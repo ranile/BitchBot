@@ -4,20 +4,15 @@ import re
 import random
 import requests
 import asyncio
-
-dabs = ["<:dab:594089160956968973>",
-        "<:emojidab:594089164987695124>",
-        "<:sharkdab:594089168519299093>",
-        "<:sindab:594089170801000481>"
+dabs = ["<:thnank:573006494296047625>",
+        "<:rabbitman:593375171880943636>",
+        "<:hrmmm:553857757510631434>",
+        "<:DaveLovesU:550855068929228800>"
         ]
 
 rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
 
 haiku_bot = 372175794895585280
-
-server_id = 535750941702619166
-announce = 535750941702619169
-channel_mention = 535750941702619169
 
 seals = """What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of 
 my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 
@@ -60,6 +55,15 @@ class Autoresponder(commands.Cog):
         elif re.search(r"\bbich\b", msg):
             await cnl.send(random.choice(["Bich", "No u"]))
 
+        elif re.search(r"\bbruh\b", msg):
+            await cnl.send("THAT is a bruh moment")
+
+        elif re.search(r"\brip\b", msg):
+            await cnl.send("Not epic")
+
+        elif re.search(r"\buh oh\b", msg):
+            await cnl.send("We're in danger")
+
         elif ctx.author.id == haiku_bot:
             await cnl.send("Shut the fuck up HaikuBot bot shut the fuck up nobody asked you bitch ass i hate you you bad fucking bot st upid ass")
 
@@ -69,10 +73,10 @@ class Autoresponder(commands.Cog):
         elif re.search(r"\b(o|u)w(o|u)\b", msg, re.IGNORECASE):
             await cnl.send("FURRY DETECTED\n\nTARGET DETECTED,\n\nMISSILES ENROUTE")
 
-        elif re.search(r"69", ctx.clean_content):
+        elif re.search(r"\b69\b", ctx.clean_content):
             await cnl.send("Ha thats the sex number")
         
-        elif re.search(r"420", ctx.clean_content):
+        elif re.search(r"\b420\b", ctx.clean_content):
             await cnl.send("Ha thats the weed number")
 
         elif re.search(r"\bsmh\b", msg):
@@ -84,7 +88,7 @@ class Autoresponder(commands.Cog):
         elif re.search(r"good bot", msg):
             await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
         elif re.search(r"bad bot", msg):
-            await cnl.send(random.choice(["Rip", "Aww", "K", "You sure about that?", seals, "F", "Uh, Quantum Bot is over there", "😦"]))
+            await cnl.send(random.choice(["Rip", "Aww", "K", "You sure about that?", seals, "F", "😦"]))
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -107,15 +111,7 @@ class Autoresponder(commands.Cog):
             embed = discord.Embed()
             embed.set_image(url=img)
             await ctx.send(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        if member.guild.id == server_id:
-            cnl = self.bot.get_channel(announce)
-            rules = self.bot.get_channel(channel_mention)
-            msg = f"Welcome {member.mention}!\nPlease refer to {rules.mention} for all you need to know"
-            await cnl.send(msg)
-
+            
 
 def setup(bot):
     bot.add_cog(Autoresponder(bot))

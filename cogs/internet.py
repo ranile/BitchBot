@@ -8,10 +8,10 @@ import urllib
 
 
 def format_error(error):
-    return """```
+    return f"""```
 Error 420 in command
-    {}
-```""".format(error)
+    {error}
+```"""
 
 
 class Internet(commands.Cog):
@@ -91,7 +91,12 @@ class Internet(commands.Cog):
         """
         Get a random reddit post
         """
-        req = requests.get('http://reddit.com/r/' + search + '/new/.json', headers={'User-agent': 'Chrome'})
+
+        if (str(search) == 'teenagers'):
+            req = requests.get('http://reddit.com/r/' + search + '/new/.json', headers={'User-agent': 'Chrome'})
+        else:
+            req = requests.get('http://reddit.com/r/' + search + '/hot/.json', headers={'User-agent': 'Chrome'})
+        
         json = req.json()
         if "error" in json or json["data"]["after"] is None:
             await ctx.send(format_error("Subreddit '{}' not found".format(search)))
@@ -135,9 +140,19 @@ class Internet(commands.Cog):
         """
         Be like bill
         """
-        link = "https://belikebill.ga/billgen-API.php?default=1&name=" + urllib.parse.quote(name)
+        link = f"https://belikebill.ga/billgen-API.php?default=1&name={urllib.parse.quote(name)}"
         await ctx.send(embed=discord.Embed().set_image(url=link))
 
+    @commands.command()
+    async def urban(self, ctx, *, search):
+        """
+        Gets top defination from urban dictionary
+        """
+        await ctx.channel.trigger_typing()
+        url = f"http://api.urbandictionary.com/v0/define?term={search}"
+        req = requests.get(url)
+        data = req.json()
+        await ctx.send(embed = discord.Embed(title = search, description=  data['list'][0]['definition']))
 
 def setup(bot):
     bot.add_cog(Internet(bot))

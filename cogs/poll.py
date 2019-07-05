@@ -30,11 +30,11 @@ class Polls(commands.Cog):
         e.g. >poll "Do you like bacon" yes
         """
         if answers == ():
-            msg = await ctx.send("**📊 " + question.title() + "**")
+            msg = await ctx.send(f"**📊 {question.title()}**")
             await msg.add_reaction("👍")
             await msg.add_reaction("👎")
         elif len(answers) < 10:
-            header = "**📊 " + question.title() + "**"
+            header = f"**📊 {question.title()}**"
             inner = ""
             for i in range(len(answers)):
                 inner += "{} {}\n".format(letter_emote[i], answers[i].title())
