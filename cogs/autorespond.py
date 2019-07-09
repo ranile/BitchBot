@@ -64,8 +64,8 @@ class Autoresponder(commands.Cog):
         elif re.search(r"\buh oh\b", msg):
             await cnl.send("We're in danger")
 
-        elif ctx.author.id == haiku_bot:
-            await cnl.send("Shut the fuck up HaikuBot bot shut the fuck up nobody asked you bitch ass i hate you you bad fucking bot st upid ass")
+        # elif ctx.author.id == haiku_bot:
+        #     await cnl.send("Shut the fuck up HaikuBot bot shut the fuck up nobody asked you bitch ass i hate you you bad fucking bot st upid ass")
 
         elif re.match(r"furr(y|ies) on sight!?", msg):
             await cnl.send("TARGET DETECTED,\n\nMISSILES ENROUTE")
@@ -87,6 +87,7 @@ class Autoresponder(commands.Cog):
 
         elif re.search(r"good bot", msg):
             await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
+            
         elif re.search(r"bad bot", msg):
             await cnl.send(random.choice(["Rip", "Aww", "K", "You sure about that?", seals, "F", "😦"]))
 
