@@ -52,10 +52,10 @@ class Autoresponder(commands.Cog):
         if re.search(r"\bepic\b", msg):
             await cnl.send(random.choice(dabs))
 
-        elif re.search(r"\bbich\b", msg):
+        elif re.fullmatch(r"\bbich\b", msg):
             await cnl.send(random.choice(["Bich", "No u"]))
 
-        elif re.search(r"\bbruh\b", msg):
+        elif re.fullmatch(r"\bbruh\b", msg):
             await cnl.send("THAT is a bruh moment")
 
         elif re.search(r"\brip\b", msg):
@@ -71,7 +71,8 @@ class Autoresponder(commands.Cog):
             await cnl.send("TARGET DETECTED,\n\nMISSILES ENROUTE")
 
         elif re.search(r"\b(o|u)w(o|u)\b", msg, re.IGNORECASE):
-            await cnl.send("FURRY DETECTED\n\nTARGET DETECTED,\n\nMISSILES ENROUTE")
+            if cnl.id != 561016195780706317: # ID for welcome/leave message channel because well, reaso
+                await cnl.send(f"FURRY DETECTED\n\nTARGET DETECTED,\n\nMISSILES ENROUTE")
 
         elif re.search(r"\b69\b", ctx.clean_content):
             await cnl.send("Ha thats the sex number")
@@ -79,11 +80,11 @@ class Autoresponder(commands.Cog):
         elif re.search(r"\b420\b", ctx.clean_content):
             await cnl.send("Ha thats the weed number")
 
-        elif re.search(r"\bsmh\b", msg):
+        elif re.fullmatch(r"\bsmh\b", msg):
             await cnl.send(random.choice(["Shaking my smh", "Smh my head", "Ikr", "Shaking my head"]))
-
-        elif re.search(r"\b(wtf|what the fuck)\b", msg):
-            await cnl.send(random.choice(["Smh", "Ikr"]))
+    
+        # elif re.fullmatch(r"\b(wtf|what the fuck)\b", msg):
+        #     await cnl.send(random.choice(["Smh", "Ikr"]))
 
         elif re.search(r"good bot", msg):
             await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
@@ -96,7 +97,7 @@ class Autoresponder(commands.Cog):
         if str(reaction) == "📌":
             await reaction.message.pin()
             await reaction.message.remove_reaction(reaction, user)
-            await reaction.message.channel.send("{} Pinned a message!".format(user.mention))
+            await reaction.message.channel.send(f"{user.mention} Pinned a message!")
 
     @commands.command(aliases=["rick", "rickroll"])
     async def rickroulette(self, ctx):

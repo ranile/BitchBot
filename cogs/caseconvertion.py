@@ -17,12 +17,19 @@ class CaseConvertion(commands.Cog):
         
         await ctx.send(out)
     
-    @commands.command()
+    @commands.command(aliases=["yell"])
     async def touppercase(self, ctx, *, msg):
         """
         Convert string to toggle case
         """
         await ctx.send(str(msg).upper())
+    
+    @commands.command()
+    async def addspaces(self, ctx, *, msg):
+        """
+        Adds 3 spaces in between every character
+        """
+        await ctx.send('   '.join(list(str(msg))))
     
 
 def setup(bot):
