@@ -19,6 +19,13 @@ class Stupidity(commands.Cog):
         """
         await ctx.send(embed = discord.Embed(description=message))
 
+    @commands.command(aliases=["kayliesman"])
+    async def rabbitman(self, ctx):
+        """
+        Sends a rabbitman picture
+        """
+        await ctx.channel.send(file=discord.File('res/rabbitman.jpg'))
+
 def setup(bot):
     bot.add_cog(Stupidity(bot))
 
