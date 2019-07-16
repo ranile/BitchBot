@@ -15,7 +15,7 @@ Get a discord bot token after creating a discord application with a bot from [he
 Put your token in `keys.py` in `bot` with the `BOT_TOKEN` constant in `core.py` value reading from that file OR
 Put your token in `BOT_TOKEN` environment variable
 
-#### Currently Availabe Commands
+### Currently Availabe Commands
 **Syntax: {prefix}command [args]**
 
 Following commands are given in this way: command -> result

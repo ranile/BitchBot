@@ -1,5 +1,8 @@
 from discord.ext import commands
 import discord
+import random
+
+RES_PATH = 'res/'
 
 class Stupidity(commands.Cog):
     def __init__(self, bot): 
@@ -24,7 +27,22 @@ class Stupidity(commands.Cog):
         """
         Sends a rabbitman picture
         """
-        await ctx.channel.send(file=discord.File('res/rabbitman.jpg'))
+        files = []
+        for i in range(1, 10):
+            files.append(f'{RES_PATH}rabbitman{i}.jpg')
+        
+        await ctx.channel.send(file=discord.File(files[random.randint(0,len(files)-1)]))
+
+    @commands.command()
+    async def baby(self, ctx):
+        """
+        Sends a Baby picture
+        """
+        files = []
+        for i in range(1, 9):
+            files.append(f'{RES_PATH}baby{i}.jpg')
+        
+        await ctx.channel.send(file=discord.File(files[random.randint(0,len(files)-1)]))
 
 def setup(bot):
     bot.add_cog(Stupidity(bot))
