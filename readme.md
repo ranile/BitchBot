@@ -60,4 +60,4 @@ Following commands are given in this way: command -> result
 
     args: Takes a string as its argument and says it back in embeds
 * rabbitman -> returns a rabbitman picture.
-* help -> Shows this message
+* help -> Shows help message
