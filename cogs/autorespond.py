@@ -7,7 +7,9 @@ import asyncio
 dabs = ["<:thnank:573006494296047625>",
         "<:rabbitman:593375171880943636>",
         "<:hrmmm:553857757510631434>",
-        "<:DaveLovesU:550855068929228800>"
+        "<:DaveLovesU:550855068929228800>",
+        "<:hhngyfdtj:564926491754889218>",
+        "<:daway:524473417169109003>"
         ]
 
 rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
@@ -31,7 +33,14 @@ drown in it. You're fucking dead, kiddo. """
 
 
 class Autoresponder(commands.Cog):
+    words = []
+
     def __init__(self, bot):
+        with open('res/words.txt') as f:
+            for i in f.readlines():
+                word = i.split('::')[0]
+                self.words.append(word)
+
         self.bot = bot
 
     @commands.command()
@@ -48,18 +57,26 @@ class Autoresponder(commands.Cog):
 
         if ctx.author == self.bot.user:
             return
+        
+        for i in str(msg).split():
+            if (i in self.words):
+                await cnl.send("You might've made a typo...\nReminder: have autocorrect enabled so you don't make typos")
+                break
 
-        if re.search(r"\bepic\b", msg):
+        if (re.search(r"\bepic\b", msg)) and 'not epic' not in msg.lower():
             await cnl.send(random.choice(dabs))
 
         elif re.fullmatch(r"\bbich\b", msg):
             await cnl.send(random.choice(["Bich", "No u"]))
 
-        elif re.fullmatch(r"\bbruh\b", msg):
+        elif re.fullmatch(r"\b(bruh|bruh moment)\b", msg):
             await cnl.send("THAT is a bruh moment")
 
         elif re.search(r"\brip\b", msg):
             await cnl.send("Not epic")
+
+        elif re.search(r"\bnot epic\b", msg):
+            await cnl.send(random.choice(["Not epic, indeed", "rip"]))
 
         elif re.search(r"\buh oh\b", msg):
             await cnl.send("We're in danger")
@@ -71,7 +88,7 @@ class Autoresponder(commands.Cog):
             await cnl.send("TARGET DETECTED,\n\nMISSILES ENROUTE")
 
         elif re.search(r"\b(o|u)w(o|u)\b", msg, re.IGNORECASE):
-            if cnl.id != 561016195780706317: # ID for welcome/leave message channel because well, reaso
+            if cnl.id != 561016195780706317: # ID for welcome/leave message channel because well, reasons
                 await cnl.send(f"FURRY DETECTED\n\nTARGET DETECTED,\n\nMISSILES ENROUTE")
 
         elif re.search(r"\b69\b", ctx.clean_content):
@@ -89,9 +106,15 @@ class Autoresponder(commands.Cog):
         elif re.search(r"good bot", msg):
             await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
             
-        elif re.search(r"bad bot", msg):
+        elif re.search(r"(bad bot|stfu bitch bot|stfu bitchbot)", msg):
             await cnl.send(random.choice(["Rip", "Aww", "K", "You sure about that?", seals, "F", "😦"]))
-
+            
+        elif re.fullmatch(r'w(ha|u|a)t\?+', msg.lower()) or re.fullmatch(r'w(ha|u|a)t', msg.lower()):
+            if str(ctx.content).isupper():
+                await cnl.send("YES")
+            else:
+                await cnl.send("Yes")
+        
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         if str(reaction) == "📌":
@@ -107,7 +130,7 @@ class Autoresponder(commands.Cog):
         await ctx.channel.trigger_typing()
         if random.randint(0, 5) == 0:
             await asyncio.sleep(3)
-            await ctx.send("Get rick rolled\n" + rick)
+            await ctx.send(f"Get rick rolled\n {rick}")
         else:
             img = requests.get("https://dog.ceo/api/breeds/image/random").json()["message"]
             embed = discord.Embed()

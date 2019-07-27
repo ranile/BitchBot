@@ -8,10 +8,7 @@ import urllib
 
 
 def format_error(error):
-    return f"""```
-Error 420 in command
-    {error}
-```"""
+    return f"""```Error 420 in command{error}```"""
 
 
 class Internet(commands.Cog):
@@ -151,6 +148,10 @@ class Internet(commands.Cog):
         await ctx.channel.trigger_typing()
         url = f"http://api.urbandictionary.com/v0/define?term={search}"
         req = requests.get(url)
+
+        if req.status_code == 404:
+            await ctx.send(format_error('Errorrrrr... Not found'))
+        
         data = req.json()
         await ctx.send(embed = discord.Embed(title = search, description=  data['list'][0]['definition']))
 
