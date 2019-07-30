@@ -7,7 +7,7 @@ BOT_TOKEN = os.environ['BOT_TOKEN']
 
 bot = commands.Bot(command_prefix=">", case_insensitive=True, owner_ids =[529535587728752644])
 
-cogs = ["autorespond", "internet", "poll", 'caseconvertion', 'stupidity', 'games']
+cogs = ["autorespond", "internet", "poll", 'caseconvertion', 'stupidity', 'games', 'math']
 
 
 @bot.event

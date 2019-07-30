@@ -9,8 +9,34 @@ dabs = ["<:thnank:573006494296047625>",
         "<:hrmmm:553857757510631434>",
         "<:DaveLovesU:550855068929228800>",
         "<:hhngyfdtj:564926491754889218>",
-        "<:daway:524473417169109003>"
+        "<:daway:524473417169109003>",
+        "<:fried_wheeze:509526391495065600>",
+        "<a:Birb:605416788964147220>"
         ]
+
+emojis_i_can_send = ['<:thonk:524473295345549323>','<:daway:524473417169109003>',
+'<:sad_yeehaw:542504166531137556>','<:disappointed_dave:542518626922528769>',
+'<:Old_Sport_corrupted:542578324568932382>','<:AHHHH:542578485219295234>',
+'<:Jack:542578536007991307>','<:Blackjack:542578578622119977>',
+'<:Steven1:542581306937049102>','<:f_:542582487755259915>',
+'<:Michael:542582934847094787>','<:PeterPointing:542590076568207403>',
+'<:JakesPissed:542599849170829315>','<:HALT:542603773651189760>',
+'<:Cumdump:543260690991939584>','<:FredbearPlush:548020515684483072>',
+'<:PureEvilJack:548020631191683074>','<:yup:549102182704611328>',
+'<:eto:549110549753888779>','<:DaveLovesU:550855068929228800>',
+'<:PureFear:550855275830050836>','<:hrmmm:553857757510631434>',
+'<:FreddyPlush:553858389403369494>','<:HelpyBoop:553863991982686246>',
+'<:Helpy:553864004095836160>','<:loveyizu:564734314567434240>',
+'<:thoonk:564737184507101184>','<:Baby:564747238681608192>',
+'<:help:564751981726662667>','<:hhngyfdtj:564926491754889218>',
+'<:cute:564926571165515797>','<:whatacutie:564927073961902084>',
+'<:uwu:565007921641947136>','<:denk:565435459895820288>',
+'<:taank:573006288682876929>','<:thnank:573006494296047625>',
+'<:thinnnnnnk:573006544246145026>','<:tthhoonnkk:573006630350880778>',
+'<:PeterHappy:574807238481281035>','<:inthedark:593334846907088917>',
+'<:rabbitman:593375171880943636>','<:iloveyousayitback:605150642230525953>',
+'<:takecareofyourselfbitch:605150934640623635>','<:givemeyourteeth:605168016828923924>',
+'<:emoji_45:605477313198555347>','<:emoji_46:605477349873549394>','<:angery:605478515776946187>']
 
 rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
 
@@ -33,14 +59,7 @@ drown in it. You're fucking dead, kiddo. """
 
 
 class Autoresponder(commands.Cog):
-    words = []
-
     def __init__(self, bot):
-        with open('res/words.txt') as f:
-            for i in f.readlines():
-                word = i.split('::')[0]
-                self.words.append(word)
-
         self.bot = bot
 
     @commands.command()
@@ -57,14 +76,22 @@ class Autoresponder(commands.Cog):
 
         if ctx.author == self.bot.user:
             return
-        
-        for i in str(msg).split():
-            if (i in self.words):
-                await cnl.send("You might've made a typo...\nReminder: have autocorrect enabled so you don't make typos")
-                break
+         
+        if (re.search(r"\bepic\b", msg)) and 'not epic' not in msg:
+            server_emojis = cnl.guild.emojis
+            to_send = random.choice(dabs)
+            emojis = []
+            for emoji in server_emojis:
+                emojis.append(str(emoji))
 
-        if (re.search(r"\bepic\b", msg)) and 'not epic' not in msg.lower():
-            await cnl.send(random.choice(dabs))
+            if (to_send in emojis_i_can_send) or (to_send in emojis):
+                await cnl.send(to_send)
+            else:
+                splitted = to_send.split(':')
+                id = splitted[2].replace('>', '')
+                url = f"https://cdn.discordapp.com/emojis/{id}.{'gif' if splitted[0] == '<a' else 'png'}"
+                await cnl.send(url)
+            
 
         elif re.fullmatch(r"\bbich\b", msg):
             await cnl.send(random.choice(["Bich", "No u"]))
