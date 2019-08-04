@@ -28,7 +28,7 @@ class Stupidity(commands.Cog):
         Sends a rabbitman picture
         """
         files = []
-        for i in range(1, 10):
+        for i in range(1, 11):
             files.append(f'{RES_PATH}rabbitman{i}.jpg')
         
         await ctx.channel.send(file=discord.File(files[random.randint(0,len(files)-1)]))

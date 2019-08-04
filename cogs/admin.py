@@ -12,5 +12,13 @@ class Owner(commands.Cog):
         self.bot.reload_extension("cog."+module)
         await ctx.send("🔄")
 
+    @commands.is_owner()
+    @commands.command()
+    async def delete(self, ctx, message):
+        msg = await ctx.channel.fetch_message(message)
+        await msg.delete()
+        await ctx.send("Done")
+
+
 def setup(bot):
     bot.add_cog(Owner(bot))

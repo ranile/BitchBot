@@ -57,6 +57,35 @@ your little "clever" comment was about to bring down upon you, maybe you would h
 couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will 
 drown in it. You're fucking dead, kiddo. """
 
+def get_temp_if_valid(msg: str):
+    match = re.search(r'(-?\d+\.?\d*) ?°?(c|celsius|f|fahrenheit)', msg, re.IGNORECASE)
+    
+    if match:
+        temp = match.group(1)
+        unit_match  = re.search(r'(c|celsius|f|fahrenheit)', match.group(2), re.IGNORECASE)
+
+        if unit_match:
+            unit = unit_match.group(1)
+        else:
+            unit = re.search(r'(c|celsius|f|c)', match.group(3), re.IGNORECASE).group(1)
+
+        if re.search(r'(c|celsius)', unit, re.IGNORECASE):
+            result = {
+                'temp': temp,
+                'unit': 'C'
+            }
+        elif re.search(r'(f|fahrenheit)', unit, re.IGNORECASE):
+            result = {
+                'temp': temp,
+                'unit': 'F'
+            }
+    return result
+
+def c_to_f(c: float) -> float:
+    return (c * 9/5) + 32
+
+def f_to_c(f: float) -> float:
+    return (f - 32) * (5/9)
 
 class Autoresponder(commands.Cog):
     def __init__(self, bot):
@@ -114,9 +143,11 @@ class Autoresponder(commands.Cog):
         elif re.match(r"furr(y|ies) on sight!?", msg):
             await cnl.send("TARGET DETECTED,\n\nMISSILES ENROUTE")
 
-        elif re.search(r"\b(o|u)w(o|u)\b", msg, re.IGNORECASE):
-            if cnl.id != 561016195780706317: # ID for welcome/leave message channel because well, reasons
-                await cnl.send(f"FURRY DETECTED\n\nTARGET DETECTED,\n\nMISSILES ENROUTE")
+        elif re.search(r"weea?bs?", msg):
+            if (cnl.guild.id == 505655510263922700) and (cnl.id == 535495420269559828 or cnl.id == 552961964314460181 or cnl.id == 564189039788294154):
+                return
+
+            await cnl.send("NO WEEBS")
 
         elif re.search(r"\b69\b", ctx.clean_content):
             await cnl.send("Ha thats the sex number")
@@ -126,22 +157,29 @@ class Autoresponder(commands.Cog):
 
         elif re.fullmatch(r"\bsmh\b", msg):
             await cnl.send(random.choice(["Shaking my smh", "Smh my head", "Ikr", "Shaking my head"]))
-    
-        # elif re.fullmatch(r"\b(wtf|what the fuck)\b", msg):
-        #     await cnl.send(random.choice(["Smh", "Ikr"]))
 
         elif re.search(r"good bot", msg):
             await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
             
         elif re.search(r"(bad bot|stfu bitch bot|stfu bitchbot)", msg):
             await cnl.send(random.choice(["Rip", "Aww", "K", "You sure about that?", seals, "F", "😦"]))
+        
+        elif re.fullmatch(r"\bcreeper\b", msg):
+            await cnl.send('Aww man')
             
-        elif re.fullmatch(r'w(ha|u|a)t\?+', msg.lower()) or re.fullmatch(r'w(ha|u|a)t', msg.lower()):
+        elif re.fullmatch(r'w(ha|u|a)t(\?+)?', msg):
             if str(ctx.content).isupper():
                 await cnl.send("YES")
             else:
                 await cnl.send("Yes")
         
+        elif re.search(r'(-?\d+\.?\d*) ?°?(c|celsius|f|fahrenheit)', msg, re.IGNORECASE):
+            temperature = get_temp_if_valid(msg)
+            if temperature['unit'] == 'F':
+                await cnl.send(f"{temperature['temp']}°{temperature['unit']} = {int(f_to_c(float(temperature['temp'])))}°C")
+            elif temperature['unit'] == 'C':
+                await cnl.send(f"{temperature['temp']}°{temperature['unit']} = {int(c_to_f(float(temperature['temp'])))}°F")
+
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         if str(reaction) == "📌":
