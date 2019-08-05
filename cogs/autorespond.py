@@ -173,7 +173,7 @@ class Autoresponder(commands.Cog):
             else:
                 await cnl.send("Yes")
         
-        elif re.search(r'(-?\d+\.?\d*) ?°?(c|celsius|f|fahrenheit)', msg, re.IGNORECASE):
+        elif re.fullmatch(r'(-?\d+\.?\d*)°(c|celsius|f|fahrenheit)', msg, re.IGNORECASE):
             temperature = get_temp_if_valid(msg)
             if temperature['unit'] == 'F':
                 await cnl.send(f"{temperature['temp']}°{temperature['unit']} = {int(f_to_c(float(temperature['temp'])))}°C")

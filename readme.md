@@ -62,5 +62,13 @@ Following commands are given in this way: command -> result
 * sayembed -> Have the bot say something in embeds.
 
     args: Takes a string as its argument and says it back in embeds
+* urban -> Looks up the given word on urban dictionary
 * rabbitman -> returns a rabbitman picture.
+* baby -> returns a *baby* picture.
+* toc -> Converts fahrenheit to celcius
+
+    args: Takes temperature in fahrenheit
+* tof -> Converts celcius to fahrenheit
+
+    args: Takes temperature in celcius
 * help -> Shows help message

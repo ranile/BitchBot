@@ -88,11 +88,9 @@ class Internet(commands.Cog):
         """
         Get a random reddit post
         """
-
-        if (str(search) == 'teenagers'):
-            req = requests.get('http://reddit.com/r/' + search + '/new/.json', headers={'User-agent': 'Chrome'})
-        else:
-            req = requests.get('http://reddit.com/r/' + search + '/hot/.json', headers={'User-agent': 'Chrome'})
+        
+        await ctx.channel.trigger_typing()
+        req = requests.get('http://reddit.com/r/' + search + '/new/.json', headers={'User-agent': 'Chrome'})
         
         json = req.json()
         if "error" in json or json["data"]["after"] is None:
@@ -119,7 +117,7 @@ class Internet(commands.Cog):
         if re.match(r".*\.(jpg|png|gif)$", url):
             embed.set_image(url=url)
 
-        embed.set_footer(text="By {} in {}".format(author, subreddit))
+        embed.set_footer(text=f"First post in new in {subreddit} by {author}")
 
         await ctx.send(embed=embed)
 
@@ -147,13 +145,27 @@ class Internet(commands.Cog):
         """
         await ctx.channel.trigger_typing()
         url = f"http://api.urbandictionary.com/v0/define?term={search}"
+        link = f"https://www.urbandictionary.com/define.php?term={search}"
         req = requests.get(url)
 
         if req.status_code == 404:
             await ctx.send(format_error('Errorrrrr... Not found'))
         
         data = req.json()
-        await ctx.send(embed = discord.Embed(title = search, description=  data['list'][0]['definition']))
+        embed = discord.Embed(title = search, description=  data['list'][0]['definition'], url=link)
+        embed.set_footer(text = "From Urban Dictionary")
+        await ctx.send(embed = embed)
+
+    @commands.command(aliases=["insult"])
+    async def roastme(self, ctx):
+        await ctx.channel.trigger_typing()
+        url = "https://insult.mattbas.org/api/insult.json"
+        req = requests.get(url)
+        if req.status_code != 200:
+            await ctx.send("You lucky bastard... An error occuered\nMission failed bois, we'll get 'em next time")
+            return
+        
+        await ctx.send(req.json()['insult'])
 
 def setup(bot):
     bot.add_cog(Internet(bot))

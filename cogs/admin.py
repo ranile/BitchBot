@@ -17,7 +17,6 @@ class Owner(commands.Cog):
     async def delete(self, ctx, message):
         msg = await ctx.channel.fetch_message(message)
         await msg.delete()
-        await ctx.send("Done")
 
 
 def setup(bot):
