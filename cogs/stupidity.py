@@ -39,6 +39,16 @@ class Stupidity(commands.Cog):
             'z': '🇿'
         }
 
+        self.emoji_chars_alts = {
+            'k': "🎋",
+            'l': "👢",
+            'o': "⭕",
+            'q': "🎯",
+            's': "💲",        
+            'u': "⛎",
+            'x': "❌"
+        }
+
         self.animated_emojis_to_ids = {
             'oof': 447819226795999233,
             'nou': 527620293976391691,
@@ -91,11 +101,17 @@ class Stupidity(commands.Cog):
 
     @commands.command()
     async def react(self, ctx, message, text):
+        
         msg = await ctx.channel.fetch_message(message)
-        reaction = ''.join(ch for ch, _ in itertools.groupby(text))
-        for i in reaction:
+        sent = []
+        for i in text:
             if re.fullmatch(r'[a-z]', i, re.IGNORECASE):
-                await msg.add_reaction(self.emoji_chars[str(i).lower()])
+                emoji = str(i).lower()
+                if (i in sent) and (emoji in self.emoji_chars_alts.keys()):
+                    await msg.add_reaction(self.emoji_chars_alts[emoji])
+                else:
+                    await msg.add_reaction(self.emoji_chars[emoji])
+                sent.append(i)  
 
     @commands.command()
     async def emoji(self, ctx, message):
