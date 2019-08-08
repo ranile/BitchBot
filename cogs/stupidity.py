@@ -39,6 +39,20 @@ class Stupidity(commands.Cog):
             'z': '🇿'
         }
 
+        self.animated_emojis_to_ids = {
+            'oof': 447819226795999233,
+            'nou': 527620293976391691,
+            'xAccept': 585833119672958998,
+            '0PepeHowdy': 594175419801141273,
+            'dance': 429336765933813781,
+            '0SpookyPls': 608340245485846591,
+            'ping': 605457745004724279
+        }
+
+        self.emojis_to_ids = {
+            'arianafite': 607895287293411339
+        }
+
     @commands.command(aliases=["send"])
     async def say(self, ctx, *, message):
         """
@@ -82,6 +96,17 @@ class Stupidity(commands.Cog):
         for i in reaction:
             if re.fullmatch(r'[a-z]', i, re.IGNORECASE):
                 await msg.add_reaction(self.emoji_chars[str(i).lower()])
+
+    @commands.command()
+    async def emoji(self, ctx, message):
+        if message in self.animated_emojis_to_ids.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis_to_ids[message]}.gif"
+            await ctx.send(url)
+        elif message in self.emojis_to_ids.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.emojis_to_ids[message]}.png"
+            await ctx.send(url)
+        else:
+            await ctx.send('Emoji not available')
 
 def setup(bot):
     bot.add_cog(Stupidity(bot))
