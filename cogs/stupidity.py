@@ -56,10 +56,12 @@ class Stupidity(commands.Cog):
             '0PepeHowdy': 594175419801141273,
             'dance': 429336765933813781,
             '0SpookyPls': 608340245485846591,
+            'brib': 605416788964147220,
             'ping': 605457745004724279
         }
 
         self.emojis_to_ids = {
+            'fried_wheeze': 509526391495065600,
             'arianafite': 607895287293411339
         }
 
@@ -123,6 +125,26 @@ class Stupidity(commands.Cog):
             await ctx.send(url)
         else:
             await ctx.send('Emoji not available')
+
+    @commands.command()
+    async def emojis(self, ctx):
+        out_animated = ''
+        out_non_animated = ''
+
+        for i in range(0, len(self.animated_emojis_to_ids.keys())):
+            emojis = list(self.animated_emojis_to_ids.keys())
+            out_animated += f'{i+ 1}. {emojis[i]}\n'
+        
+        for i in range(0, len(self.emojis_to_ids.keys())):
+            emojis = list(self.emojis_to_ids.keys())
+            out_non_animated += f'{i + 1}. {emojis[i]}\n'
+        
+        embed=discord.Embed(title='Available emojis')
+        embed.add_field(name='Animated:', value=out_animated, inline=False)
+        embed.add_field(name='Non animated:', value=out_non_animated, inline=True)
+        embed.set_footer(text='@hamza to add more')
+        
+        await ctx.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(Stupidity(bot))
