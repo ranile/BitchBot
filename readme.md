@@ -71,4 +71,8 @@ Following commands are given in this way: command -> result
 * tof -> Converts celcius to fahrenheit
 
     args: Takes temperature in celcius
+* emojis -> Returns emojis that can be sent by 'emoji' command
+* emoji -> Sends any one of the emojis from 'emojis' command
+
+    args: Emoji to send
 * help -> Shows help message

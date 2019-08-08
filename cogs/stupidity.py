@@ -103,7 +103,9 @@ class Stupidity(commands.Cog):
 
     @commands.command()
     async def react(self, ctx, message, text):
-        
+        """
+        Add the given reactions to a message
+        """
         msg = await ctx.channel.fetch_message(message)
         sent = []
         for i in text:
@@ -117,6 +119,9 @@ class Stupidity(commands.Cog):
 
     @commands.command()
     async def emoji(self, ctx, message):
+        """
+        Send any one of the emoji given by 'emojis' command
+        """
         if message in self.animated_emojis_to_ids.keys():
             url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis_to_ids[message]}.gif"
             await ctx.send(url)
@@ -128,6 +133,9 @@ class Stupidity(commands.Cog):
 
     @commands.command()
     async def emojis(self, ctx):
+        """
+        Shows the emojis that can be sent by 'emoji' command
+        """
         out_animated = ''
         out_non_animated = ''
 

@@ -117,7 +117,7 @@ class Internet(commands.Cog):
         if re.match(r".*\.(jpg|png|gif)$", url):
             embed.set_image(url=url)
 
-        embed.set_footer(text=f"First post in new in {subreddit} by {author}")
+        embed.set_footer(text=f"From new in {subreddit} by {author}")
 
         await ctx.send(embed=embed)
 
