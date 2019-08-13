@@ -126,7 +126,7 @@ class Autoresponder(commands.Cog):
             await cnl.send(random.choice(["Bich", "No u"]))
 
         elif re.fullmatch(r"\b(bruh|bruh moment)\b", msg):
-            await cnl.send("THAT is a bruh moment")
+            await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
 
         elif re.search(r"\brip\b", msg):
             await cnl.send("Not epic")
