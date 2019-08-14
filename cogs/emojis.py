@@ -69,7 +69,24 @@ class Emojis(commands.Cog):
         
         await ctx.send(embed = embed)
 
-
+    
+    @commands.command(aliases=["emojiembed"])
+    async def emoji2(self, ctx, message):
+        """
+        Send embed of any one of the emoji given by 'emojis' command
+        """
+        embed=discord.Embed()
+        if message in self.animated_emojis_to_ids.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis_to_ids[message]}.gif"
+            embed.set_image(url=url)
+            await ctx.send(embed)
+        elif message in self.emojis_to_ids.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.emojis_to_ids[message]}.png"
+            embed.set_image(url=url)
+            await ctx.send(embed)
+        else:
+            await ctx.send('Emoji not available')
+    
 def setup(bot):
     bot.add_cog(Emojis(bot))
 
