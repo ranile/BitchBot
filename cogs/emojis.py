@@ -1,23 +1,20 @@
 from discord.ext import commands
 import discord
-import json
+import requests
 import itertools
 import re
-
-RES_PATH = 'res/'
 
 class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        with open(f'{RES_PATH}emojis.json') as f:
-            emojis = json.load(f)
-            self.animated_emojis_to_ids = emojis['animated_emojis_to_ids']
-            self.animated_emojis = emojis['animated_emojis']
-            self.emojis_to_ids = emojis['non_animated_emojis_to_ids']
-            self.nona_emojis = emojis['non_animated_emojis']
+        emojis = requests.get('https://raw.githubusercontent.com/hamza1311/BitchBot/master/res/emojis.json').json()
+        self.animated_emojis_to_ids = emojis['animated_emojis_to_ids']
+        self.animated_emojis = emojis['animated_emojis']
+        self.emojis_to_ids = emojis['non_animated_emojis_to_ids']
+        self.nona_emojis = emojis['non_animated_emojis']
     
-    @commands.command(aliases=["emojilarge", "enlargeemoji"])
+    @commands.command(aliases=["emojilink"])
     async def emojiimg(self, ctx, message):
         """
         Send link of any one of the emoji given by 'emojis' command
@@ -75,15 +72,16 @@ class Emojis(commands.Cog):
         """
         Send embed of any one of the emoji given by 'emojis' command
         """
-        embed=discord.Embed()
+        embed=discord.Embed(title=message)
+        # embed.set_footer(text=message)
         if message in self.animated_emojis_to_ids.keys():
             url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis_to_ids[message]}.gif"
             embed.set_image(url=url)
-            await ctx.send(embed)
+            await ctx.send(embed=embed)
         elif message in self.emojis_to_ids.keys():
             url = f"https://cdn.discordapp.com/emojis/{self.emojis_to_ids[message]}.png"
             embed.set_image(url=url)
-            await ctx.send(embed)
+            await ctx.send(embed=embed)
         else:
             await ctx.send('Emoji not available')
     
