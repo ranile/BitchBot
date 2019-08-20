@@ -8,9 +8,6 @@ dabs = ["<:thnank:573006494296047625>",
         "<:rabbitman:593375171880943636>",
         "<:hrmmm:553857757510631434>",
         "<:DaveLovesU:550855068929228800>",
-        "<:hhngyfdtj:564926491754889218>",
-        "<:daway:524473417169109003>",
-        "<:fried_wheeze:509526391495065600>",
         "<a:Birb:605416788964147220>"
         ]
 
@@ -36,7 +33,11 @@ emojis_i_can_send = ['<:thonk:524473295345549323>','<:daway:524473417169109003>'
 '<:PeterHappy:574807238481281035>','<:inthedark:593334846907088917>',
 '<:rabbitman:593375171880943636>','<:iloveyousayitback:605150642230525953>',
 '<:takecareofyourselfbitch:605150934640623635>','<:givemeyourteeth:605168016828923924>',
-'<:emoji_45:605477313198555347>','<:emoji_46:605477349873549394>','<:angery:605478515776946187>']
+'<:emoji_45:605477313198555347>','<:emoji_46:605477349873549394>','<:angery:605478515776946187>',
+"<a:oof:610783715567599616>","<a:nou:610785266231279630>", "<a:brib:610784129348534293>",
+ "<a:aup:610784162332278791>", "<a:0PepeHowdy:610784127985123339>", "<a:dance:610779614897242132>",
+ "<a:ping:610784135627407370>","<a:ablobwave:610784148822425602>", "<a:doormonkas:610881896800452628>", 
+ "<a:0SpookyPls:610784153385959434>",]
 
 rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
 
@@ -125,7 +126,7 @@ class Autoresponder(commands.Cog):
         elif re.fullmatch(r"\bbich\b", msg):
             await cnl.send(random.choice(["Bich", "No u"]))
 
-        elif re.fullmatch(r"\b(bruh|bruh moment)\b", msg):
+        elif re.fullmatch(r"\bbruh(mius)?( moment(ium)?)?\b", msg):
             await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
 
         elif re.search(r"\brip\b", msg):
@@ -190,17 +191,11 @@ class Autoresponder(commands.Cog):
     @commands.command(aliases=["rick", "rickroll"])
     async def rickroulette(self, ctx):
         """
-        Rick Astley = Loose, Doggo = Win
+        Rick Astley = Loose = Win
         """
         await ctx.channel.trigger_typing()
-        if random.randint(0, 5) == 0:
-            await asyncio.sleep(3)
-            await ctx.send(f"Get rick rolled\n {rick}")
-        else:
-            img = requests.get("https://dog.ceo/api/breeds/image/random").json()["message"]
-            embed = discord.Embed()
-            embed.set_image(url=img)
-            await ctx.send(embed=embed)
+        await asyncio.sleep(3)
+        await ctx.send(f"Get rick rolled\n {rick}")
             
 
 def setup(bot):
