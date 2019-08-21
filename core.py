@@ -9,7 +9,6 @@ bot = commands.Bot(command_prefix=">", case_insensitive=True, owner_ids =[529535
 
 cogs = ["admin", "autorespond", "internet", "poll", 'caseconversion', "stupidity", "games", "math", "tempconversion", "emojis", "servermanagement"]
 
-
 @bot.event
 async def on_ready():
     print(f"{bot.user.name} is running")
