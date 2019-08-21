@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 
-class CaseConvertion(commands.Cog):
+class CaseConversion(commands.Cog):
     def __init__(self, bot): 
         self.bot = bot
 
@@ -24,15 +24,24 @@ class CaseConvertion(commands.Cog):
         """
         await ctx.send(str(msg).upper())
     
-    @commands.command()
+    @commands.command(aliases=["wide"])
     async def addspaces(self, ctx, *, msg):
         """
-        Adds 3 spaces in between every character
+        Adds 3 spaces in between every character.
+        If the first arg is a number, it will use
+        that for the number of spaces instead.
         """
-        await ctx.send('   '.join(list(str(msg))))
+        args = msg.split(" ")
+        try:
+        	spaces = int(args[0])
+        	msg = ' '.join(args[1:])
+        except TypeError:
+        	spaces = 3
+        between = spaces * ' '
+        await ctx.send(between.join(list(str(msg))))
     
 
 def setup(bot):
-    bot.add_cog(CaseConvertion(bot))
+    bot.add_cog(CaseConversion(bot))
 
     
