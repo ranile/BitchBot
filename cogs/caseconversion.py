@@ -40,6 +40,33 @@ class CaseConversion(commands.Cog):
         between = spaces * ' '
         await ctx.send(between.join(list(str(msg))))
     
+    @commands.command()
+    async def flip(self, ctx, *, msg):
+    	"""
+    	Flip latin characters.
+	    """
+		FLIP_RANGES = [
+		    (string.ascii_lowercase, "ɐqɔpǝɟƃɥᴉɾʞꞁɯuodbɹsʇnʌʍxʎz"),
+		    # alternatives: l:ʅ
+		    (string.ascii_uppercase, "ⱯᗺƆᗡƎᖵ⅁HIᒋ⋊ꞀWNOԀꝹᴚS⊥ႶɅMX⅄Z"),
+		    # alternatives: L:ᒣ⅂, J:ſ, F:߃Ⅎ, A:∀ᗄ, U:Ⴖ, W:Ϻ, C:ϽↃ, Q:Ό, M:Ɯꟽ
+		    (string.digits, "0ІᘔƐᔭ59Ɫ86"),
+		    (string.punctuation, "¡„#$%⅋,)(*+'-˙/:؛>=<¿@]\\[ᵥ‾`}|{~"),
+		]
+
+		chars = list(msg)
+		msgBack = ""
+		for c in chars:
+			for r in range(len(FLIP_RANGES)):
+				try:
+					p = FLIP_RANGES[r][0].index(c)
+					if not p == -1:
+						newC = FLIP_RANGES[r][1][p]
+						msgBack += newC
+						break
+				except ValueError:
+					continue
+		await ctx.send(msgBack)
 
 def setup(bot):
     bot.add_cog(CaseConversion(bot))
