@@ -127,7 +127,6 @@ class Autoresponder(commands.Cog):
         elif re.search(r"good bot", msg):
             await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
             
-        # elif re.search(r"(bad bot|stfu bitch bot|stfu bitchbot)", msg):
         elif re.search(r"(bad|stfu) (bitch )?bot", msg):
             await cnl.send(random.choice(["Rip", "Aww", "K", "You sure about that?", seals, "F", "😦"]))
         
