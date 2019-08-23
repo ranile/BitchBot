@@ -17,10 +17,10 @@ class ServerManagement(commands.Cog):
         self.intro_result = {}
 
         # guild id and id of introduction channel of my server
-        self.server_guild_id = os.environ['SERVER_GUILD_ID']
-        self.introduction_cnl_id = os.environ['INTRODUCTION_CHANNEL_ID']
-        self.welcome_cnl_id = os.environ['WELCOME_CHANNEL_ID']
-        self.infromation_cnl_id = os.environ['INFORMATION_CHANNEL_ID']
+        self.server_guild_id = int(os.environ['SERVER_GUILD_ID'])
+        self.introduction_cnl_id = int(os.environ['INTRODUCTION_CHANNEL_ID'])
+        self.welcome_cnl_id = int(os.environ['WELCOME_CHANNEL_ID'])
+        self.infromation_cnl_id = int(os.environ['INFORMATION_CHANNEL_ID'])
 
     
     @commands.command()
