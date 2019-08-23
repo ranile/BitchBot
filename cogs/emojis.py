@@ -3,30 +3,53 @@ import discord
 import requests
 import itertools
 import re
+import os
+
+EMOJIS_LINK = os.environ['EMOJIS_LINK']
+
+class AnimatedEmoji():
+    def __init__(self, name, id, command):
+        self.name = name
+        self.id = id
+        self.command = command
+
+class UnAnimatedEmoji():
+    def __init__(self, name, id, command):
+        self.name = name
+        self.id = id
+        self.command = command
 
 class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        emojis = requests.get('https://raw.githubusercontent.com/hamza1311/BitchBot/master/res/emojis.json').json()
-        self.animated_emojis_to_ids = emojis['animated_emojis_to_ids']
-        self.animated_emojis = emojis['animated_emojis']
-        self.emojis_to_ids = emojis['non_animated_emojis_to_ids']
-        self.nona_emojis = emojis['non_animated_emojis']
-    
-    @commands.command(aliases=["emojilink"])
-    async def emojiimg(self, ctx, message):
+        res = requests.get(EMOJIS_LINK)
+        json = res.json()
+
+        self.animated_emojis = {}
+        self.non_animated_emojis = {}
+
+        for i in json:
+            if i['isAnimated']:
+                self.animated_emojis[i['name']] = AnimatedEmoji(i['name'], i['id'], i['command'])
+            else:
+                self.non_animated_emojis[i['name']] = UnAnimatedEmoji(i['name'], i['id'], i['command'])
+
+    @commands.command(aliases=["emojiimg", "emoji1"])
+    async def emojilink(self, ctx, message):
         """
         Send link of any one of the emoji given by 'emojis' command
         """
-        if message in self.animated_emojis_to_ids.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis_to_ids[message]}.gif"
+        if message in self.animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[message].id}.gif"
             await ctx.send(url)
-        elif message in self.emojis_to_ids.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.emojis_to_ids[message]}.png"
+        elif message in self.non_animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[message].id}.png"
             await ctx.send(url)
         else:
             await ctx.send('Emoji not available')
+
+        await ctx.message.delete(delay=2)
 
     @commands.command()
     async def emoji(self, ctx, message, amount=1):
@@ -34,14 +57,16 @@ class Emojis(commands.Cog):
         Send any one of the emoji given by 'emojis' command
         """
         if int(amount) >= 71:
-            await ctx.send(f'Too many bruh {self.nona_emojis["bruh"]} {self.animated_emojis["oof"]}')
+            await ctx.send(f'Too many bruh {self.nona_emojis["bruh"].command} {self.animated_emojis["oof"].command}')
             return
-        if message in self.animated_emojis_to_ids.keys():
-            await ctx.send(f'{self.animated_emojis[message]} '* amount)
-        elif message in self.emojis_to_ids.keys():
-            await ctx.send(f'{self.nona_emojis[message]} ' * amount)
+        if message in self.animated_emojis.keys():
+            await ctx.send(f'{self.animated_emojis[message].command} '* amount)
+        elif message in self.non_animated_emojis.keys():
+            await ctx.send(f'{self.non_animated_emojis[message].command} ' * amount)
         else:
             await ctx.send('Emoji not available')
+
+        await ctx.message.delete(delay=2)        
 
     @commands.command()
     async def emojis(self, ctx):
@@ -51,13 +76,13 @@ class Emojis(commands.Cog):
         out_animated = ''
         out_non_animated = ''
 
-        for i in range(0, len(self.animated_emojis_to_ids.keys())):
-            emojis = list(self.animated_emojis_to_ids.keys())
-            out_animated += f'{i+ 1}. {emojis[i]}: {self.animated_emojis[emojis[i]]}\n'
+        for i in range(0, len(self.animated_emojis.keys())):
+            emojis = list(self.animated_emojis.keys())
+            out_animated += f'{i+ 1}. {emojis[i]}: {self.animated_emojis[emojis[i]].command}\n'
         
-        for i in range(0, len(self.emojis_to_ids.keys())):
-            emojis = list(self.emojis_to_ids.keys())
-            out_non_animated += f'{i + 1}. {emojis[i]}: {self.nona_emojis[emojis[i]]}\n'
+        for i in range(0, len(self.non_animated_emojis.keys())):
+            emojis = list(self.non_animated_emojis.keys())
+            out_non_animated += f'{i + 1}. {emojis[i]}: {self.non_animated_emojis[emojis[i]].command}\n'
         
         embed=discord.Embed(title='Available emojis')
         embed.add_field(name='Animated:', value=out_animated, inline=False)
@@ -67,23 +92,24 @@ class Emojis(commands.Cog):
         await ctx.send(embed = embed)
 
     
-    @commands.command(aliases=["emojiembed"])
-    async def emoji2(self, ctx, message):
+    @commands.command(aliases=["emoji2"])
+    async def emojiembed(self, ctx, message):
         """
         Send embed of any one of the emoji given by 'emojis' command
         """
-        embed=discord.Embed(title=message)
-        # embed.set_footer(text=message)
-        if message in self.animated_emojis_to_ids.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis_to_ids[message]}.gif"
+        embed=discord.Embed() # TODO remove title
+        if message in self.animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[message].id}.gif"
             embed.set_image(url=url)
             await ctx.send(embed=embed)
-        elif message in self.emojis_to_ids.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.emojis_to_ids[message]}.png"
+        elif message in self.non_animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[message].id}.png"
             embed.set_image(url=url)
             await ctx.send(embed=embed)
         else:
             await ctx.send('Emoji not available')
+
+        await ctx.message.delete(delay=2)
     
 def setup(bot):
     bot.add_cog(Emojis(bot))
