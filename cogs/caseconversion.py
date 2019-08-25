@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+import string
 
 class CaseConversion(commands.Cog):
     def __init__(self, bot): 
@@ -42,6 +43,30 @@ class CaseConversion(commands.Cog):
         between = spaces * ' '
         await ctx.send(between.join(list(str(msg))))
         await ctx.message.delete()
+
+    @commands.command()
+    async def flip(self, ctx, *, msg):
+        FLIP_RANGES = [
+            (string.ascii_lowercase, "ɐqɔpǝɟƃɥᴉɾʞꞁɯuodbɹsʇnʌʍxʎz"),
+            (string.ascii_uppercase, "ⱯᗺƆᗡƎᖵ⅁HIᒋ⋊ꞀWNOԀꝹᴚS⊥ႶɅMX⅄Z"),
+            (string.digits, "0ІᘔƐᔭ59Ɫ86"),
+            (string.punctuation, "¡„#$%⅋,)(*+'-˙/:؛>=<¿@]\\[ᵥ‾`}|{~"),
+        ]
+
+        msgBack = ""
+        for c in list(msg):
+            for r in range(len(FLIP_RANGES)):
+                try:
+                    p = FLIP_RANGES[r][0].index(c)
+                    if not p == -1:
+                        newC = FLIP_RANGES[r][1][p]
+                        msgBack += newC
+                        break
+                except ValueError:
+                    msgBack += ' '
+                    continue
+
+        await ctx.send(' '.join(msgBack.split()))
 
 def setup(bot):
     bot.add_cog(CaseConversion(bot))
