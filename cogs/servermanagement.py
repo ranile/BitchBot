@@ -46,7 +46,8 @@ class ServerManagement(commands.Cog):
             intro_result[tag] = msg.content
 
         requests.post(SAVE_USER_INFO_LINK, json = intro_result)
-        await ctx.author.add_role(USER_ROLE)
+        # await ctx.author.add_role(USER_ROLE)
+        await self.bot.add_roles(ctx.author, ctx.channel.guild.get_role(USER_ROLE))
         print(intro_result)
 
     @commands.command()
@@ -86,7 +87,25 @@ class ServerManagement(commands.Cog):
 
         await user.send(embed=embed)
         await ctx.send(f"**User {user.mention} has been kicked by {ctx.author.mention}**")
-        await user.kick(reason=reason) # Test if this works
+        await user.kick(reason=reason)
+    
+    @commands.command()
+    @commands.has_permissions(manage_messages=True)
+    async def purge(self, ctx, limit, messages_of: discord.Member = None):
+        if messages_of is None:
+            deleted = await ctx.channel.purge(limit=int(limit))
+        else:
+            def check(m):
+                return m.author == messages_of
+            
+            deleted = await ctx.channel.purge(limit=int(limit), check=check)
+        
+        deleted_of = set()
+        for message in deleted:
+            deleted_of.add(message.author.name)
+        
+        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}')
+
 
 def setup(bot):
     bot.add_cog(ServerManagement(bot))

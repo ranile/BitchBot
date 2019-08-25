@@ -67,6 +67,7 @@ class CaseConversion(commands.Cog):
                     continue
 
         await ctx.send(' '.join(msgBack.split()))
+        await ctx.message.delete()
 
 def setup(bot):
     bot.add_cog(CaseConversion(bot))
