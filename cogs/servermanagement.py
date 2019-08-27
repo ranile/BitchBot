@@ -1,26 +1,36 @@
 from discord.ext import commands
 import discord
 import requests
+import os
+import json
+
+SAVE_USER_INFO_LINK = os.environ['ADD_USER_INFO_LINK']
+
+GET_USER_INFO_LINK = os.environ['GET_USER_INFO_LINK']
+
+USER_ROLE = os.environ['USER_ROLE']
 
 class ServerManagement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.questions = {
-            "name": "What's your name",
-            "age": "How old are you",
-            "invited_by": "Who invited you"
-        }
+        self.questions = json.loads(os.environ["QUESTIONS"])
         self.intro_result = {}
 
         # guild id and id of introduction channel of my server
-        self.server_guild_id = 612627243239342080
-        self.introduction_cnl_id = 613376365332267023
+        self.server_guild_id = int(os.environ['SERVER_GUILD_ID'])
+        self.introduction_cnl_id = int(os.environ['INTRODUCTION_CHANNEL_ID'])
+        self.welcome_cnl_id = int(os.environ['WELCOME_CHANNEL_ID'])
+        self.infromation_cnl_id = int(os.environ['INFORMATION_CHANNEL_ID'])
+
     
     @commands.command()
     async def introduce(self, ctx):
         """
         Asks user for their introduction
         """
+        if ctx.channel.guild.id != self.server_guild_id:
+            return
+        
         if ctx.channel.guild.id == self.server_guild_id and ctx.channel.id != self.introduction_cnl_id:
             await ctx.send(f'Wrong channel. Run this command in {self.bot.get_channel(self.introduction_cnl_id).mention}')
             return
@@ -28,34 +38,40 @@ class ServerManagement(commands.Cog):
         def pred(m):
             return m.author == ctx.author and m.channel == ctx.channel
 
-        author_id = str(ctx.author.id)
-        self.intro_result[author_id] = {}
-
+        intro_result = {}
+        intro_result['id'] = str(ctx.author.id)
         for tag, question in self.questions.items():
             await ctx.send(question)
             msg = await self.bot.wait_for('message', check=pred)
-            self.intro_result[author_id][tag] = msg.content
+            intro_result[tag] = msg.content
 
-
-        print(self.intro_result) # save it to db
+        requests.post(SAVE_USER_INFO_LINK, json = intro_result)
+        # await ctx.author.add_role(USER_ROLE)
+        await self.bot.add_roles(ctx.author, ctx.channel.guild.get_role(USER_ROLE))
+        print(intro_result)
 
     @commands.command()
-    async def userinfo(self, ctx, userid):
+    async def userinfo(self, ctx, user: discord.Member):
         """
         Give user information
         """
-        await ctx.send(str(self.intro_result[userid]))
+        print(user.id)
+        await ctx.channel.trigger_typing()
+        req = requests.get(f'{GET_USER_INFO_LINK}?id={user.id}')
+        data = req.json()
+        embed = discord.Embed(title = data['name'])
+        embed.add_field(name='Age:', value=data['age'], inline=True)
+        embed.add_field(name='Invited by:', value=data['invited_by'], inline=True)
+        await ctx.send(embed = embed)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        if member.guild.id == 612627243239342080: # guild id of my server
-            welcome_cnl = self.bot.get_channel(613376350719442959) 
-            infromation_cnl = self.bot.get_channel(613376875867406366)
-            introduction_cnl = self.bot.get_channel(613376365332267023)
+        if member.guild.id == self.server_guild_id:
+            welcome_cnl = self.bot.get_channel(self.welcome_cnl_id) 
+            infromation_cnl = self.bot.get_channel(self.infromation_cnl_id)
+            introduction_cnl = self.bot.get_channel(self.introduction_cnl_id)
             msg = f"Welcome to `server.name` member.mention!\nPlease refer to {infromation_cnl.mention} for all you need to know and use command `>introduce` to introduce yourself in {introduction_cnl.mention}"
             await welcome_cnl.send(msg)
-            
-            # await member.add_role(member.guild.get_role(466645033437888512))
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -71,7 +87,25 @@ class ServerManagement(commands.Cog):
 
         await user.send(embed=embed)
         await ctx.send(f"**User {user.mention} has been kicked by {ctx.author.mention}**")
-        await user.kick(reason=reason) # Test if this works
+        await user.kick(reason=reason)
+    
+    @commands.command()
+    @commands.has_permissions(manage_messages=True)
+    async def purge(self, ctx, limit, messages_of: discord.Member = None):
+        if messages_of is None:
+            deleted = await ctx.channel.purge(limit=int(limit))
+        else:
+            def check(m):
+                return m.author == messages_of
+            
+            deleted = await ctx.channel.purge(limit=int(limit), check=check)
+        
+        deleted_of = set()
+        for message in deleted:
+            deleted_of.add(message.author.name)
+        
+        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}')
+
 
 def setup(bot):
     bot.add_cog(ServerManagement(bot))
