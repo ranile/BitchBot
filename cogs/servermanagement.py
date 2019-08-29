@@ -27,6 +27,7 @@ class ServerManagement(commands.Cog):
         self.infromation_cnl_id = int(os.environ['INFORMATION_CHANNEL_ID'])
 
         self.tit = int(os.environ['TIT'])
+        self.tit_main = int(os.environ['TIT_MAIN'])
 
     
     @commands.command()
@@ -92,7 +93,7 @@ class ServerManagement(commands.Cog):
         elif member.guild.id == self.tit:
             msg = f"Welcome to `{member.guild.name}` {member.mention}!\n.We hope you enjoy your time here. You can use command `>introduce` to introduce yourself"
             await member.add_roles(member.guild.get_role(int(os.environ["TIT_MEMBER_ROLE"])))
-            # 607396881546477661
+            await self.bot.get_channel(self.tit_main).send(msg)
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
