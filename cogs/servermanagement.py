@@ -62,7 +62,7 @@ class ServerManagement(commands.Cog):
         requests.post(SAVE_USER_INFO_LINK, json = intro_result)
         if ctx.channel.guild.id == self.server_guild_id:
             await ctx.message.author.add_roles(ctx.channel.guild.get_role(USER_ROLE))
-        await ctx.send('Welcome!')
+        await ctx.send('Welcome! Introduction completed')
         print(intro_result)
 
     @commands.command()
