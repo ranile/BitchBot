@@ -133,11 +133,11 @@ class Autoresponder(commands.Cog):
         elif re.fullmatch(r"\bcreeper\b", msg):
             await cnl.send('Aww man')
             
-        elif re.fullmatch(r'w(ha|u|a)t(\?+)?', msg):
-            if str(ctx.content).isupper():
-                await cnl.send("YES")
-            else:
-                await cnl.send("Yes")
+        # elif re.fullmatch(r'w(ha|u|a)t(\?+)?', msg):
+        #     if str(ctx.content).isupper():
+        #         await cnl.send("YES")
+        #     else:
+        #         await cnl.send("Yes")
         
         elif re.fullmatch(r'(-?\d+\.?\d*)°(c|celsius|f|fahrenheit)', msg, re.IGNORECASE):
             temperature = get_temp_if_valid(msg)

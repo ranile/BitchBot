@@ -57,7 +57,7 @@ class Emojis(commands.Cog):
         Send any one of the emoji given by 'emojis' command
         """
         if int(amount) >= 71:
-            await ctx.send(f'Too many bruh {self.nona_emojis["bruh"].command} {self.animated_emojis["oof"].command}')
+            await ctx.send(f'Too many bruh {self.non_animated_emojis["bruh"].command} {self.animated_emojis["oof"].command}')
             return
         if message in self.animated_emojis.keys():
             await ctx.send(f'{self.animated_emojis[message].command} '* amount)
@@ -97,7 +97,7 @@ class Emojis(commands.Cog):
         """
         Send embed of any one of the emoji given by 'emojis' command
         """
-        embed=discord.Embed() # TODO remove title
+        embed=discord.Embed()
         if message in self.animated_emojis.keys():
             url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[message].id}.gif"
             embed.set_image(url=url)

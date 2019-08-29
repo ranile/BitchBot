@@ -8,6 +8,10 @@ SAVE_USER_INFO_LINK = os.environ['ADD_USER_INFO_LINK']
 
 GET_USER_INFO_LINK = os.environ['GET_USER_INFO_LINK']
 
+GET_SERVER_SELFASSIGN_ROLES_LINK = os.environ['GET_SERVER_SELFASSIGN_ROLES_LINK']
+
+GET_ID_SELFASSIGN_LINK = os.environ['GET_ID_SELFASSIGN_LINK']
+
 USER_ROLE = os.environ['USER_ROLE']
 
 class ServerManagement(commands.Cog):
@@ -22,14 +26,22 @@ class ServerManagement(commands.Cog):
         self.welcome_cnl_id = int(os.environ['WELCOME_CHANNEL_ID'])
         self.infromation_cnl_id = int(os.environ['INFORMATION_CHANNEL_ID'])
 
+        self.tit = int(os.environ['TIT'])
+
     
     @commands.command()
     async def introduce(self, ctx):
         """
         Asks user for their introduction
         """
-        if ctx.channel.guild.id != self.server_guild_id:
-            return
+        # if ctx.channel.guild.id != self.server_guild_id:
+        #     return
+        tit_questions = os.environ["TIT_QUESTIONS"]
+
+        if ctx.channel.guild.id == self.tit:
+            iquestions = json.loads(tit_questions)
+        else:
+            iquestions = QUESTIONS
         
         if ctx.channel.guild.id == self.server_guild_id and ctx.channel.id != self.introduction_cnl_id:
             await ctx.send(f'Wrong channel. Run this command in {self.bot.get_channel(self.introduction_cnl_id).mention}')
@@ -40,14 +52,16 @@ class ServerManagement(commands.Cog):
 
         intro_result = {}
         intro_result['id'] = str(ctx.author.id)
-        for tag, question in self.questions.items():
+        intro_result['serverId'] = str(ctx.channel.guild.id)
+        for tag, question in iquestions.items():
             await ctx.send(question)
             msg = await self.bot.wait_for('message', check=pred)
             intro_result[tag] = msg.content
 
         requests.post(SAVE_USER_INFO_LINK, json = intro_result)
-        # await ctx.author.add_role(USER_ROLE)
-        await self.bot.add_roles(ctx.author, ctx.channel.guild.get_role(USER_ROLE))
+        if ctx.channel.guild.id == self.server_guild_id:
+            await ctx.message.author.add_roles(ctx.channel.guild.get_role(USER_ROLE))
+        await ctx.send('Welcome!')
         print(intro_result)
 
     @commands.command()
@@ -57,11 +71,14 @@ class ServerManagement(commands.Cog):
         """
         print(user.id)
         await ctx.channel.trigger_typing()
-        req = requests.get(f'{GET_USER_INFO_LINK}?id={user.id}')
+        req = requests.get(f'{GET_USER_INFO_LINK}?id={user.id}&server_id={ctx.channel.guild.id}')
         data = req.json()
         embed = discord.Embed(title = data['name'])
-        embed.add_field(name='Age:', value=data['age'], inline=True)
-        embed.add_field(name='Invited by:', value=data['invited_by'], inline=True)
+        for i in range(0, len(data)):
+            if list(data.values())[i] == 'id' or list(data.values())[i] == 'serverId':
+                continue
+
+            embed.add_field(name=f'{list(data.keys())[i]}:', value=f'{list(data.values())[i]}', inline=False)
         await ctx.send(embed = embed)
 
     @commands.Cog.listener()
@@ -70,8 +87,12 @@ class ServerManagement(commands.Cog):
             welcome_cnl = self.bot.get_channel(self.welcome_cnl_id) 
             infromation_cnl = self.bot.get_channel(self.infromation_cnl_id)
             introduction_cnl = self.bot.get_channel(self.introduction_cnl_id)
-            msg = f"Welcome to `server.name` member.mention!\nPlease refer to {infromation_cnl.mention} for all you need to know and use command `>introduce` to introduce yourself in {introduction_cnl.mention}"
+            msg = f"Welcome to `server.name` {member.mention}!\nPlease refer to {infromation_cnl.mention} for all you need to know and use command `>introduce` to introduce yourself in {introduction_cnl.mention}"
             await welcome_cnl.send(msg)
+        elif member.guild.id == self.tit:
+            msg = f"Welcome to `{member.guild.name}` {member.mention}!\n.We hope you enjoy your time here. You can use command `>introduce` to introduce yourself"
+            await member.add_roles(member.guild.get_role(int(os.environ["TIT_MEMBER_ROLE"])))
+            # 607396881546477661
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -105,7 +126,30 @@ class ServerManagement(commands.Cog):
             deleted_of.add(message.author.name)
         
         await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}')
+        await ctx.message.delete(delay=2)
 
+    @commands.command()
+    async def roles(self, ctx):
+        await ctx.channel.trigger_typing()
+        req = requests.get(f'{GET_SERVER_SELFASSIGN_ROLES_LINK}?id={ctx.channel.guild.id}')
+        data = req.json()
+        out = ''
+        index = 1
+        for i in data:
+            out += f"{index}. {i['role_name']}"
+            index += 1
+        embed = discord.Embed(title="Self assignable roles", description=out)        
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def assignrole(self, ctx, role_name):
+        await ctx.channel.trigger_typing()
+        req = requests.get(f'{GET_ID_SELFASSIGN_LINK}?server_id={ctx.channel.guild.id}&role_name={role_name}')
+        data = req.json()
+        role_id = data['role_id']
+        role = ctx.channel.guild.get_role(int(role_id))
+        await ctx.message.author.add_roles(role)
+        await ctx.send(f"Assigned role: {role.name} to {ctx.author.name}")
 
 def setup(bot):
     bot.add_cog(ServerManagement(bot))
