@@ -60,7 +60,21 @@ class Stupidity(commands.Cog):
         """
         Have the bot say something in embeds. Have fun!
         """
-        await ctx.send(embed = discord.Embed(description=message))
+        embed = discord.Embed()
+        splitedMessage = message.split('\n')
+        for i in splitedMessage:
+            if i.startswith('t'):
+                embed.title = i[2:]
+            elif i.startswith('d'):
+                embed.description = i[2:]
+            elif i.startswith('f'):
+                embed.set_footer(text = i[2:])
+
+        fields = [j.strip('?').split(',') for j in splitedMessage if j.startswith("?")]
+        for f in fields:
+            embed.add_field(name = f[0], value = f[1], inline = f[2]!='false')
+        await ctx.send(embed = embed)
+
 
     @commands.command(aliases=["kayliesman"])
     async def rabbitman(self, ctx):
