@@ -1,47 +1,26 @@
 from discord.ext import commands
-import discord
-import requests
-import os
-import json
-
-SAVE_USER_INFO_LINK = os.environ['ADD_USER_INFO_LINK']
-
-GET_USER_INFO_LINK = os.environ['GET_USER_INFO_LINK']
-
-GET_SERVER_SELFASSIGN_ROLES_LINK = os.environ['GET_SERVER_SELFASSIGN_ROLES_LINK']
-
-GET_ID_SELFASSIGN_LINK = os.environ['GET_ID_SELFASSIGN_LINK']
-
-USER_ROLE = os.environ['USER_ROLE']
+import discord, requests, json
+from keys import (SAVE_USER_INFO_LINK, GET_USER_INFO_LINK,
+    GET_SERVER_SELFASSIGN_ROLES_LINK, GET_ID_SELFASSIGN_LINK,
+    USER_ROLE, WARN, WARNINGS
+)
+from ids import  SERVER_GUILD_ID, INFORMATION_CHANNEL_ID, INTRODUCTION_CHANNEL_ID, WELCOME_CHANNEL_ID, INTRO_QUESTIONS
 
 class ServerManagement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.questions = json.loads(os.environ["QUESTIONS"])
         self.intro_result = {}
-
-        # guild id and id of introduction channel of my server
-        self.server_guild_id = int(os.environ['SERVER_GUILD_ID'])
-        self.introduction_cnl_id = int(os.environ['INTRODUCTION_CHANNEL_ID'])
-        self.welcome_cnl_id = int(os.environ['WELCOME_CHANNEL_ID'])
-        self.infromation_cnl_id = int(os.environ['INFORMATION_CHANNEL_ID'])
 
     @commands.command()
     async def introduce(self, ctx):
         """
         Asks user for their introduction
         """
-        # if ctx.channel.guild.id != self.server_guild_id:
+        # if ctx.channel.guild.id != SERVER_GUILD_ID:
         #     return
-        tit_questions = os.environ["TIT_QUESTIONS"]
-
-        if ctx.channel.guild.id == self.tit:
-            iquestions = json.loads(tit_questions)
-        else:
-            iquestions = self.questions
         
-        if ctx.channel.guild.id == self.server_guild_id and ctx.channel.id != self.introduction_cnl_id:
-            await ctx.send(f'Wrong channel. Run this command in {self.bot.get_channel(self.introduction_cnl_id).mention}')
+        if ctx.channel.guild.id == SERVER_GUILD_ID and ctx.channel.id != INTRODUCTION_CHANNEL_ID:
+            await ctx.send(f'Wrong channel. Run this command in {self.bot.get_channel(INTRODUCTION_CHANNEL_ID).mention}')
             return
 
         def pred(m):
@@ -50,13 +29,13 @@ class ServerManagement(commands.Cog):
         intro_result = {}
         intro_result['id'] = str(ctx.author.id)
         intro_result['serverId'] = str(ctx.channel.guild.id)
-        for tag, question in iquestions.items():
+        for tag, question in INTRO_QUESTIONS.items():
             await ctx.send(question)
             msg = await self.bot.wait_for('message', check=pred)
             intro_result[tag] = msg.content
 
         requests.post(SAVE_USER_INFO_LINK, json = intro_result)
-        if ctx.channel.guild.id == self.server_guild_id:
+        if ctx.channel.guild.id == SERVER_GUILD_ID:
             await ctx.message.author.add_roles(ctx.channel.guild.get_role(USER_ROLE))
         await ctx.send('Welcome! Introduction completed')
         print(intro_result)
@@ -80,16 +59,12 @@ class ServerManagement(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        if member.guild.id == self.server_guild_id:
-            welcome_cnl = self.bot.get_channel(self.welcome_cnl_id) 
-            infromation_cnl = self.bot.get_channel(self.infromation_cnl_id)
-            introduction_cnl = self.bot.get_channel(self.introduction_cnl_id)
+        if member.guild.id == SERVER_GUILD_ID:
+            welcome_cnl = self.bot.get_channel(WELCOME_CHANNEL_ID) 
+            infromation_cnl = self.bot.get_channel(INFORMATION_CHANNEL_ID)
+            introduction_cnl = self.bot.get_channel(INTRODUCTION_CHANNEL_ID)
             msg = f"Welcome to `server.name` {member.mention}!\nPlease refer to {infromation_cnl.mention} for all you need to know and use command `>introduce` to introduce yourself in {introduction_cnl.mention}"
             await welcome_cnl.send(msg)
-        elif member.guild.id == self.tit:
-            msg = f"Welcome to `{member.guild.name}` {member.mention}!\n.We hope you enjoy your time here. You can use command `>introduce` to introduce yourself"
-            await member.add_roles(member.guild.get_role(int(os.environ["TIT_MEMBER_ROLE"])))
-            await self.bot.get_channel(self.tit_main).send(msg)
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -172,14 +147,14 @@ class ServerManagement(commands.Cog):
             'reason': str(reason),
             'warning_by': str('ctx.author.name')
         }
-        requests.post('http://localhost:5000/bitchbot-discordbot/us-central1/warnUser', json= warning)
+        requests.post(WARN, json= warning)
         embed = discord.Embed(title=f"{user.name} have been warned by {ctx.author.name} in {ctx.guild.name}", description=reason)
         await ctx.send(embed=embed)
         await user.send(embed=embed)
 
     @commands.command()
     async def warnings(self, ctx, user: discord.Member):
-        req = requests.get(f'http://localhost:5000/bitchbot-discordbot/us-central1/warnings?server_id={ctx.guild.id}&user_id={user.id}')
+        req = requests.get(f'{WARNINGS}?server_id={ctx.guild.id}&user_id={user.id}')
         data = req.json()
         embed = discord.Embed(title=f"Warinings for {user.name}")
 
