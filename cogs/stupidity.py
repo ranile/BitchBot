@@ -73,14 +73,13 @@ class Stupidity(commands.Cog):
                 embed.description = i[2:]
             elif i.startswith('f'):
                 embed.set_footer(text = i[2:])
+            elif i.startswith('c'):
+                embed.colour = discord.Colour(int(f'0x{i[2:].strip()}', 16))
 
         fields = [j.strip('?').split(',') for j in splitedMessage if j.startswith("?")]
         for f in fields:
-            print(fields)
-            print(f[2]!='false')
             embed.add_field(name = f[0], value = f[1], inline = f[2].strip()!='false')
         await ctx.send(embed = embed)
-
 
     @commands.command(aliases=["kayliesman"])
     async def rabbitman(self, ctx):
