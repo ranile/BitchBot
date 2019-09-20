@@ -3,6 +3,13 @@ import discord, random, itertools, re, string, asyncio
 
 RES_PATH = 'res/'
 
+def c_to_f(c: float) -> float:
+    return (c * 9/5) + 32
+
+def f_to_c(f: float) -> float:
+    return (f - 32) * (5/9)
+
+
 class Stupidity(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -69,7 +76,9 @@ class Stupidity(commands.Cog):
 
         fields = [j.strip('?').split(',') for j in splitedMessage if j.startswith("?")]
         for f in fields:
-            embed.add_field(name = f[0], value = f[1], inline = f[2]!='false')
+            print(fields)
+            print(f[2]!='false')
+            embed.add_field(name = f[0], value = f[1], inline = f[2].strip()!='false')
         await ctx.send(embed = embed)
 
 
@@ -186,6 +195,32 @@ class Stupidity(commands.Cog):
         rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
         await asyncio.sleep(3)
         await ctx.send(f"Get rick rolled\n {rick}")
+
+    @commands.command(aliases=["to_c"])
+    async def toc(self, ctx, message):
+        """
+        Convert fahrenheit to celsius.
+        Format: '>toc <temp in f>'. 
+        Example: '>toc 69'.
+        """
+
+        try:
+            await ctx.send(f'{int(f_to_c(float(message)))}°C')
+        except Exception as identifier:
+            await ctx.send(f"Bruh...\nDon't you know how to follow instructions\nError: {identifier}")
+
+    @commands.command(aliases=["to_f"])
+    async def tof(self, ctx, message):
+        """
+        Convert celsius to fahrenheit.
+        Format: '>tof <temp in c'.
+        Example: '>tof 20.5'.
+        """
+
+        try:
+            await ctx.send(f'{int(c_to_f(float(message)))}°F')
+        except Exception as identifier:
+            await ctx.send(f"Bruh...\nDon't you know how to follow instructions\nError: {identifier}")
 
 def setup(bot):
     bot.add_cog(Stupidity(bot))

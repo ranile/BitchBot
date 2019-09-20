@@ -29,9 +29,7 @@ class Internet(commands.Cog):
 
         page = wikipedia.page(search[0])
         title = page.title
-        body = page.summary
-        if len(body) >= 2000:
-            body = body[:2000].rsplit(" ", 1)[0] + " **-Snippet-**"
+        body = page.summary[:1000]
         image = page.images[0]
         url = page.url
 

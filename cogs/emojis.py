@@ -1,11 +1,6 @@
 from discord.ext import commands
-import discord
-import requests
-import itertools
-import re
-import os
-
-EMOJIS_LINK = os.environ['EMOJIS_LINK']
+import discord, requests, itertools, re
+from keys import EMOJIS_LINK
 
 class AnimatedEmoji():
     def __init__(self, name, id, command):
