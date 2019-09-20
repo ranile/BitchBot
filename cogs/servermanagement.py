@@ -26,10 +26,6 @@ class ServerManagement(commands.Cog):
         self.welcome_cnl_id = int(os.environ['WELCOME_CHANNEL_ID'])
         self.infromation_cnl_id = int(os.environ['INFORMATION_CHANNEL_ID'])
 
-        self.tit = int(os.environ['TIT'])
-        self.tit_main = int(os.environ['TIT_MAIN'])
-
-    
     @commands.command()
     async def introduce(self, ctx):
         """
@@ -42,7 +38,7 @@ class ServerManagement(commands.Cog):
         if ctx.channel.guild.id == self.tit:
             iquestions = json.loads(tit_questions)
         else:
-            iquestions = QUESTIONS
+            iquestions = self.questions
         
         if ctx.channel.guild.id == self.server_guild_id and ctx.channel.id != self.introduction_cnl_id:
             await ctx.send(f'Wrong channel. Run this command in {self.bot.get_channel(self.introduction_cnl_id).mention}')
@@ -151,6 +147,48 @@ class ServerManagement(commands.Cog):
         role = ctx.channel.guild.get_role(int(role_id))
         await ctx.message.author.add_roles(role)
         await ctx.send(f"Assigned role: {role.name} to {ctx.author.name}")
+
+    @commands.command()
+    @commands.has_permissions(ban_members=True)
+    async def ban(self, ctx, user: discord.Member, *, reason=None):
+        """
+        Ban a user
+        Reason is optional. It will show up on the audit log and will be dmed to the banned user
+        """
+        embed = discord.Embed(title="You have been banned from {}".format(ctx.guild.name), description=reason)
+        embed.set_footer(text="Ban by " + ctx.author.display_name)
+        embed.set_thumbnail(url=ctx.guild.icon_url)
+        await user.ban(reason=reason)
+        await ctx.send(f"**User {user.mention} has been banned by {ctx.author.mention}**")
+        await user.send(embed=embed)
+ 
+ 
+ 
+    @commands.command()
+    async def warn(self, ctx, user: discord.Member, *, reason):
+        warning = {
+            'server_id': str(ctx.guild.id),
+            'user_id': str(user.id),
+            'reason': str(reason),
+            'warning_by': str('ctx.author.name')
+        }
+        requests.post('http://localhost:5000/bitchbot-discordbot/us-central1/warnUser', json= warning)
+        embed = discord.Embed(title=f"{user.name} have been warned by {ctx.author.name} in {ctx.guild.name}", description=reason)
+        await ctx.send(embed=embed)
+        await user.send(embed=embed)
+
+    @commands.command()
+    async def warnings(self, ctx, user: discord.Member):
+        req = requests.get(f'http://localhost:5000/bitchbot-discordbot/us-central1/warnings?server_id={ctx.guild.id}&user_id={user.id}')
+        data = req.json()
+        embed = discord.Embed(title=f"Warinings for {user.name}")
+
+        for i in data:
+            embed.add_field(name = f"{i['reason']}", value=f"Warned by: name", inline=False)
+
+        await ctx.send(embed=embed)
+        await user.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(ServerManagement(bot))

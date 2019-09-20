@@ -1,13 +1,14 @@
 import discord
 from discord.ext import commands
-# from keys import bot as BOT_TOKEN
+from keys import bot as BOT_TOKEN
 
-import os
-BOT_TOKEN = os.environ['BOT_TOKEN']
+# import os
+# BOT_TOKEN = os.environ['BOT_TOKEN']
 
 bot = commands.Bot(command_prefix=">", case_insensitive=True, owner_ids =[529535587728752644])
 
-cogs = ["admin", "autorespond", "internet", "poll", 'caseconversion', "stupidity", "games", "math", "tempconversion", "emojis", "servermanagement"]
+# cogs = ["admin", "autorespond", "internet", "poll", 'caseconversion', "stupidity", "games", "math", "tempconversion", "emojis", "servermanagement"]
+cogs = ["stupidity", "admin"]
 
 @bot.event
 async def on_ready():

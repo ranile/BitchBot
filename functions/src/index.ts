@@ -8,6 +8,7 @@ admin.initializeApp({
     databaseURL: "https://bitchbot-discordbot.firebaseio.com"
 })
 
+
 export const allEmojis = functions.https.onRequest(async (request, response) => {
     const data = await admin.firestore().collection('emoji').get()
     const list = data.docs
@@ -71,4 +72,38 @@ export const getRoleIdForAssignment = functions.https.onRequest(async (request, 
         response.send(error)
     }
     
+})
+
+export const warnings = functions.https.onRequest(async (request, response) => {
+    const warningInfo = request.query
+    console.log(warningInfo.toString())
+    try {
+        admin.firestore()
+            .collection(`servers/${warningInfo.server_id}/warnings`)
+            .where('user_id', '==', warningInfo.user_id)
+            .get()
+            .then(snapshot => {
+                const docs = snapshot.docs.map(it => it.data())
+                console.log(docs)
+                response.send(docs)
+            })
+        
+    } catch (error) {
+        response.send(error)
+    }
+    
+})
+
+export const warnUser = functions.https.onRequest(async (request, response) => {
+    const warningInfo = request.body
+    try {
+        const doc = await admin.firestore()
+            .collection(`servers/${warningInfo.server_id}/warnings`)
+            .add(warningInfo)
+
+        response.send(doc)
+        
+    } catch (error) {
+        response.send(error)
+    }
 })
