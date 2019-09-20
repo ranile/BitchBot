@@ -1,8 +1,5 @@
 from discord.ext import commands
-import discord
-import random
-import itertools
-import re
+import discord, random, itertools, re, string, asyncio
 
 RES_PATH = 'res/'
 
@@ -114,6 +111,81 @@ class Stupidity(commands.Cog):
                     await msg.add_reaction(self.emoji_chars[emoji])
                 sent.append(i)  
 
+    @commands.command()
+    async def totogglecase(self, ctx, *, msg):
+        """
+        Convert string to toggle case
+        """
+        out = ""
+        message = str(msg)
+        for i in range(0, len(message)):
+            out += message[i].lower() if (i%2 == 0) else message[i].upper()
+        
+        await ctx.send(out)
+        await ctx.message.delete()
+    
+    @commands.command(aliases=["yell"])
+    async def touppercase(self, ctx, *, msg):
+        """
+        Convert string to toggle case
+        """
+        await ctx.send(str(msg).upper())
+        await ctx.message.delete()
+    
+    @commands.command(aliases=["wide"])
+    async def addspaces(self, ctx, *, msg):
+        """
+        Adds 3 spaces in between every character.
+        If the first arg is a number, it will use
+        that for the number of spaces instead.
+        """
+        args = msg.split(" ")
+        try:
+            spaces = int(args[0])
+            msg = ' '.join(args[1:])
+        except ValueError:
+            spaces = 3
+        between = spaces * ' '
+        await ctx.send(between.join(list(str(msg))))
+        await ctx.message.delete()
+
+    @commands.command()
+    async def flip(self, ctx, *, msg):
+        """
+        Converts given text to flipped unicode characters
+        """
+        FLIP_RANGES = [
+            (string.ascii_lowercase, "ɐqɔpǝɟƃɥᴉɾʞꞁɯuodbɹsʇnʌʍxʎz"),
+            (string.ascii_uppercase, "ⱯᗺƆᗡƎᖵ⅁HIᒋ⋊ꞀWNOԀꝹᴚS⊥ႶɅMX⅄Z"),
+            (string.digits, "0ІᘔƐᔭ59Ɫ86"),
+            (string.punctuation, "¡„#$%⅋,)(*+'-˙/:؛>=<¿@]\\[ᵥ‾`}|{~"),
+        ]
+
+        msgBack = ""
+        for c in list(msg):
+            for r in range(len(FLIP_RANGES)):
+                try:
+                    p = FLIP_RANGES[r][0].index(c)
+                    if not p == -1:
+                        newC = FLIP_RANGES[r][1][p]
+                        msgBack += newC
+                        break
+                except ValueError:
+                    msgBack += ' '
+                    continue
+
+        await ctx.send(' '.join(msgBack.split()))
+        await ctx.message.delete()
+
+    @commands.command(aliases=["rick", "rickroll"])
+    async def rickroulette(self, ctx):
+        """
+        Rick Astley = Loose = Win
+        """
+        await ctx.channel.trigger_typing()
+        rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
+        await asyncio.sleep(3)
+        await ctx.send(f"Get rick rolled\n {rick}")
+
 def setup(bot):
     bot.add_cog(Stupidity(bot))
-

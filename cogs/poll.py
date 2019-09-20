@@ -29,8 +29,9 @@ class Polls(commands.Cog):
         If answers/questions contain spaces put it in quotes
         e.g. >poll "Do you like bacon" yes
         """
+        
         if answers == ():
-            msg = await ctx.send(f"**📊 {question.title()}**")
+            msg = await ctx.send(f"**📊 {question}**")
             await msg.add_reaction("👍")
             await msg.add_reaction("👎")
         elif len(answers) < 10:
