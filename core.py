@@ -7,7 +7,9 @@ from keys import bot as BOT_TOKEN
 
 bot = commands.Bot(command_prefix=">", case_insensitive=True, owner_ids =[529535587728752644])
 
-cogs = ["admin", "autorespond", "internet", "poll", "stupidity", "games", "math", "tempconversion", "emojis", "servermanagement"]
+# cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity", "servermanagement"]
+cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity"]
+
 
 @bot.event
 async def on_ready():
