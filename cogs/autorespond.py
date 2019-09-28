@@ -46,7 +46,7 @@ class Autoresponder(commands.Cog):
         if re.search(r"good (bitch)?bot", msg):
             await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
 
-        elif re.search(r"(bad|stfu) (bitch )?bot", msg):
+        elif re.search(r"(bad|stfu|fuck you) (bitch)? ?bot", msg):
             await cnl.send(random.choice(["Rip", "K", "You sure about that?", seals, "F", "😦"]))
 
         elif re.fullmatch(r"\bcreeper\b", msg):
@@ -64,7 +64,7 @@ class Autoresponder(commands.Cog):
                 emoji = random.choice(self.epic_emojis)
                 await cnl.send(emoji)
 
-            elif re.fullmatch(r"\bbruh(mius)?( moment(ium)?)?\b", msg):
+            elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg):
                 await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>", "Epic bruh moment"]))
 
             elif re.search(r"\brip\b", msg):
