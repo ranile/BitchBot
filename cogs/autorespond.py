@@ -55,7 +55,7 @@ class Autoresponder(commands.Cog):
         elif re.search(r"\b69\b", ctx.clean_content):
             await cnl.send("Ha thats the sex number")
 
-        elif re.search(r"\b420\b", ctx.clean_content):
+        elif re.search(r"\b4:?20\b", ctx.clean_content):
             await cnl.send("Ha thats the weed number")
 
         if (random.randint(0,4) > 2):
@@ -78,9 +78,6 @@ class Autoresponder(commands.Cog):
 
             elif re.fullmatch(r"\bsmh\b", msg):
                 await cnl.send(random.choice(["Shaking my smh", "Smh my head", "Ikr", "Shaking my head"]))
-
-
-    
 
 
 def setup(bot):
