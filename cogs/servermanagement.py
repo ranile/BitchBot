@@ -97,7 +97,7 @@ class ServerManagement(commands.Cog):
         for message in deleted:
             deleted_of.add(message.author.name)
         
-        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}')
+        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}', delete_after = 7)
         await ctx.message.delete(delay=2)
 
     @commands.command()
