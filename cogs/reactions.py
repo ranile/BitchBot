@@ -1,10 +1,11 @@
 from discord.ext import commands
 import discord, requests
+from keys import QUOTES_CHANNELS, SET_QUOTES_CHANNEL
 
 class Reactions(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.quotes_channels = requests.get('http://localhost:5000/bitchbot-discordbot/us-central1/quotesChannels').json()
+        self.quotes_channels = requests.get(QUOTES_CHANNELS).json()
         self.starred_messages = []
 
         print(self.quotes_channels)
@@ -52,7 +53,7 @@ class Reactions(commands.Cog):
     @commands.is_owner()
     @commands.command()
     async def setQuotesChannel(self, ctx, channel: discord.TextChannel):
-        req = requests.post('http://localhost:5000/bitchbot-discordbot/us-central1/setQuotesChannel', {
+        req = requests.post(SET_QUOTES_CHANNEL, {
             'guildId': str(ctx.message.guild.id),
             'channelId': str(channel.id),
         })
@@ -61,7 +62,7 @@ class Reactions(commands.Cog):
             await ctx.send('An error occured while saving')
             return
         
-        self.quotes_channels = requests.get('http://localhost:5000/bitchbot-discordbot/us-central1/quotesChannels').json()
+        self.quotes_channels = requests.get(QUOTES_CHANNELS).json()
         
         await ctx.send('Saved')
 
