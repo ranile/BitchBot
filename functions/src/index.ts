@@ -74,36 +74,32 @@ export const getRoleIdForAssignment = functions.https.onRequest(async (request, 
     
 })
 
-export const warnings = functions.https.onRequest(async (request, response) => {
-    const warningInfo = request.query
-    console.log(warningInfo.toString())
+export const quotesChannels = functions.https.onRequest(async (request, response) => {
     try {
-        admin.firestore()
-            .collection(`servers/${warningInfo.server_id}/warnings`)
-            .where('user_id', '==', warningInfo.user_id)
-            .get()
-            .then(snapshot => {
-                const docs = snapshot.docs.map(it => it.data())
-                console.log(docs)
-                response.send(docs)
-            })
-        
+        const snapshot = await admin.firestore().collection(`/servers`).doc('quotesChannel').get()
+        const data = snapshot.data()
+        response.send(data)
     } catch (error) {
+        console.error(error)
         response.send(error)
     }
-    
 })
 
-export const warnUser = functions.https.onRequest(async (request, response) => {
-    const warningInfo = request.body
+export const setQuotesChannel = functions.https.onRequest(async (request, response) => {
+    const body = request.body
     try {
-        const doc = await admin.firestore()
-            .collection(`servers/${warningInfo.server_id}/warnings`)
-            .add(warningInfo)
+        const snapshot = await admin.firestore().collection(`/servers`).doc('quotesChannel').get()
+        const data = snapshot.data()
+        if (data == undefined) { 
+            response.send('data is undefined')
+            return
+        }
+        data[body.guildId] = body.channelId
 
-        response.send(doc)
-        
+
+        await admin.firestore().collection(`/servers`).doc('quotesChannel').set(data)
+        response.send('OK')
     } catch (error) {
-        response.send(error)
+        response.send('error')
     }
 })

@@ -80,12 +80,7 @@ class Autoresponder(commands.Cog):
                 await cnl.send(random.choice(["Shaking my smh", "Smh my head", "Ikr", "Shaking my head"]))
 
 
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        if str(reaction) == "📌":
-            await reaction.message.pin()
-            await reaction.message.remove_reaction(reaction, user)
-            await reaction.message.channel.send(f"{user.mention} Pinned a message!")
+    
 
 
 def setup(bot):
