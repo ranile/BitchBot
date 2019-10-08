@@ -14,6 +14,10 @@ cogs = ["admin", "internet", "poll", "stupidity"]
 
 @bot.command()
 async def reload(ctx: commands.Context, module: str):
+    """
+    Reloads a cog
+    """
+
     if (await bot.is_owner(ctx.author.id)):
         bot.reload_extension(f'cogs.{module}')
         await ctx.send("🔄")
@@ -22,8 +26,13 @@ bot.remove_command('help')
 
 @bot.command()
 async def help(ctx: commands.Context, command: str = None):
+    """
+    Displays help message
+    """
+
     embed = discord.Embed(title='**You wanted help? Help is provided**')
     embed.colour = discord.Color(value=random.randint(0, 16777215))
+    embed.set_footer(text=f'Do {bot.command_prefix}help commndName to get help for a specific command')
 
     if command is None:
 
@@ -35,6 +44,14 @@ async def help(ctx: commands.Context, command: str = None):
                 out += f"**{cmd.name}**:\t{helpStr}\n"
 
             embed.add_field(name=f'**{name}**', value=out, inline=False)
+        
+        out = ''
+        cmds = [help, reload]
+        for cmd in cmds:
+            helpStr = str(cmd.help).split('\n')[0]
+            out += f"**{cmd.name}**:\t{helpStr}\n"
+
+        embed.add_field(name='**Uncategorized**', value=out, inline=False)
     else:
         
         cmd = bot.get_command(command)
