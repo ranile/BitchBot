@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord, requests, itertools, re
+import discord, requests, itertools, re, random
 from keys import EMOJIS_LINK
 
 class AnimatedEmoji():
@@ -77,6 +77,7 @@ class Emojis(commands.Cog):
         embed.add_field(name='Animated:', value=out_animated, inline=False)
         embed.add_field(name='Non animated:', value=out_non_animated, inline=True)
         embed.set_footer(text='@hamza to add more')
+        embed.colour = discord.Color(value=random.randint(0, 16777215))
         
         await ctx.send(embed = embed)
 
