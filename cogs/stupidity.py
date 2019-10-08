@@ -188,7 +188,7 @@ class Stupidity(commands.Cog):
     @commands.command(aliases=["rick", "rickroll"])
     async def rickroulette(self, ctx):
         """
-        Rick Astley = Loose = Win
+        Rickroll bot. Lose/win
         """
         await ctx.channel.trigger_typing()
         rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
