@@ -8,12 +8,6 @@ class Owner(commands.Cog):
 
     @commands.is_owner()
     @commands.command()
-    async def reload(self, ctx, module):
-        self.bot.reload_extension(module)
-        await ctx.send("🔄")
-
-    @commands.is_owner()
-    @commands.command()
     async def delete(self, ctx, message):
         msg = await ctx.channel.fetch_message(message)
         await msg.delete()

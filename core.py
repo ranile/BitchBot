@@ -1,4 +1,4 @@
-import discord
+import discord, random
 from discord.ext import commands
 from keys import bot as BOT_TOKEN
 
@@ -9,8 +9,50 @@ bot = commands.Bot(command_prefix=">", case_insensitive=True,
                    owner_ids=[529535587728752644])
 
 # cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity", "servermanagement"]
-cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity", "reactions"]
+# cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity", "reactions"]
+cogs = ["admin", "internet", "poll", "stupidity"]
 
+@bot.command()
+async def reload(ctx: commands.Context, module: str):
+    if (await bot.is_owner(ctx.author.id)):
+        bot.reload_extension(f'cogs.{module}')
+        await ctx.send("🔄")
+
+bot.remove_command('help')
+
+@bot.command()
+async def help(ctx: commands.Context, command: str = None):
+    embed = discord.Embed(title='**You wanted help? Help is provided**')
+    embed.colour = discord.Color(value=random.randint(0, 16777215))
+
+    if command is None:
+
+        for name, cog in bot.cogs.items():
+            out = ''
+            for cmd in cog.get_commands():
+
+                helpStr = str(cmd.help).split('\n')[0]
+                out += f"**{cmd.name}**:\t{helpStr}\n"
+
+            embed.add_field(name=f'**{name}**', value=out, inline=False)
+    else:
+        
+        cmd = bot.get_command(command)
+
+        if cmd is None:
+            await ctx.send(f"Command {command} doesn't exist")
+
+        embed.add_field(name = f'{cmd.name}', value = cmd.help, inline=False)
+
+        cmdAliases = cmd.aliases
+        if (cmdAliases):
+            aliases = ''
+            for i in range(0, len(cmdAliases)):
+                aliases += f'{i + 1}. {cmdAliases[i]}\n'
+
+            embed.add_field(name='Aliases:', value=aliases, inline=False)
+        
+    await ctx.send(embed=embed)
 
 @bot.event
 async def on_ready():
