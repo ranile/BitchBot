@@ -1,6 +1,6 @@
 from discord.ext import commands
-import discord, requests
-from keys import QUOTES_CHANNELS, SET_QUOTES_CHANNEL
+import discord, requests, random
+from keys import QUOTES_CHANNELS, SET_QUOTES_CHANNEL, COUNTERS_FOR_SERVER, UPDATE_COUNTER
 
 class Reactions(commands.Cog):
     def __init__(self, bot):
@@ -9,6 +9,15 @@ class Reactions(commands.Cog):
         self.starred_messages = []
 
         print(self.quotes_channels)
+
+        data = requests.get(f'{COUNTERS_FOR_SERVER}?serverId=607386356582187008').json()
+        print(data)
+        self.counters = {}
+
+        for i in data:
+            self.counters[i['name']] = i['count']
+        
+        print(self.counters)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -22,8 +31,7 @@ class Reactions(commands.Cog):
 
         elif str(reaction) == "⭐":
 
-            print(reaction.count)
-            
+           
             if reaction.count < 2:
                 print('nope')
                 return
@@ -34,14 +42,14 @@ class Reactions(commands.Cog):
             guild = reaction.message.channel.guild
             cnl = guild.get_channel(int(self.quotes_channels[str(guild.id)]))
             url = reaction.message.jump_url
-            print(url)
+            
             embed = discord.Embed(title = 'Go to message',url = url)
-            embed.add_field(name  = 'Author', value = reaction.message.author.name, inline = True)
-            embed.add_field(name  = 'Channel', value = reaction.message.channel.mention, inline = True)
+            embed.set_footer(text=f"- {reaction.message.author.name}")
+            embed.colour = discord.Color(value=random.randint(0, 16777215))
 
             content = reaction.message.content
             if content:
-                embed.add_field(name  = 'Content', value = content, inline = False)
+                embed.description = content
 
             attachments = reaction.message.attachments
             if attachments:
@@ -65,8 +73,28 @@ class Reactions(commands.Cog):
         self.quotes_channels = requests.get(QUOTES_CHANNELS).json()
         
         await ctx.send('Saved')
+    
+    @commands.Cog.listener()
+    async def on_message(self, ctx):
 
+        if ctx.author == self.bot.user:
+            return
 
+        msg = ctx.content.lower()
+        cnl = ctx.channel
+
+        for counter in self.counters.keys():
+            if str(counter).lower() in msg:
+                self.counters[counter] += 1
+                requests.post(UPDATE_COUNTER, json={
+                    'serverId': str(cnl.guild.id),
+                    'counter': counter,
+                    'value': self.counters[counter],
+                })
+
+                channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
+                await channel.send(f'Someone said {counter}.\n{counter} count: {self.counters[counter]}')
+                
 
 def setup(bot):
     bot.add_cog(Reactions(bot))

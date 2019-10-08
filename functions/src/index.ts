@@ -103,3 +103,26 @@ export const setQuotesChannel = functions.https.onRequest(async (request, respon
         response.send('error')
     }
 })
+// BlameLucy
+
+export const countersForServer = functions.https.onRequest(async (request, response) => {
+    const serverId = request.query.serverId
+
+    const snapshot = await admin.firestore().collection(`/servers/${serverId}/counters/`).get()
+    const data = snapshot.docs.map(it => it.data())
+
+    response.send(data)
+})
+
+export const updateCounter = functions.https.onRequest(async (request, response) => {
+    const query = request.body
+    const serverId = query.serverId
+    const counter = query.counter
+    const newValue = query.value
+
+    await admin.firestore().collection(`/servers/${serverId}/counters/`).doc(counter).update({count: newValue})
+    const snapshot = await admin.firestore().collection(`/servers/${serverId}/counters/`).doc(counter).get()
+    const data = snapshot.data()
+
+    response.send(data)
+})
