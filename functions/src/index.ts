@@ -1,10 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-const serviceAccount = require('../bitchbot-discordbot-firebase-adminsdk-hyo1e-bfd6127782.json');
+// const serviceAccount = require('../bitchbot-discordbot-firebase-adminsdk-hyo1e-bfd6127782.json');
 
 admin.initializeApp({
-    // credential: admin.credential.applicationDefault(),
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.applicationDefault(),
+    // credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://bitchbot-discordbot.firebaseio.com"
 })
 
@@ -103,12 +103,19 @@ export const setQuotesChannel = functions.https.onRequest(async (request, respon
         response.send('error')
     }
 })
-// BlameLucy
 
 export const countersForServer = functions.https.onRequest(async (request, response) => {
     const serverId = request.query.serverId
 
     const snapshot = await admin.firestore().collection(`/servers/${serverId}/counters/`).get()
+    const data = snapshot.docs.map(it => it.data())
+
+    response.send(data)
+})
+
+export const counters = functions.https.onRequest(async (request, response) => {
+
+    const snapshot = await admin.firestore().collectionGroup('counters').get()
     const data = snapshot.docs.map(it => it.data())
 
     response.send(data)

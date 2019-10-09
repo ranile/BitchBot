@@ -1,9 +1,9 @@
 import discord, random
 from discord.ext import commands
-from keys import bot as BOT_TOKEN
+# from keys import bot as BOT_TOKEN
 
-# import os
-# BOT_TOKEN = os.environ['BOT_TOKEN']
+import os
+BOT_TOKEN = os.environ['BOT_TOKEN']
 
 bot = commands.Bot(command_prefix=">", case_insensitive=True,
                    owner_ids=[529535587728752644])
@@ -17,7 +17,7 @@ async def reload(ctx: commands.Context, module: str):
     Reloads a cog
     """
 
-    if (await bot.is_owner(ctx.author.id)):
+    if (await bot.is_owner(ctx.author)):
         bot.reload_extension(f'cogs.{module}')
         await ctx.send("🔄")
 

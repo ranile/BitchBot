@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord, requests, random
-from keys import QUOTES_CHANNELS, SET_QUOTES_CHANNEL, COUNTERS_FOR_SERVER, UPDATE_COUNTER
+from keys import QUOTES_CHANNELS, SET_QUOTES_CHANNEL, COUNTERS_FOR_SERVER, UPDATE_COUNTER, COUNTERS
 
 class Reactions(commands.Cog):
     def __init__(self, bot):
@@ -10,7 +10,7 @@ class Reactions(commands.Cog):
 
         print(self.quotes_channels)
 
-        data = requests.get(f'{COUNTERS_FOR_SERVER}?serverId=607386356582187008').json()
+        data = requests.get(COUNTERS).json()
         print(data)
         self.counters = {}
 
