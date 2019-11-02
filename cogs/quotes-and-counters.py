@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord, requests, random
+import discord, requests, random, re
 from keys import QUOTES_CHANNELS, SET_QUOTES_CHANNEL, COUNTERS_FOR_SERVER, UPDATE_COUNTER, COUNTERS
 
 class Reactions(commands.Cog):
@@ -84,6 +84,20 @@ class Reactions(commands.Cog):
         cnl = ctx.channel
 
         for counter in self.counters.keys():
+            rabbitMatch = r"(kaylie'?s? ?(man)|rabbit(man)?)"
+            if (str(counter).lower() == 'rabbit') and re.search(rabbitMatch, msg, re.IGNORECASE):
+                self.counters[counter] += 1
+                requests.post(UPDATE_COUNTER, json={
+                    'serverId': str(cnl.guild.id),
+                    'counter': counter,
+                    'value': self.counters[counter],
+                })
+
+                channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
+                await channel.send(f"Someone said rabbit <:rabbitman:593375171880943636>, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
+                return
+
+
             if str(counter).lower() in msg:
                 self.counters[counter] += 1
                 requests.post(UPDATE_COUNTER, json={
