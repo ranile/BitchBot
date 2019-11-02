@@ -34,13 +34,14 @@ class Polls(commands.Cog):
             msg = await ctx.send(f"**📊 {question}**")
             await msg.add_reaction("👍")
             await msg.add_reaction("👎")
+
         elif len(answers) < 10:
-            header = f"**📊 {question}**"
+
             inner = ""
             for i in range(len(answers)):
                 inner += f"{letter_emote[i]} {answers[i]}\n"
-            embed = discord.Embed(description=inner, colour=0x02389e)
-            msg = await ctx.send(header, embed=embed)
+            embed = discord.Embed(title= f"**📊 {question}**", description=inner, colour=0x02389e)
+            msg = await ctx.send(embed=embed)
             for i in range(len(answers)):
                 await msg.add_reaction(letter_emote[i])
         else:
