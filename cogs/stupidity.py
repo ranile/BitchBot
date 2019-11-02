@@ -141,18 +141,12 @@ class Stupidity(commands.Cog):
         await ctx.message.delete()
     
     @commands.command(aliases=["wide"])
-    async def addspaces(self, ctx, *, msg):
+    async def addspaces(self, ctx, spaces: int = 3, *, msg: str):
         """
         Adds 3 spaces in between every character.
-        If the first arg is a number, it will use
-        that for the number of spaces instead.
+        If the first arg is a number, it will use that for the number of spaces instead.
         """
-        args = msg.split(" ")
-        try:
-            spaces = int(args[0])
-            msg = ' '.join(args[1:])
-        except ValueError:
-            spaces = 3
+
         between = spaces * ' '
         await ctx.send(between.join(list(str(msg))))
         await ctx.message.delete()
