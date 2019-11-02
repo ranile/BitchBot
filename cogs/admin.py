@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord
+import discord, inspect
 
 
 class Owner(commands.Cog):
@@ -27,8 +27,54 @@ class Owner(commands.Cog):
         for message in deleted:
             deleted_of.add(message.author.name)
         
-        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}', delete_after = 7)
+        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}', delete_after = 5)
         await ctx.message.delete(delay=2)
+
+    @commands.command(aliases=["exec", "code", "eval"])
+    @commands.is_owner()
+    async def run(self, ctx, *, code):
+        """
+        `eval()`s python code
+        """
+
+        env = {
+            'bot': self.bot,
+            'ctx': ctx,
+            'message': ctx.message,
+            'channel': ctx.message.channel,
+            'author': ctx.message.author,
+            'commands': commands,
+            'discord': discord,
+            'guild': ctx.message.guild,
+        }
+
+        env.update(globals())
+
+        while str(code).startswith('`'):
+            code = str(code)[1:]
+        
+        while str(code).endswith('`'):
+            code = str(code)[:-1]
+
+        try:
+            result = eval(code, env)
+            if inspect.isawaitable(result):
+                result = await result
+        except Exception as e:
+            await ctx.send(f'```python {type(e).__name__}:{str(e)}```')
+            return
+
+        output = f"""```python
+        >>> {code}
+
+        {result}
+        ```
+        """
+        await ctx.send(inspect.cleandoc(output))
+
+    @run.error
+    async def run_error(self, ctx, error):
+        ctx.send(str(error))
 
 def setup(bot):
     bot.add_cog(Owner(bot))
