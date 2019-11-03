@@ -61,7 +61,13 @@ class Owner(commands.Cog):
             if inspect.isawaitable(result):
                 result = await result
         except Exception as e:
-            await ctx.send(f'```python {type(e).__name__}:{str(e)}```')
+            errorOut = f"""```python
+            >>> {code}
+
+            {type(e).__name__}:{str(e)}
+            ```
+            """
+            await ctx.send(inspect.cleandoc(errorOut))
             return
 
         output = f"""```python
