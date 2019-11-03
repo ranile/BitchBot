@@ -9,7 +9,7 @@ bot = commands.Bot(command_prefix=">", case_insensitive=True,
                    owner_ids=[529535587728752644])
 
 # cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity", "servermanagement"]
-cogs = ["admin", "autorespond", "emojis", "internet", "poll", "stupidity", "quotes-and-counters"]
+cogs = ["admin", "autorespond", "emojis", "internet", "poll", "misc", "quotes-and-counters"]
 
 @bot.command()
 async def reload(ctx: commands.Context, module: str):
