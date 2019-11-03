@@ -18,6 +18,8 @@ your little "clever" comment was about to bring down upon you, maybe you would h
 couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will 
 drown in it. You're fucking dead, kiddo. """
 
+THE_RABBIT = '<:rabbitman:593375171880943636>'
+
 class AutoresponderCounterQuotes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -104,7 +106,8 @@ class AutoresponderCounterQuotes(commands.Cog):
                 })
 
                 channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
-                await channel.send(f"Someone said rabbit <:rabbitman:593375171880943636>, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
+                await channel.send(f"Someone said rabbit {THE_RABBIT}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
+                ctx.add_reaction(THE_RABBIT)
                 return
 
 
