@@ -135,20 +135,24 @@ class Internet(commands.Cog):
         await ctx.send(embed=discord.Embed().set_image(url=link))
 
     @commands.command()
-    async def urban(self, ctx, *, search):
+    async def urban(self, ctx, query, index = 0):
         """
         Gets top defination from urban dictionary
         """
+        
         await ctx.channel.trigger_typing()
+        search = urllib.parse.quote(query)
         url = f"http://api.urbandictionary.com/v0/define?term={search}"
         link = f"https://www.urbandictionary.com/define.php?term={search}"
         req = requests.get(url)
 
         if req.status_code == 404:
             await ctx.send(format_error('Errorrrrr... Not found'))
-        
         data = req.json()
-        embed = discord.Embed(title = search, description=  data['list'][0]['definition'], url=link)
+
+        item = data['list'][index]
+        embed = discord.Embed(title = query, description=  item['definition'], url=link)
+        embed.add_field(name = "Example", value = item["example"], inline=False)
         embed.set_footer(text = "From Urban Dictionary")
         await ctx.send(embed = embed)
 
