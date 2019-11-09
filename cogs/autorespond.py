@@ -125,8 +125,6 @@ class AutoresponderCounterQuotes(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        print('str(reaction)')
-        print(str(reaction))
 
         if str(reaction) == "📌":
             await reaction.message.pin()
@@ -137,10 +135,8 @@ class AutoresponderCounterQuotes(commands.Cog):
 
            
             if reaction.count < 2:
-                print('nope')
                 return
             if reaction.message.id in self.starred_messages:
-                print('nah')
                 return
             
             guild = reaction.message.channel.guild
@@ -180,4 +176,3 @@ class AutoresponderCounterQuotes(commands.Cog):
 
 def setup(bot):
     bot.add_cog(AutoresponderCounterQuotes(bot))
-
