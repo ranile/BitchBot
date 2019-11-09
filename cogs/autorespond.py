@@ -107,7 +107,7 @@ class AutoresponderCounterQuotes(commands.Cog):
 
                 channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
                 await channel.send(f"Someone said rabbit {THE_RABBIT}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
-                ctx.add_reaction(THE_RABBIT)
+                await ctx.add_reaction(THE_RABBIT)
                 return
 
 
