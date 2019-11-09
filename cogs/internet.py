@@ -1,15 +1,6 @@
 from discord.ext import commands
-import discord
-import wikipedia
-import requests
-import re
-import random
-import urllib
-
-
-def format_error(error):
-    return f"""```Error 420 in command{error}```"""
-
+import discord, wikipedia, requests, re, random, urllib
+from util.funs import random_discord_color # pylint: disable=no-name-in-module
 
 class Internet(commands.Cog):
     def __init__(self, bot):
@@ -20,11 +11,12 @@ class Internet(commands.Cog):
         """
         Find a Wikipedia page on a given topic
         """
+        
         await ctx.channel.trigger_typing()
         search = wikipedia.search(search)
 
         if not search:
-            await ctx.send(format_error("No page was found for that search term"))
+            await ctx.send("No page was found for that search term")
             return
 
         page = wikipedia.page(search[0])
@@ -33,7 +25,7 @@ class Internet(commands.Cog):
         image = page.images[0]
         url = page.url
 
-        embed = discord.Embed(title=title, description=body, url=url)
+        embed = discord.Embed(title=title, description=body, url=url, color = random_discord_color())
         embed.set_footer(text="From Wikipedia")
         embed.set_thumbnail(url=image)
 
@@ -44,6 +36,7 @@ class Internet(commands.Cog):
         """
         Random Wikipedia page
         """
+
         await ctx.channel.trigger_typing()
         search = wikipedia.search(wikipedia.random())
 
@@ -53,7 +46,7 @@ class Internet(commands.Cog):
         image = page.images[0]
         url = page.url
 
-        embed = discord.Embed(title=title, description=body, url=url)
+        embed = discord.Embed(title=title, description=body, url=url, color = random_discord_color())
         embed.set_footer(text="From Wikipedia")
         embed.set_thumbnail(url=image)
 
@@ -64,6 +57,7 @@ class Internet(commands.Cog):
         """
         They are horrible. Seriously
         """
+
         await ctx.channel.trigger_typing()
         req = requests.get("https://icanhazdadjoke.com", headers={"Accept": "text/plain"})
         content = req.content.decode("UTF-8")
@@ -75,6 +69,7 @@ class Internet(commands.Cog):
         """
         Chuck Norris. Need I say more
         """
+
         await ctx.channel.trigger_typing()
         req = requests.get("https://api.chucknorris.io/jokes/random").json()["value"]
         await ctx.send(req)
@@ -86,11 +81,11 @@ class Internet(commands.Cog):
         """
         
         await ctx.channel.trigger_typing()
-        req = requests.get('http://reddit.com/r/' + search + '/new/.json', headers={'User-agent': 'Chrome'})
-        
+        req = requests.get(f'http://reddit.com/r/{search}/new/.json', headers={'User-agent': 'Chrome'})
         json = req.json()
+
         if "error" in json or json["data"]["after"] is None:
-            await ctx.send(format_error("Subreddit '{}' not found".format(search)))
+            await ctx.send(f"Subreddit '{search}' not found")
             return
 
         req_len = len(json["data"]["children"])
@@ -102,17 +97,21 @@ class Internet(commands.Cog):
         subreddit = post["data"]['subreddit_name_prefixed']
         url = post["data"]["url"]  # can be image or post link
         link = "https://reddit.com" + post["data"]["permalink"]
+
         if "selftext" in post["data"]:
             text = post["data"]["selftext"]  # may not exist
+
             if len(text) >= 2000:
                 text = text[:2000].rsplit(" ", 1)[0] + " **-Snippet-**"
             embed = discord.Embed(title=title, description=text, url=link)
+
         else:
             embed = discord.Embed(title=title, url=link)
 
         if re.match(r".*\.(jpg|png|gif)$", url):
             embed.set_image(url=url)
 
+        embed.colour = random_discord_color()
         embed.set_footer(text=f"From new in {subreddit} by {author}")
 
         await ctx.send(embed=embed)
@@ -122,6 +121,7 @@ class Internet(commands.Cog):
         """
         Fun fact. U gey
         """
+
         await ctx.channel.trigger_typing()
         text = requests.get("http://randomuselessfact.appspot.com/random.json?language=en").json()["text"]
         await ctx.send(text)
@@ -131,6 +131,7 @@ class Internet(commands.Cog):
         """
         Be like bill
         """
+
         link = f"https://belikebill.ga/billgen-API.php?default=1&name={urllib.parse.quote(name)}"
         await ctx.send(embed=discord.Embed().set_image(url=link))
 
@@ -147,17 +148,21 @@ class Internet(commands.Cog):
         req = requests.get(url)
 
         if req.status_code == 404:
-            await ctx.send(format_error('Errorrrrr... Not found'))
+            await ctx.send('Errorrrrr... Not found')
         data = req.json()
 
         item = data['list'][index]
-        embed = discord.Embed(title = query, description=  item['definition'], url=link)
+        embed = discord.Embed(title = query, description=  item['definition'], url=link, color = random_discord_color())
         embed.add_field(name = "Example", value = item["example"], inline=False)
         embed.set_footer(text = "From Urban Dictionary")
         await ctx.send(embed = embed)
 
     @commands.command(aliases=["insult"])
     async def roastme(self, ctx):
+        """
+        Get roasted
+        """
+
         await ctx.channel.trigger_typing()
         url = "https://insult.mattbas.org/api/insult.json"
         req = requests.get(url)
