@@ -19,8 +19,9 @@ couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will
 drown in it. You're fucking dead, kiddo. """
 
 THE_RABBIT = '<:rabbitman:593375171880943636>'
+THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 
-class AutoresponderCounterQuotes(commands.Cog):
+class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         req = requests.get(EPIC_EMOJIS_LINK)
@@ -68,10 +69,10 @@ class AutoresponderCounterQuotes(commands.Cog):
         elif re.fullmatch(r"\bcreeper\b", msg):
             await cnl.send('Aww man')
 
-        elif re.search(r"\b69\b", ctx.clean_content):
+        elif re.search(r"69", ctx.clean_content):
             await cnl.send("Ha thats the sex number")
 
-        elif re.search(r"\b4:?20\b", ctx.clean_content):
+        elif re.search(r"4:?20", ctx.clean_content):
             await cnl.send("Ha thats the weed number")
 
         if (random.randint(0,4) > 2):
@@ -81,7 +82,7 @@ class AutoresponderCounterQuotes(commands.Cog):
                 await cnl.send(emoji)
 
             elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg):
-                await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>", "Epic bruh moment"]))
+                await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
 
             elif re.search(r"\brip\b", msg):
                 await cnl.send("Not epic")
@@ -96,7 +97,7 @@ class AutoresponderCounterQuotes(commands.Cog):
                 await cnl.send(random.choice(["Shaking my smh", "Smh my head", "Ikr", "Shaking my head"]))
 
         for counter in self.counters.keys():
-            rabbitMatch = r"(kaylie'?s? ?(man)|rabbit(man)?)"
+            rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?a( +)?b( +)?b( +)?i( +)?t(man)?)"
             if (str(counter).lower() == 'rabbit') and re.search(rabbitMatch, msg, re.IGNORECASE):
                 self.counters[counter] += 1
                 requests.post(UPDATE_COUNTER, json={
@@ -106,12 +107,13 @@ class AutoresponderCounterQuotes(commands.Cog):
                 })
 
                 channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
-                await channel.send(f"Someone said rabbit {THE_RABBIT}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
-                await ctx.add_reaction(THE_RABBIT)
+                rabbit = random.choice([THE_RABBIT, THE_RABBIT_V2])
+                await channel.send(f"Someone called the rabbit {rabbit}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
+                await ctx.add_reaction(rabbitMatch)
                 return
 
 
-            if str(counter).lower() in msg:
+            if str(counter).lower() in msg and 'rabbit' not in msg:
                 self.counters[counter] += 1
                 requests.post(UPDATE_COUNTER, json={
                     'serverId': str(cnl.guild.id),
@@ -131,36 +133,13 @@ class AutoresponderCounterQuotes(commands.Cog):
             await reaction.message.remove_reaction(reaction, user)
             await reaction.message.channel.send(f"{user.mention} Pinned a message!")
 
-        elif str(reaction) == "⭐":
-
-           
-            if reaction.count < 2:
-                return
-            if reaction.message.id in self.starred_messages:
-                return
-            
-            guild = reaction.message.channel.guild
-            cnl = guild.get_channel(int(self.quotes_channels[str(guild.id)]))
-            url = reaction.message.jump_url
-            
-            embed = discord.Embed(title = 'Go to message',url = url)
-            embed.set_footer(text=f"- {reaction.message.author.name}")
-            embed.colour = discord.Color(value=random.randint(0, 16777215))
-
-            content = reaction.message.content
-            if content:
-                embed.description = content
-
-            attachments = reaction.message.attachments
-            if attachments:
-                embed.set_image(url=attachments[0].url)
-
-            await cnl.send(embed = embed)
-            self.starred_messages.append(reaction.message.id)
-    
     @commands.is_owner()
     @commands.command()
-    async def setQuotesChannel(self, ctx, channel: discord.TextChannel):
+    async def setCountersChannel(self, ctx, channel: discord.TextChannel):
+        """
+        Set the channel to send the counter updates into for the guild
+        """
+
         req = requests.post(SET_QUOTES_CHANNEL, {
             'guildId': str(ctx.message.guild.id),
             'channelId': str(channel.id),
@@ -175,4 +154,4 @@ class AutoresponderCounterQuotes(commands.Cog):
         await ctx.send('Saved')
 
 def setup(bot):
-    bot.add_cog(AutoresponderCounterQuotes(bot))
+    bot.add_cog(AutoresponderCounter(bot))
