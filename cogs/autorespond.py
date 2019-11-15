@@ -109,7 +109,7 @@ class AutoresponderCounter(commands.Cog):
                 channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
                 rabbit = random.choice([THE_RABBIT, THE_RABBIT_V2])
                 await channel.send(f"Someone called the rabbit {rabbit}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
-                await ctx.add_reaction(rabbitMatch)
+                await ctx.add_reaction(rabbit)
                 return
 
 
