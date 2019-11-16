@@ -21,6 +21,15 @@ drown in it. You're fucking dead, kiddo. """
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 
+ignoreAutorespond = set()
+
+def chance(val):
+    return random.randint(0, 4) > val
+
+def isInAutorespondIgnore(message):
+    return message.channel.guild.id in ignoreAutorespond
+
+
 class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -60,41 +69,38 @@ class AutoresponderCounter(commands.Cog):
         if ctx.author == self.bot.user:
             return
         
-        if re.search(r"good (bitch)?bot", msg):
-            await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
+        if not isInAutorespondIgnore(ctx):
+        
+            if re.search(r"good (bitch)?bot", msg):
+                await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
 
-        elif re.search(r"(bad|stfu|fuck you) (bitch)? ?bot", msg):
-            await cnl.send(random.choice(["Rip", "K", "You sure about that?", seals, "F", "😦"]))
+            elif re.search(r"(bad|stfu|fuck you) (bitch)? ?bot", msg):
+                await cnl.send(random.choice(["Rip", "K", "You sure about that?", seals, "F", "😦"]))
 
-        elif re.fullmatch(r"\bcreeper\b", msg):
-            await cnl.send('Aww man')
+            elif re.fullmatch(r"\bcreeper\b", msg):
+                await cnl.send('Aww man')
 
-        elif re.search(r"69", ctx.clean_content):
-            await cnl.send("Ha thats the sex number")
+            elif re.search(r"\b69\b", ctx.clean_content):
+                await cnl.send("Ha thats the sex number")
 
-        elif re.search(r"4:?20", ctx.clean_content):
-            await cnl.send("Ha thats the weed number")
+            elif re.search(r"\b4:?20\b", ctx.clean_content):
+                await cnl.send("Ha thats the weed number")
 
-        if (random.randint(0,4) > 2):
-
-            if (re.search(r"\be(p|b)?ic\b", msg)) and 'not epic' not in msg:
+            elif (re.search(r"\be(p|b)?ic\b", msg)) and 'not epic' not in msg and chance(2):
                 emoji = random.choice(self.epic_emojis)
                 await cnl.send(emoji)
 
-            elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg):
+            elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg) and chance(3):
                 await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
 
-            elif re.search(r"\brip\b", msg):
+            elif re.search(r"\brip\b", msg) and chance(3):
                 await cnl.send("Not epic")
 
-            elif re.search(r"\bnot epic\b", msg):
+            elif re.search(r"\bnot epic\b", msg) and chance(3):
                 await cnl.send(random.choice(["Not epic, indeed", "rip"]))
 
-            elif re.search(r"\buh oh\b", msg):
+            elif re.search(r"\buh oh\b", msg) and chance(3):
                 await cnl.send("We're in danger")
-
-            elif re.fullmatch(r"\bsmh\b", msg):
-                await cnl.send(random.choice(["Shaking my smh", "Smh my head", "Ikr", "Shaking my head"]))
 
         for counter in self.counters.keys():
             rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?a( +)?b( +)?b( +)?i( +)?t(man)?)"
@@ -152,6 +158,18 @@ class AutoresponderCounter(commands.Cog):
         self.quotes_channels = requests.get(QUOTES_CHANNELS).json()
         
         await ctx.send('Saved')
+
+    @commands.is_owner()
+    @commands.command()
+    async def ignoreAutorespond(self, ctx):
+        ignoreAutorespond.add(ctx.guild.id)
+        await ctx.send(f'Ignoring {ctx.guild.name} until reload')
+
+    @commands.is_owner()
+    @commands.command()
+    async def removeIgnoreAutorespond(self, ctx):
+        ignoreAutorespond.remove(ctx.guild.id)
+        await ctx.send(f'Removed autorespond ignore for {ctx.guild.name}')
 
 def setup(bot):
     bot.add_cog(AutoresponderCounter(bot))
