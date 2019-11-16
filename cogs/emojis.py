@@ -44,17 +44,27 @@ class Emojis(commands.Cog):
 
         await ctx.message.delete(delay=2)
 
-    @commands.command()
-    async def emoji(self, ctx, message, amount=1):
+    @commands.command(aliases=["e"])
+    async def emoji(self, ctx, *emojis):
         """
         Send any one of the emoji given by 'emojis' command
         """
-        
-        if message in self.animated_emojis.keys():
-            await ctx.send(f'{self.animated_emojis[message].command} '* amount)
-        elif message in self.non_animated_emojis.keys():
-            await ctx.send(f'{self.non_animated_emojis[message].command} ' * amount)
 
+        emojis = list(emojis)
+        if str(emojis[-1]).isdigit():
+            amount = int(emojis[-1])
+            emojis.pop()
+        else:
+            amount = 1
+
+        out = ""
+        for message in emojis:
+            if message in self.animated_emojis.keys():
+                out += f'{self.animated_emojis[message].command} '* amount
+            elif message in self.non_animated_emojis.keys():
+                out += f'{self.non_animated_emojis[message].command} ' * amount
+
+        await ctx.send(out)
         await ctx.message.delete(delay=2)        
 
     @commands.command()
