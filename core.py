@@ -1,4 +1,4 @@
-import discord, random
+import discord, random, re, inspect
 from discord.ext import commands
 # from keys import bot as BOT_TOKEN
 
@@ -22,6 +22,43 @@ async def reload(ctx: commands.Context, module: str):
         await ctx.send("🔄")
 
 bot.remove_command('help')
+
+def getInfoFromDocstring(docstring):
+    """Gets information from docstring formatted using Google's python styleguide.
+
+    Args:
+        docstring: The doctring to extract information from.
+
+    Returns:
+        Tuple of dict of the aruguments and their docs and everything in the docstring before the word `Args: `.
+
+    """
+
+    splitted = docstring.split("Args:\n")
+    args = inspect.cleandoc(splitted[1].split('Returns:\n')[0]).split('\n')
+
+    docs = {}
+    for arg in args:
+        matched = re.search(r'\w+: ', arg)
+
+        if not matched:
+            continue
+
+        argName = matched.group(0)[:-2]
+        argDoc = arg[len(argName):][1:].strip()
+
+        docs[argName] = argDoc
+
+    return docs, splitted[0][:-2]
+
+def generateArgStringForEmbed(args):
+    out = ''
+    keys = list(args.keys())
+    values = list(args.values())
+    for i in range(len(args)):
+        out += f'**{keys[i]}**: {values[i]}\n'
+    
+    return out
 
 @bot.command()
 async def help(ctx: commands.Context, command: str = None):
@@ -57,8 +94,13 @@ async def help(ctx: commands.Context, command: str = None):
 
         if cmd is None:
             await ctx.send(f"Command {command} doesn't exist")
+            return
 
-        embed.add_field(name = f'{cmd.name}', value = cmd.help, inline=False)
+        commandHelp = getInfoFromDocstring(cmd.help)
+        print(commandHelp[0])
+        embed.add_field(name = f'{cmd.name}', value = commandHelp[1], inline=False)
+        embed.add_field(name = f'Parameters', value = generateArgStringForEmbed(commandHelp[0]), inline=False)
+        
 
         cmdAliases = cmd.aliases
         if (cmdAliases):

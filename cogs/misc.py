@@ -54,8 +54,11 @@ class Miscellaneous(commands.Cog):
 
     @commands.command(aliases=["send"])
     async def say(self, ctx, *, message):
-        """
-        Have the bot say something. Have fun!
+        """Have the bot say something. Have fun!
+
+        Args:
+            message: The message you want to say
+            
         """
         await ctx.send(message)
 
