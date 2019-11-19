@@ -4,11 +4,13 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 
-ENV BOT_TOKEN=NTk1MzYzMzkyODg2MTQ1MDQ2.XYWagw.-oVpbLyZ6EFwRGzYHzAujeTpICc
+ENV BOT_TOKEN=not pushing token
 
 ENV FUNCTIONS_LINK=https://us-central1-bitchbot-discordbot.cloudfunctions.net
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN sudo apt-get install python3-dev
+
+RUN pip install -r requirements.txt
 
 COPY . .
 
