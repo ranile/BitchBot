@@ -1,6 +1,7 @@
 from discord.ext import commands
 from keys import EPIC_EMOJIS_LINK, QUOTES_CHANNELS, SET_QUOTES_CHANNEL, COUNTERS_FOR_SERVER, UPDATE_COUNTER, COUNTERS
-import discord, re, random, requests, asyncio
+import discord, re, random, requests, asyncio, unicodedata
+from fuzzywuzzy import fuzz
 
 
 seals = """What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of 
@@ -20,6 +21,7 @@ drown in it. You're fucking dead, kiddo. """
 
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
+THE_CAUSE = 505655510263922700
 
 ignoreAutorespond = set()
 
@@ -28,6 +30,15 @@ def chance(val):
 
 def isInAutorespondIgnore(message):
     return message.channel.guild.id in ignoreAutorespond
+
+def fuzzy_rabbit_check(msg):
+    words = msg.split()
+    for word in words:
+        ratio = fuzz.partial_ratio(word.lower(), 'rabbit')
+        if ratio >= 60:
+            return True
+    
+    return False
 
 
 class AutoresponderCounter(commands.Cog):
@@ -104,7 +115,12 @@ class AutoresponderCounter(commands.Cog):
 
         for counter in self.counters.keys():
             rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?a( +)?b( +)?b( +)?i( +)?t(man)?)"
-            if (str(counter).lower() == 'rabbit') and re.search(rabbitMatch, msg, re.IGNORECASE):
+            normalized = str(unicodedata.normalize('NFKD', msg).encode('ascii', 'ignore'))
+            if (
+                (str(counter).lower() == 'rabbit') and
+                (re.search(rabbitMatch, normalized, re.IGNORECASE) or fuzzy_rabbit_check(normalized)) and
+                cnl.guild.id == THE_CAUSE
+            ):
                 self.counters[counter] += 1
                 requests.post(UPDATE_COUNTER, json={
                     'serverId': str(cnl.guild.id),
