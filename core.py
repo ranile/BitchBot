@@ -15,6 +15,9 @@ cogs = ["admin", "autorespond", "emojis", "internet", "misc"]
 async def reload(ctx: commands.Context, module: str):
     """
     Reloads a cog
+
+    Args:
+        module: The cog to reload
     """
 
     if (await bot.is_owner(ctx.author)):
@@ -64,6 +67,9 @@ def generateArgStringForEmbed(args):
 async def help(ctx: commands.Context, command: str = None):
     """
     Displays help message
+
+    Args:
+        command: The command to get help for. Optional
     """
 
     embed = discord.Embed(title='**You wanted help? Help is provided**')
@@ -99,15 +105,15 @@ async def help(ctx: commands.Context, command: str = None):
         commandHelp = getInfoFromDocstring(cmd.help)
         print(commandHelp[0])
         embed.add_field(name = f'{cmd.name}', value = commandHelp[1], inline=False)
-        embed.add_field(name = f'Parameters', value = generateArgStringForEmbed(commandHelp[0]), inline=False)
+
+        argsString = generateArgStringForEmbed(commandHelp[0])
+        if argsString is not None and argsString != "":
+            embed.add_field(name = f'Parameters', value = argsString, inline=False)
         
 
         cmdAliases = cmd.aliases
         if (cmdAliases):
-            aliases = ''
-            for i in range(0, len(cmdAliases)):
-                aliases += f'{i + 1}. {cmdAliases[i]}\n'
-
+            aliases = ', '.join(cmdAliases)
             embed.add_field(name='Aliases:', value=aliases, inline=False)
         
     await ctx.send(embed=embed)

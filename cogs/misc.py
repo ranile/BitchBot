@@ -222,11 +222,13 @@ class Miscellaneous(commands.Cog):
     async def poll(self, ctx, question, *answers):
         """
         Start a poll.
-
-        If no answers are provided, it will default to yes/no
-        Max of 10 answers
         If answers/questions contain spaces put it in quotes
-        e.g. >poll "Do you like bacon" yes
+        Example:
+            >poll "Do you like bacon" yes
+
+        Args:
+            question: The question you want to ask. This will be title of embed
+            answers: The answers for the poll. If no answers are provided, it will default to yes/no. Max of 10 answers are allowed
         """
         
         if answers == ():

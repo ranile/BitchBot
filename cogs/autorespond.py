@@ -67,9 +67,8 @@ class AutoresponderCounter(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        """
-        Ping Pong
-        """
+        """Ping Pong"""
+
         await ctx.send("Pong")
 
     @commands.Cog.listener()
@@ -160,6 +159,9 @@ class AutoresponderCounter(commands.Cog):
     async def setCountersChannel(self, ctx, channel: discord.TextChannel):
         """
         Set the channel to send the counter updates into for the guild
+
+        Args:
+            channel: The channel to send counter increment messages in
         """
 
         req = requests.post(SET_QUOTES_CHANNEL, {
@@ -178,12 +180,16 @@ class AutoresponderCounter(commands.Cog):
     @commands.is_owner()
     @commands.command()
     async def ignoreAutorespond(self, ctx):
+        """Ignore autoresponder in current guild"""
+
         ignoreAutorespond.add(ctx.guild.id)
         await ctx.send(f'Ignoring {ctx.guild.name} until reload')
 
     @commands.is_owner()
     @commands.command()
     async def removeIgnoreAutorespond(self, ctx):
+        """Remove current guild from autoresponder ignore"""
+
         ignoreAutorespond.remove(ctx.guild.id)
         await ctx.send(f'Removed autorespond ignore for {ctx.guild.name}')
 

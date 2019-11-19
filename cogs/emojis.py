@@ -31,23 +31,28 @@ class Emojis(commands.Cog):
                 self.non_animated_emojis[i['name']] = UnAnimatedEmoji(i['name'], i['id'], i['command'])
 
     @commands.command(aliases=["emojiimg", "emoji1"])
-    async def emojilink(self, ctx, message):
+    async def emojilink(self, ctx, emoji):
+        """Send link of any one of the emoji given by 'emojis' command
+
+        Args:
+            emoji: The emoji to link
         """
-        Send link of any one of the emoji given by 'emojis' command
-        """
-        if message in self.animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[message].id}.gif"
+
+        if emoji in self.animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[emoji].id}.gif"
             await ctx.send(url)
-        elif message in self.non_animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[message].id}.png"
+        elif emoji in self.non_animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[emoji].id}.png"
             await ctx.send(url)
 
         await ctx.message.delete(delay=2)
 
     @commands.command(aliases=["e"])
     async def emoji(self, ctx, *emojis):
-        """
-        Send any one of the emoji given by 'emojis' command
+        """Send any one of the emoji given by 'emojis' command
+
+        Args:
+            emojis: The emoji to send. This can take variable number of value. If the last value is a number, it repeats the every emoji that amount of times
         """
 
         emojis = list(emojis)
@@ -69,9 +74,8 @@ class Emojis(commands.Cog):
 
     @commands.command()
     async def emojis(self, ctx):
-        """
-        Shows the emojis that can be sent by 'emoji' command
-        """
+        """Shows the emojis that can be sent by 'emoji' command"""
+
         out_animated = ''
         out_non_animated = ''
 
@@ -93,18 +97,21 @@ class Emojis(commands.Cog):
 
     
     @commands.command(aliases=["emoji2"])
-    async def emojiembed(self, ctx, message):
+    async def emojiembed(self, ctx, emoji):
         """
         Send embed of any one of the emoji given by 'emojis' command
+
+        Args:
+            emoji: The emoji to send in an the embed
         """
         embed=discord.Embed()
-        if message in self.animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[message].id}.gif"
+        if emoji in self.animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[emoji].id}.gif"
             embed.set_image(url=url)
             await ctx.send(embed=embed)
 
-        elif message in self.non_animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[message].id}.png"
+        elif emoji in self.non_animated_emojis.keys():
+            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[emoji].id}.png"
             embed.set_image(url=url)
             await ctx.send(embed=embed)
 
