@@ -21,6 +21,7 @@ drown in it. You're fucking dead, kiddo. """
 
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
+rabbits = [THE_RABBIT, THE_RABBIT_V2]
 THE_CAUSE = 505655510263922700
 
 ignoreAutorespond = set()
@@ -31,11 +32,11 @@ def chance(val):
 def isInAutorespondIgnore(message):
     return message.channel.guild.id in ignoreAutorespond
 
-def fuzzy_rabbit_check(msg):
+def fuzzy_rabbit_check(msg, ratioCheck):
     words = msg.split()
     for word in words:
-        ratio = fuzz.ratio(word.lower(), 'rabbit')
-        if ratio >= 60 and word.startswith("r"):
+        ratio = fuzz.partial_ratio(word.lower(), 'rabbit')
+        if ratio >= ratioCheck and word.startswith("r"):
             return True
     
     return False
@@ -44,6 +45,7 @@ def fuzzy_rabbit_check(msg):
 class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.rabbitRatio = 75
         req = requests.get(EPIC_EMOJIS_LINK)
         data = req.json()
         self.epic_emojis = []
@@ -114,10 +116,10 @@ class AutoresponderCounter(commands.Cog):
 
         for counter in self.counters.keys():
             rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?a( +)?b( +)?b( +)?i( +)?t(man)?)"
-            normalized = str(unicodedata.normalize('NFKD', msg).encode('ascii', 'ignore'))
+            normalized = unicodedata.normalize('NFKD', msg).encode('ascii', 'ignore').decode('ascii')
             if (
                 (str(counter).lower() == 'rabbit') and
-                (re.search(rabbitMatch, normalized, re.IGNORECASE) or fuzzy_rabbit_check(normalized)) and
+                (re.search(rabbitMatch, normalized, re.IGNORECASE) or fuzzy_rabbit_check(normalized, self.rabbitRatio)) and
                 cnl.guild.id == THE_CAUSE
             ):
                 self.counters[counter] += 1
@@ -128,8 +130,8 @@ class AutoresponderCounter(commands.Cog):
                 })
 
                 channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
-                rabbit = random.choice([THE_RABBIT, THE_RABBIT_V2])
-                await channel.send(f"Someone called the rabbit {rabbit}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
+                rabbit = random.choice(rabbits)
+                await channel.send(f"{ctx.author.display_name} called the rabbit {rabbit}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
                 await ctx.add_reaction(rabbit)
                 return
 
@@ -149,10 +151,30 @@ class AutoresponderCounter(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
 
+        if user.id == self.bot.user.id:
+            return
+
+        guild =reaction.message.channel.guild
+
         if str(reaction) == "📌":
             await reaction.message.pin()
             await reaction.message.remove_reaction(reaction, user)
             await reaction.message.channel.send(f"{user.mention} Pinned a message!")
+
+        elif str(reaction) in rabbits:
+            self.counters['rabbit'] += 1
+            requests.post(UPDATE_COUNTER, json={
+                'serverId': str(guild.id),
+                'counter': 'rabbit',
+                'value': self.counters['rabbit'],
+            })
+
+            channel = guild.get_channel(int(self.quotes_channels[str(guild.id)]))
+            rabbit = [r for r in rabbits if r != str(reaction)][0]
+            await channel.send(f"{reaction.message.author.display_name} summoned the rabbit {rabbit}, the Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
+            await reaction.message.add_reaction(rabbit)
+            return
+
 
     @commands.is_owner()
     @commands.command()
@@ -192,6 +214,18 @@ class AutoresponderCounter(commands.Cog):
 
         ignoreAutorespond.remove(ctx.guild.id)
         await ctx.send(f'Removed autorespond ignore for {ctx.guild.name}')
+
+    @commands.is_owner()
+    @commands.command()
+    async def setRabbitRatio(self, ctx, ratio):
+        """Set the ratio which should be achieved in order for rabbit to be matched
+
+        Args:
+            ratio: The ratio to match against
+        """
+
+        self.rabbitRatio = int(ratio)
+        await ctx.send(f"It'll now require `parial_raito` to be greater than or equal to {ratio} in order for rabbit counter to be incremented")
 
 def setup(bot):
     bot.add_cog(AutoresponderCounter(bot))
