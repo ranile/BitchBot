@@ -93,10 +93,10 @@ class AutoresponderCounter(commands.Cog):
                 await cnl.send('Aww man')
 
             elif re.search(r"\b69\b", ctx.clean_content):
-                await cnl.send("Ha thats the sex number")
+                await cnl.send("Ha that's the sex number")
 
             elif re.search(r"\b4:?20\b", ctx.clean_content):
-                await cnl.send("Ha thats the weed number")
+                await cnl.send("Ha that's the weed number")
 
             elif (re.search(r"\be(p|b)?ic\b", msg)) and 'not epic' not in msg and chance(2):
                 emoji = random.choice(self.epic_emojis)
