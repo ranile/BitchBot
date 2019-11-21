@@ -35,8 +35,11 @@ def isInAutorespondIgnore(message):
 def fuzzy_rabbit_check(msg, ratioCheck):
     words = msg.split()
     for word in words:
+        if not word.startswith("r") or word == 'r':
+            continue
+        
         ratio = fuzz.partial_ratio(word.lower(), 'rabbit')
-        if ratio >= ratioCheck and word.startswith("r"):
+        if ratio >= ratioCheck:
             return True
     
     return False
