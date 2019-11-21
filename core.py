@@ -1,16 +1,15 @@
 import discord, random, re, inspect
 from discord.ext import commands
-from keys import bot as BOT_TOKEN
+# from keys import bot as BOT_TOKEN
 
-# import os
-# BOT_TOKEN = os.environ['BOT_TOKEN']
+import os
+BOT_TOKEN = os.environ['BOT_TOKEN']
 
 bot = commands.Bot(command_prefix=">", case_insensitive=True,
                    owner_ids=[529535587728752644])
 
 # cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity", "servermanagement"]
-# cogs = ["admin", "autorespond", "emojis", "internet", "misc"]
-cogs = ["admin", "autorespond", "internet", "misc"]
+cogs = ["admin", "autorespond", "emojis", "internet", "misc"]
 
 @bot.command()
 async def reload(ctx: commands.Context, module: str):

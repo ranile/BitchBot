@@ -1,5 +1,5 @@
 from discord.ext import commands
-from keys import EPIC_EMOJIS_LINK, QUOTES_CHANNELS, SET_QUOTES_CHANNEL, COUNTERS_FOR_SERVER, UPDATE_COUNTER, COUNTERS
+from keys import functionsUrl
 import discord, re, random, requests, asyncio, unicodedata
 from fuzzywuzzy import fuzz
 
@@ -45,25 +45,14 @@ def fuzzy_rabbit_check(msg, ratioCheck):
 class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.rabbitRatio = 75
-        req = requests.get(EPIC_EMOJIS_LINK)
-        data = req.json()
-        self.epic_emojis = []
-        for i in data:
-            self.epic_emojis.append(i['command'])
+        self.rabbitRatio = 85
 
-        self.quotes_channels = requests.get(QUOTES_CHANNELS).json()
-        self.starred_messages = []
+        self.epic_emojis = requests.get(f'{functionsUrl}/emojis/epic').json()
 
+        self.quotes_channels = requests.get(f'{functionsUrl}/counters/channels').json()
         print(self.quotes_channels)
 
-        data = requests.get(COUNTERS).json()
-        print(data)
-        self.counters = {}
-
-        for i in data:
-            self.counters[i['name']] = i['count']
-        
+        self.counters = requests.get(f'{functionsUrl}/counters').json()        
         print(self.counters)
 
 
@@ -123,7 +112,7 @@ class AutoresponderCounter(commands.Cog):
                 cnl.guild.id == THE_CAUSE
             ):
                 self.counters[counter] += 1
-                requests.post(UPDATE_COUNTER, json={
+                requests.patch(f'{functionsUrl}/counters/', json={
                     'serverId': str(cnl.guild.id),
                     'counter': counter,
                     'value': self.counters[counter],
@@ -138,7 +127,7 @@ class AutoresponderCounter(commands.Cog):
 
             if str(counter).lower() in msg and 'rabbit' not in msg:
                 self.counters[counter] += 1
-                requests.post(UPDATE_COUNTER, json={
+                requests.patch(f'{functionsUrl}/counters/', json={
                     'serverId': str(cnl.guild.id),
                     'counter': counter,
                     'value': self.counters[counter],
@@ -163,7 +152,7 @@ class AutoresponderCounter(commands.Cog):
 
         elif str(reaction) in rabbits:
             self.counters['rabbit'] += 1
-            requests.post(UPDATE_COUNTER, json={
+            requests.patch(f'{functionsUrl}/counters/', json={
                 'serverId': str(guild.id),
                 'counter': 'rabbit',
                 'value': self.counters['rabbit'],
@@ -171,7 +160,7 @@ class AutoresponderCounter(commands.Cog):
 
             channel = guild.get_channel(int(self.quotes_channels[str(guild.id)]))
             rabbit = [r for r in rabbits if r != str(reaction)][0]
-            await channel.send(f"{reaction.message.author.display_name} summoned the rabbit {rabbit}, the Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
+            await channel.send(f"{user.display_name} summoned the rabbit {rabbit}, the Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
             await reaction.message.add_reaction(rabbit)
             return
 
@@ -186,7 +175,7 @@ class AutoresponderCounter(commands.Cog):
             channel: The channel to send counter increment messages in
         """
 
-        req = requests.post(SET_QUOTES_CHANNEL, {
+        req = requests.post(f'{functionsUrl}/counters/channel', {
             'guildId': str(ctx.message.guild.id),
             'channelId': str(channel.id),
         })
@@ -195,7 +184,7 @@ class AutoresponderCounter(commands.Cog):
             await ctx.send('An error occured while saving')
             return
         
-        self.quotes_channels = requests.get(QUOTES_CHANNELS).json()
+        self.quotes_channels = requests.get(f'{functionsUrl}/counters/channels').json()        
         
         await ctx.send('Saved')
 

@@ -1,14 +1,8 @@
 from discord.ext import commands
 import discord, requests, itertools, re, random
-from keys import EMOJIS_LINK
+from keys import functionsUrl
 
-class AnimatedEmoji():
-    def __init__(self, name, id, command):
-        self.name = name
-        self.id = id
-        self.command = command
-
-class UnAnimatedEmoji():
+class Emoji():
     def __init__(self, name, id, command):
         self.name = name
         self.id = id
@@ -18,17 +12,16 @@ class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        res = requests.get(EMOJIS_LINK)
-        json = res.json()
+        json = requests.get(f'{functionsUrl}/emojis/all').json()
 
         self.animated_emojis = {}
         self.non_animated_emojis = {}
 
         for i in json:
             if i['isAnimated']:
-                self.animated_emojis[i['name']] = AnimatedEmoji(i['name'], i['id'], i['command'])
+                self.animated_emojis[i['name']] = Emoji(i['name'], i['id'], i['command'])
             else:
-                self.non_animated_emojis[i['name']] = UnAnimatedEmoji(i['name'], i['id'], i['command'])
+                self.non_animated_emojis[i['name']] = Emoji(i['name'], i['id'], i['command'])
 
     @commands.command(aliases=["emojiimg", "emoji1"])
     async def emojilink(self, ctx, emoji):
