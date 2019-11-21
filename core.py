@@ -63,9 +63,9 @@ def generateArgStringForEmbed(args):
     
     return out
 
-def canRunCommand(ctx, command):
+async def canRunCommand(ctx, command):
     try:
-        canRun = command.can_run(ctx)
+        canRun = await command.can_run(ctx)
     except:
         canRun = False
     
@@ -89,7 +89,7 @@ async def help(ctx: commands.Context, command: str = None):
         for name, cog in bot.cogs.items():
             out = ''
             for cmd in cog.get_commands():
-                if not canRunCommand(ctx, cmd):
+                if not (await canRunCommand(ctx, cmd)):
                     continue
 
                 helpStr = str(cmd.help).split('\n')[0]
@@ -101,7 +101,7 @@ async def help(ctx: commands.Context, command: str = None):
         out = ''
         cmds = [help, reload]
         for cmd in cmds:
-            if not canRunCommand(ctx, cmd):
+            if not (await canRunCommand(ctx, cmd)):
                 continue
 
             helpStr = str(cmd.help).split('\n')[0]
@@ -117,7 +117,7 @@ async def help(ctx: commands.Context, command: str = None):
             await ctx.send(f"Command {command} doesn't exist")
             return
 
-        elif not canRunCommand(ctx, cmd):
+        elif not (await canRunCommand(ctx, cmd)):
             await ctx.send(f"You don't have permission to run {command} command")
             return
 
