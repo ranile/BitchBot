@@ -1,5 +1,6 @@
 import discord, random, re, inspect
 from discord.ext import commands
+from util import funs
 # from keys import bot as BOT_TOKEN
 
 import os
@@ -8,7 +9,6 @@ BOT_TOKEN = os.environ['BOT_TOKEN']
 bot = commands.Bot(command_prefix=">", case_insensitive=True,
                    owner_ids=[529535587728752644])
 
-# cogs = ["admin", "autorespond", "emojis", "games", "internet", "poll", "stupidity", "servermanagement"]
 cogs = ["admin", "autorespond", "emojis", "internet", "misc"]
 
 @bot.command()
@@ -63,6 +63,14 @@ def generateArgStringForEmbed(args):
     
     return out
 
+def canRunCommand(ctx, command):
+    try:
+        canRun = command.can_run(ctx)
+    except:
+        canRun = False
+    
+    return canRun
+
 @bot.command()
 async def help(ctx: commands.Context, command: str = None):
     """
@@ -72,8 +80,8 @@ async def help(ctx: commands.Context, command: str = None):
         command: The command to get help for. Optional
     """
 
-    embed = discord.Embed(title='**You wanted help? Help is provided**')
-    embed.colour = discord.Color(value=random.randint(0, 16777215))
+    embed = discord.Embed(title='**You wanted help? Help is provided**', color = funs.random_discord_color())
+    
     embed.set_footer(text=f'Do {bot.command_prefix}help commndName to get help for a specific command')
 
     if command is None:
@@ -81,25 +89,36 @@ async def help(ctx: commands.Context, command: str = None):
         for name, cog in bot.cogs.items():
             out = ''
             for cmd in cog.get_commands():
+                if not canRunCommand(ctx, cmd):
+                    continue
 
                 helpStr = str(cmd.help).split('\n')[0]
                 out += f"**{cmd.name}**:\t{helpStr}\n"
-
-            embed.add_field(name=f'**{name}**', value=out, inline=False)
+                
+            if out:
+                embed.add_field(name=f'**{name}**', value=out, inline=False)
         
         out = ''
         cmds = [help, reload]
         for cmd in cmds:
+            if not canRunCommand(ctx, cmd):
+                continue
+
             helpStr = str(cmd.help).split('\n')[0]
             out += f"**{cmd.name}**:\t{helpStr}\n"
 
-        embed.add_field(name='**Uncategorized**', value=out, inline=False)
+        if out:
+            embed.add_field(name='**Uncategorized**', value=out, inline=False)
     else:
         
         cmd = bot.get_command(command)
 
         if cmd is None:
             await ctx.send(f"Command {command} doesn't exist")
+            return
+
+        elif not canRunCommand(ctx, cmd):
+            await ctx.send(f"You don't have permission to run {command} command")
             return
 
         commandHelp = getInfoFromDocstring(cmd.help)
