@@ -4,6 +4,8 @@ from random import randint
 import requests
 from keys import logWebhook
 import aiohttp
+import inspect
+import re
 
 def random_discord_color():
     return discord.Color(value=randint(0, 16777215))
@@ -22,6 +24,51 @@ def cause_check():
             return False
         
     return commands.check(predicate)
+
+def getInfoFromDocstring(docstring):
+    """Gets information from docstring formatted using Google's python styleguide.
+
+    Args:
+        docstring: The doctring to extract information from.
+
+    Returns:
+        Tuple of dict of the aruguments and their docs and everything in the docstring before the word `Args: `.
+
+    """
+
+    splitted = docstring.split("Args:\n")
+    args = inspect.cleandoc(splitted[1].split('Returns:\n')[0]).split('\n')
+
+    docs = {}
+    for arg in args:
+        matched = re.search(r'\w+: ', arg)
+
+        if not matched:
+            continue
+
+        argName = matched.group(0)[:-2]
+        argDoc = arg[len(argName):][1:].strip()
+
+        docs[argName] = argDoc
+
+    return docs, splitted[0][:-2]
+
+def generateArgStringForEmbed(args):
+    out = ''
+    keys = list(args.keys())
+    values = list(args.values())
+    for i in range(len(args)):
+        out += f'**{keys[i]}**: {values[i]}\n'
+    
+    return out
+
+async def canRunCommand(ctx, command):
+    try:
+        canRun = await command.can_run(ctx)
+    except:
+        canRun = False
+    
+    return canRun
 
 async def log(ctx, username, msg, sentMessage, out = None):
 
