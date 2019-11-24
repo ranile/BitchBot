@@ -126,7 +126,7 @@ async def help(ctx: commands.Context, command: str = None):
 
         try:
             commandHelp = getInfoFromDocstring(cmd.help)
-        except ValueError:
+        except:
             commandHelp = (cmd.help, "")
 
         embed.add_field(name = f'{cmd.name}', value = commandHelp[1], inline=False)
