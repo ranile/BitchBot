@@ -124,8 +124,11 @@ async def help(ctx: commands.Context, command: str = None):
             await ctx.send(f"You don't have permission to run {command} command")
             return
 
-        commandHelp = getInfoFromDocstring(cmd.help)
-        print(commandHelp[0])
+        try:
+            commandHelp = getInfoFromDocstring(cmd.help)
+        except ValueError:
+            commandHelp = (cmd.help, "")
+
         embed.add_field(name = f'{cmd.name}', value = commandHelp[1], inline=False)
 
         argsString = generateArgStringForEmbed(commandHelp[0])
