@@ -92,8 +92,11 @@ async def help(ctx: commands.Context, command: str = None):
                 if not (await canRunCommand(ctx, cmd)):
                     continue
 
-                helpStr = str(cmd.help).split('\n')[0]
-                out += f"**{cmd.name}**:\t{helpStr}\n"
+                try:
+                    helpStr = str(cmd.help).split('\n')[0]
+                    out += f"**{cmd.name}**:\t{helpStr}\n"
+                except:
+                    continue
                 
             if out:
                 embed.add_field(name=f'**{name}**', value=out, inline=False)
