@@ -18,5 +18,6 @@ async def on_ready():
 
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
+    bot.load_extension('botstuff')
 
 bot.run(BOT_TOKEN)

@@ -78,48 +78,6 @@ class Owner(commands.Cog):
         """
         await ctx.send(inspect.cleandoc(output))
 
-    @commands.command(aliases=["code", "eval"])
-    @commands.is_owner()
-    async def exec(self, ctx, *, code):
-        """Runs python code in `exec()`
-        Super dangerous. Can modify the file system
-
-        Args:
-            code: The code to run in `exec()`. Can be in code block/inline code
-        """
-        env = {
-            'bot': self.bot,
-            'ctx': ctx,
-            'message': ctx.message,
-            'channel': ctx.message.channel,
-            'author': ctx.message.author,
-            'commands': commands,
-            'discord': discord,
-            'guild': ctx.message.guild,
-        }
-
-        env.update(globals())
-
-        while str(code).startswith('`'):
-            code = str(code)[1:]
-        
-        while str(code).endswith('`'):
-            code = str(code)[:-1]
-
-        try:
-            result = exec(code, env)
-            if inspect.isawaitable(result):
-                result = await result
-        except Exception as e:
-            errorOut = f"""```python
-            >>> {code}
-
-            {type(e).__name__}:{str(e)}
-            ```
-            """
-            await ctx.send(inspect.cleandoc(errorOut))
-            return
-
     @run.error
     async def run_error(self, ctx, error):
         await ctx.send(str(error))
