@@ -3,6 +3,7 @@ from discord.ext import commands
 from random import randint
 import requests
 from keys import logWebhook
+import aiohttp
 
 def random_discord_color():
     return discord.Color(value=randint(0, 16777215))
@@ -22,7 +23,7 @@ def cause_check():
         
     return commands.check(predicate)
 
-def log(ctx, username, msg, sentMessage, out = None):
+async def log(ctx, username, msg, sentMessage, out = None):
 
     embed = discord.Embed(color = random_discord_color(), description = msg)
     embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar_url)
@@ -33,8 +34,7 @@ def log(ctx, username, msg, sentMessage, out = None):
     
     embed.add_field(name = 'Message', value = f'[Jump To Message]({sentMessage.jump_url})')
 
-    data = {
-        "username": username,
-        "embeds": [embed.to_dict()]
-    }
-    requests.post(logWebhook, json=data)
+    
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url(logWebhook, adapter=discord.AsyncWebhookAdapter(session))
+        await webhook.send(embed=embed, username=username)

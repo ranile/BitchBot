@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord, random, itertools, re, string, asyncio, requests
+import discord, random, itertools, re, string, asyncio, aiohttp
 from keys import logWebhook
 from util import funs # pylint: disable=no-name-in-module
 
@@ -64,7 +64,7 @@ class Miscellaneous(commands.Cog):
 
         await ctx.channel.trigger_typing()
         sentMessage = await ctx.send(message)
-        funs.log(ctx, 'Say', message, sentMessage)
+        await funs.log(ctx, 'Say', message, sentMessage)
         await ctx.message.delete(delay = 5)
 
     @commands.command(aliases=["sendembed", "embed"])
@@ -94,11 +94,10 @@ class Miscellaneous(commands.Cog):
         embed.timestamp = ctx.message.created_at
         embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar_url)
         embed.add_field(name = 'Message', value = f'[Jump To Message]({sentMessage.jump_url})', inline= False)
-        data = {
-            "username": "say embed",
-            "embeds": [embed.to_dict()]
-        }
-        requests.post(logWebhook, json=data)
+        
+        async with aiohttp.ClientSession() as session:
+            webhook = discord.Webhook.from_url(logWebhook, adapter=discord.AsyncWebhookAdapter(session))
+            await webhook.send(embed=embed, username='sayembed')
 
     @commands.command(aliases=["kayliesman"])
     @funs.cause_check()
@@ -141,7 +140,7 @@ class Miscellaneous(commands.Cog):
                     await msg.add_reaction(self.emoji_chars[emoji])
                 sent.append(i)
         
-        funs.log(ctx, 'react', text, ctx.message, ''.join(sent))
+        await funs.log(ctx, 'react', text, ctx.message, ''.join(sent))
 
     @commands.command()
     async def totogglecase(self, ctx, *, msg):
@@ -154,7 +153,7 @@ class Miscellaneous(commands.Cog):
             out += message[i].lower() if (i%2 == 0) else message[i].upper()
         
         sentMessage = await ctx.send(out)
-        funs.log(ctx, 'toggle case', msg, sentMessage, out)
+        await funs.log(ctx, 'toggle case', msg, sentMessage, out)
         await ctx.message.delete(delay = 5)
     
     @commands.command(aliases=["yell"])
@@ -164,7 +163,7 @@ class Miscellaneous(commands.Cog):
         """
         out = str(msg).upper()
         sentMessage = await ctx.send(out)
-        funs.log(ctx, 'touppercase', msg, sentMessage, out)
+        await funs.log(ctx, 'touppercase', msg, sentMessage, out)
         await ctx.message.delete()
     
     @commands.command(aliases=["wide"])
@@ -177,7 +176,7 @@ class Miscellaneous(commands.Cog):
         between = spaces * ' '
         out = between.join(list(str(msg)))
         sentMessage = await ctx.send(out)
-        funs.log(ctx, 'addspaces', msg, sentMessage, out)
+        await funs.log(ctx, 'addspaces', msg, sentMessage, out)
         await ctx.message.delete(delay = 5)
 
     @commands.command()
@@ -207,7 +206,7 @@ class Miscellaneous(commands.Cog):
         
         out = ' '.join(msgBack.split())
         sentMessage = await ctx.send(out)
-        funs.log(ctx, 'flip', msg, sentMessage, out)
+        await funs.log(ctx, 'flip', msg, sentMessage, out)
         await ctx.message.delete(delay = 5)
 
     @commands.command(aliases=["rick", "rickroll"])
