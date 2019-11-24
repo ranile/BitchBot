@@ -1,6 +1,6 @@
 import discord, random, re, inspect
 from discord.ext import commands
-from util import funs
+from util import funs # pylint: disable=no-name-in-module
 # from keys import bot as BOT_TOKEN
 
 import os
@@ -9,7 +9,7 @@ BOT_TOKEN = os.environ['BOT_TOKEN']
 bot = commands.Bot(command_prefix=">", case_insensitive=True,
                    owner_ids=[529535587728752644])
 
-cogs = ["admin", "autorespond", "emojis", "internet", "misc"]
+cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
 
 @bot.command()
 async def reload(ctx: commands.Context, module: str):

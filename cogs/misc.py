@@ -1,5 +1,7 @@
 from discord.ext import commands
-import discord, random, itertools, re, string, asyncio
+import discord, random, itertools, re, string, asyncio, requests
+from keys import logWebhook
+from util import funs # pylint: disable=no-name-in-module
 
 RES_PATH = 'res/'
 
@@ -58,15 +60,20 @@ class Miscellaneous(commands.Cog):
 
         Args:
             message: The message you want to say
-            
         """
-        await ctx.send(message)
+
+        await ctx.channel.trigger_typing()
+        sentMessage = await ctx.send(message)
+        funs.log(ctx, 'Say', message, sentMessage)
+        await ctx.message.delete(delay = 5)
 
     @commands.command(aliases=["sendembed", "embed"])
     async def sayembed(self, ctx, *, message):
         """
         Have the bot say something in embeds. Have fun!
         """
+        await ctx.channel.trigger_typing()
+
         embed = discord.Embed()
         splitedMessage = message.split('\n')
         for i in splitedMessage:
@@ -82,13 +89,24 @@ class Miscellaneous(commands.Cog):
         fields = [j.strip('?').split(',') for j in splitedMessage if j.startswith("?")]
         for f in fields:
             embed.add_field(name = f[0], value = f[1], inline = f[2].strip()!='false')
-        await ctx.send(embed = embed)
+        sentMessage = await ctx.send(embed = embed)
+
+        embed.timestamp = ctx.message.created_at
+        embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar_url)
+        embed.add_field(name = 'Message', value = f'[Jump To Message]({sentMessage.jump_url})', inline= False)
+        data = {
+            "username": "say embed",
+            "embeds": [embed.to_dict()]
+        }
+        requests.post(logWebhook, json=data)
 
     @commands.command(aliases=["kayliesman"])
+    @funs.cause_check()
     async def rabbitman(self, ctx):
         """
         Sends a rabbitman picture
         """
+
         files = []
         for i in range(1, 11):
             files.append(f'{RES_PATH}rabbitman{i}.jpg')
@@ -96,6 +114,7 @@ class Miscellaneous(commands.Cog):
         await ctx.channel.send(file=discord.File(files[random.randint(0,len(files)-1)]))
 
     @commands.command()
+    @funs.cause_check()
     async def baby(self, ctx):
         """
         Sends a Baby picture
@@ -107,11 +126,11 @@ class Miscellaneous(commands.Cog):
         await ctx.channel.send(file=discord.File(files[random.randint(0,len(files)-1)]))
 
     @commands.command(aliases=["addreaction"])
-    async def react(self, ctx, message, text):
+    async def react(self, ctx, msg: discord.Message, text):
         """
         Add the given reactions to a message
         """
-        msg = await ctx.channel.fetch_message(message)
+
         sent = []
         for i in text:
             if re.fullmatch(r'[a-z]', i, re.IGNORECASE):
@@ -120,7 +139,9 @@ class Miscellaneous(commands.Cog):
                     await msg.add_reaction(self.emoji_chars_alts[emoji])
                 else:
                     await msg.add_reaction(self.emoji_chars[emoji])
-                sent.append(i)  
+                sent.append(i)
+        
+        funs.log(ctx, 'react', text, ctx.message, ''.join(sent))
 
     @commands.command()
     async def totogglecase(self, ctx, *, msg):
@@ -132,27 +153,32 @@ class Miscellaneous(commands.Cog):
         for i in range(0, len(message)):
             out += message[i].lower() if (i%2 == 0) else message[i].upper()
         
-        await ctx.send(out)
-        await ctx.message.delete()
+        sentMessage = await ctx.send(out)
+        funs.log(ctx, 'toggle case', msg, sentMessage, out)
+        await ctx.message.delete(delay = 5)
     
     @commands.command(aliases=["yell"])
     async def touppercase(self, ctx, *, msg):
         """
         Convert string to toggle case
         """
-        await ctx.send(str(msg).upper())
+        out = str(msg).upper()
+        sentMessage = await ctx.send(out)
+        funs.log(ctx, 'touppercase', msg, sentMessage, out)
         await ctx.message.delete()
     
     @commands.command(aliases=["wide"])
-    async def addspaces(self, ctx, spaces: int = 3, *, msg: str):
+    async def addspaces(self, ctx, msg: str, spaces: int = 3):
         """
         Adds 3 spaces in between every character.
         If the first arg is a number, it will use that for the number of spaces instead.
         """
 
         between = spaces * ' '
-        await ctx.send(between.join(list(str(msg))))
-        await ctx.message.delete()
+        out = between.join(list(str(msg)))
+        sentMessage = await ctx.send(out)
+        funs.log(ctx, 'addspaces', msg, sentMessage, out)
+        await ctx.message.delete(delay = 5)
 
     @commands.command()
     async def flip(self, ctx, *, msg):
@@ -178,9 +204,11 @@ class Miscellaneous(commands.Cog):
                 except ValueError:
                     msgBack += ' '
                     continue
-
-        await ctx.send(' '.join(msgBack.split()))
-        await ctx.message.delete()
+        
+        out = ' '.join(msgBack.split())
+        sentMessage = await ctx.send(out)
+        funs.log(ctx, 'flip', msg, sentMessage, out)
+        await ctx.message.delete(delay = 5)
 
     @commands.command(aliases=["rick", "rickroll"])
     async def rickroulette(self, ctx):
@@ -241,7 +269,7 @@ class Miscellaneous(commands.Cog):
             inner = ""
             for i in range(len(answers)):
                 inner += f"{letter_emote[i]} {answers[i]}\n"
-            embed = discord.Embed(title= f"**📊 {question}**", description=inner, colour=0x02389e)
+            embed = discord.Embed(title= f"**📊 {question}**", description=inner, color = funs.random_discord_color())
             msg = await ctx.send(embed=embed)
             for i in range(len(answers)):
                 await msg.add_reaction(letter_emote[i])
