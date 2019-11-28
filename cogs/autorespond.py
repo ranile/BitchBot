@@ -23,8 +23,9 @@ THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 rabbits = [THE_RABBIT, THE_RABBIT_V2]
 THE_CAUSE = 505655510263922700
+immune_to_rabbit = [529535587728752644, 453068315858960395]
 
-ignoreAutorespond = set()
+ignoreAutorespond = {529349973998043146}
 
 def chance(val):
     return random.randint(0, 4) > val
@@ -48,16 +49,20 @@ def fuzzy_rabbit_check(msg, ratioCheck):
 class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.rabbitRatio = 85
 
         self.epic_emojis = requests.get(f'{functionsUrl}/emojis/epic').json()
 
         self.quotes_channels = requests.get(f'{functionsUrl}/counters/channels').json()
         print(self.quotes_channels)
 
-        self.counters = requests.get(f'{functionsUrl}/counters').json()        
+        self.counters = requests.get(f'{functionsUrl}/counters').json()
         print(self.counters)
 
+        # Rabbit stuff
+        self.rabbitRatio = 85
+        self.isRabbitOnCooldown = False
+        self.rabbitCooldownTime = 60
+        self.rabbitAlreadySummoned = []
 
     @commands.command()
     async def ping(self, ctx):
@@ -123,7 +128,7 @@ class AutoresponderCounter(commands.Cog):
 
                 channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
                 rabbit = random.choice(rabbits)
-                await channel.send(f"{ctx.author.display_name} called the rabbit {rabbit}, the Kaylie's man.\n{counter} count: {self.counters[counter]}")
+                await channel.send(f"{ctx.author.display_name} called the rabbit {rabbit}, Kaylie's man.\n{counter} count: {self.counters[counter]}")
                 await ctx.add_reaction(rabbit)
                 return
 
@@ -146,7 +151,7 @@ class AutoresponderCounter(commands.Cog):
         if user.id == self.bot.user.id:
             return
 
-        guild =reaction.message.channel.guild
+        guild = reaction.message.channel.guild
 
         if str(reaction) == "📌":
             await reaction.message.pin()
@@ -154,18 +159,31 @@ class AutoresponderCounter(commands.Cog):
             await reaction.message.channel.send(f"{user.mention} Pinned a message!")
 
         elif str(reaction) in rabbits:
-            self.counters['rabbit'] += 1
-            requests.patch(f'{functionsUrl}/counters/', json={
-                'serverId': str(guild.id),
-                'counter': 'rabbit',
-                'value': self.counters['rabbit'],
-            })
+            if reaction.message.id in self.rabbitAlreadySummoned:
+                return
 
             channel = guild.get_channel(int(self.quotes_channels[str(guild.id)]))
-            rabbit = [r for r in rabbits if r != str(reaction)][0]
-            await channel.send(f"{user.display_name} summoned the rabbit {rabbit}, the Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
-            await reaction.message.add_reaction(rabbit)
-            return
+
+            if not self.isRabbitOnCooldown:
+        
+                self.counters['rabbit'] += 1
+                requests.patch(f'{functionsUrl}/counters/', json={
+                    'serverId': str(guild.id),
+                    'counter': 'rabbit',
+                    'value': self.counters['rabbit'],
+                })
+
+                rabbit = [r for r in rabbits if r != str(reaction)][0]
+                await channel.send(f"{user.display_name} summoned the rabbit {rabbit}, the Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
+                await reaction.message.add_reaction(rabbit)
+
+                self.rabbitAlreadySummoned.append(reaction.message.id)
+                self.isRabbitOnCooldown = True
+                await asyncio.sleep(self.rabbitCooldownTime)
+                self.isRabbitOnCooldown = False
+            
+            else:
+                self.counters['rabbit'] += 1
 
 
     @commands.is_owner()
@@ -209,15 +227,15 @@ class AutoresponderCounter(commands.Cog):
 
     @commands.is_owner()
     @commands.command()
-    async def setRabbitRatio(self, ctx, ratio):
-        """Set the ratio which should be achieved in order for rabbit to be matched
+    async def setRabbitCooldownTime(self, ctx, time):
+        """Set the time after which the rabbit reaction cooldown expires
 
         Args:
-            ratio: The ratio to match against
+            time: New cooldown time in seconds
         """
 
-        self.rabbitRatio = int(ratio)
-        await ctx.send(f"It'll now require `parial_raito` to be greater than or equal to {ratio} in order for rabbit counter to be incremented")
+        self.rabbitCooldownTime = int(time)
+        await ctx.send(f"The rabbit cooldown will now last {time} seconds")
 
 def setup(bot):
     bot.add_cog(AutoresponderCounter(bot))
