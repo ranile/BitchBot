@@ -82,5 +82,13 @@ class Owner(commands.Cog):
     async def run_error(self, ctx, error):
         await ctx.send(str(error))
 
+    @commands.command()
+    @commands.is_owner()
+    async def exit(self, ctx):
+        """Kill the bot
+        """
+
+        await self.bot.logout()
+
 def setup(bot):
     bot.add_cog(Owner(bot))
