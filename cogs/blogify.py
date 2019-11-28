@@ -4,9 +4,10 @@ import discord
 import requests
 import datetime
 from util.funs import random_discord_color # pylint: disable=no-name-in-module
+from keys import blogifyHost
 
 
-BLOGIFY_API_URL = 'http://172.105.28.10:8080/api'
+BLOGIFY_API_URL = f'http://{blogifyHost}:8080/api'
 BLOGIFY_URL = 'http://172.105.28.10:8080'
 
 
