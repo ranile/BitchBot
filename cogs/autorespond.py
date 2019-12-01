@@ -49,7 +49,7 @@ def fuzzy_rabbit_check(msg, ratioCheck):
 class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        print(functionsUrl)
         self.epic_emojis = requests.get(f'{functionsUrl}/emojis/epic').json()
 
         self.quotes_channels = requests.get(f'{functionsUrl}/counters/channels').json()
@@ -112,7 +112,7 @@ class AutoresponderCounter(commands.Cog):
                 await cnl.send("We're in danger")
 
         for counter in self.counters.keys():
-            rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?a( +)?b( +)?b( +)?i( +)?t(man)?)"
+            rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r ?word)"
             normalized = unicodedata.normalize('NFKD', msg).encode('ascii', 'ignore').decode('ascii')
             if (
                 (str(counter).lower() == 'rabbit') and
@@ -120,17 +120,21 @@ class AutoresponderCounter(commands.Cog):
                 cnl.guild.id == THE_CAUSE
             ):
                 self.counters[counter] += 1
-                requests.patch(f'{functionsUrl}/counters/', json={
-                    'serverId': str(cnl.guild.id),
-                    'counter': counter,
-                    'value': self.counters[counter],
-                })
+                if not self.isRabbitOnCooldown:
+                    requests.patch(f'{functionsUrl}/counters/', json={
+                        'serverId': str(cnl.guild.id),
+                        'counter': counter,
+                        'value': self.counters[counter],
+                    })
 
-                channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
-                rabbit = random.choice(rabbits)
-                await channel.send(f"{ctx.author.display_name} called the rabbit {rabbit}, Kaylie's man.\n{counter} count: {self.counters[counter]}")
-                await ctx.add_reaction(rabbit)
-                return
+                    channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
+                    rabbit = random.choice(rabbits)
+                    await channel.send(f"{ctx.author.display_name} called the rabbit {rabbit}, Kaylie's man.\n{counter} count: {self.counters[counter]}")
+                    await ctx.add_reaction(rabbit)
+                    self.isRabbitOnCooldown = True
+                    await asyncio.sleep(self.rabbitCooldownTime)
+                    self.isRabbitOnCooldown = False
+                    return
 
 
             if str(counter).lower() in msg and 'rabbit' not in msg:
@@ -174,7 +178,7 @@ class AutoresponderCounter(commands.Cog):
                 })
 
                 rabbit = [r for r in rabbits if r != str(reaction)][0]
-                await channel.send(f"{user.display_name} summoned the rabbit {rabbit}, the Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
+                await channel.send(f"{user.display_name} summoned the rabbit {rabbit}, Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
                 await reaction.message.add_reaction(rabbit)
 
                 self.rabbitAlreadySummoned.append(reaction.message.id)
