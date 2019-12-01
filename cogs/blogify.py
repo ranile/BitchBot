@@ -3,6 +3,7 @@ from discord.ext import commands
 import discord
 import requests
 import datetime
+import urllib
 from util.funs import random_discord_color # pylint: disable=no-name-in-module
 from keys import blogifyHost
 
@@ -22,50 +23,56 @@ class Blogify(commands.Cog):
         pass
 
     @blogify.group(invoke_without_command=True)
-    async def articles(self, ctx):
+    async def articles(self, ctx, uuid = None):
         """Articles group
         """
+        if uuid is None:
+            articles = requests.get(f'{BLOGIFY_API_URL}/articles?fields=title,summary').json()
 
-        articles = requests.get(f'{BLOGIFY_API_URL}/articles?fields=title,summary').json()
+            embed = discord.Embed(title="Articles", color = random_discord_color(), url = BLOGIFY_URL)
+            embed.set_footer(text = 'From Blogify')
 
-        embed = discord.Embed(title="Articles", color = random_discord_color(), url = BLOGIFY_URL)
-        embed.set_footer(text = 'From Blogify')
+            for article in articles:
+                embed.add_field(name=f'**{article["title"]}**', value = article['summary'], inline=False)
+            
+            await ctx.send(embed=embed)
 
-        for article in articles:
-            embed.add_field(name=f'**{article["title"]}**', value = article['summary'], inline=False)
-        
-        await ctx.send(embed=embed)
-    
-    @articles.group()
-    async def uuid(self, ctx, uuid):
-        """
-        """
+        else:
 
-        article = requests.get(f'{BLOGIFY_API_URL}/articles/{uuid}?fields=title,content,createdAt,createdBy').json()
+            article = requests.get(f'{BLOGIFY_API_URL}/articles/{uuid}?fields=title,content,createdAt,createdBy').json()
 
-        embed = discord.Embed(title=article['title'], color = random_discord_color(), url = f'{BLOGIFY_URL}/article/{uuid}')
+            embed = discord.Embed(title=article['title'], color = random_discord_color(), url = f'{BLOGIFY_URL}/article/{uuid}')
 
-        user = requests.get(f'{BLOGIFY_API_URL}/users/{article["createdBy"]}/?fields=username,profilePicture').json()
-        embed.set_author(name=user['username'], url= f'{BLOGIFY_URL}/profile/{user["username"]}', icon_url=f'{BLOGIFY_API_URL}/get/{user["profilePicture"]["fileId"]}')
-        
-        embed.timestamp = datetime.datetime.fromtimestamp(int(str(article['createdAt'])[:-3]))
-        embed.set_footer(text = 'From Blogify')
+            try:
+                user = requests.get(f'{BLOGIFY_API_URL}/users/{article["createdBy"]}/?fields=username,profilePicture').json()
+                embed.set_author(name=user['username'], url= f'{BLOGIFY_URL}/profile/{user["username"]}', icon_url=f'{BLOGIFY_API_URL}/get/{user["profilePicture"]["fileId"]}')
+            except KeyError:
+                pass
 
-        embed.description = article['content'] if len(article['content']) < 2000 else (article['content'][:1988] + '**snippet**')
-        
-        await ctx.send(embed=embed)
+            embed.timestamp = datetime.datetime.fromtimestamp(int(str(article['createdAt'])[:-3]))
+            embed.set_footer(text = 'From Blogify')
 
-    @articles.group()
+            embed.description = article['content'] if len(article['content']) < 2000 else (article['content'][:1988] + '**snippet**')
+            
+            await ctx.send(embed=embed)
+
+    @articles.command()
     async def search(self, ctx, query):
         """
         """
 
         articles = requests.get(f'{BLOGIFY_API_URL}/articles/search?q={query}&fields=title,summary').json()
-
-        embed = discord.Embed(title="Articles", color = random_discord_color(), url = BLOGIFY_URL)
+        
+        embed = discord.Embed(title="Articles", color = random_discord_color(), url = f'{BLOGIFY_URL}/home;search="{urllib.parse.quote(query)}"')
         embed.set_footer(text = 'From Blogify')
 
-        for article in articles:
+        if articles['found'] is None:
+            embed.description = 'No results found :('
+            await ctx.send(embed=embed)
+            return
+
+        for article in articles["hits"]:
+            article = article['document']
             embed.add_field(name=f'**{article["title"]}**', value = article['summary'], inline=False)
         
         await ctx.send(embed=embed)
@@ -76,7 +83,7 @@ class Blogify(commands.Cog):
         """
         pass
 
-    @users.group()
+    @users.command()
     async def profile(self, ctx, username):
         """
         """
@@ -87,12 +94,14 @@ class Blogify(commands.Cog):
         embed.add_field(name='**Username**', value=user['username'], inline=False)
         embed.add_field(name='**Name**', value=user['name'], inline=False)
         embed.add_field(name='**Profile**', value=f'[Go to profile]({BLOGIFY_URL}/profile/{user["username"]})', inline=False)
-        embed.set_thumbnail(url = f'{BLOGIFY_API_URL}/get/{user["profilePicture"]["fileId"]}')
+        try:
+            embed.set_thumbnail(url = f'{BLOGIFY_API_URL}/get/{user["profilePicture"]["fileId"]}')
+        except KeyError:
+            pass
 
         embed.set_footer(text = 'From Blogify')
         
         await ctx.send(embed=embed)
-
 
 
 def setup(bot):
