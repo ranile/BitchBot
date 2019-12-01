@@ -37,7 +37,7 @@ def getInfoFromDocstring(docstring):
     """
 
     splitted = docstring.split("Args:\n")
-    args = inspect.cleandoc(splitted[1].split('Returns:\n')[0]).split('\n')
+    args = inspect.cleandoc(splitted[1]).split('\n')
 
     docs = {}
     for arg in args:
