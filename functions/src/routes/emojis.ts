@@ -1,17 +1,15 @@
 import express = require("express")
-import * as admin from 'firebase-admin';
+import { EmojiService } from "../services/EmojiService"
 
 const router = express.Router()
+const service = EmojiService.getInstance()
 
 router.get("/all", async (request, response) => {
-    const emojis = (await admin.firestore().collection('emoji').get()).docs.map(it => it.data())
-    response.send(emojis)
+    response.send(await service.getAllEmojis())
 })
 
 router.get("/epic", async (request, response) => {
-    const epicEmojis = (await admin.firestore().collection('epic_emojis').get()).docs.map(it => it.data())
-    
-    response.send(epicEmojis.map(it => it.command))
+    response.send(await service.getEpicEmojis())
 })
 
 module.exports = router

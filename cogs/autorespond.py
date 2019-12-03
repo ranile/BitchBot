@@ -49,13 +49,15 @@ def fuzzy_rabbit_check(msg, ratioCheck):
 class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        config = bot.config
+        
         print(functionsUrl)
-        self.epic_emojis = requests.get(f'{functionsUrl}/emojis/epic').json()
+        self.epic_emojis = config['epicEmojis']
 
-        self.quotes_channels = requests.get(f'{functionsUrl}/counters/channels').json()
+        self.quotes_channels = config['counterChannels']
         print(self.quotes_channels)
 
-        self.counters = requests.get(f'{functionsUrl}/counters').json()
+        self.counters = config['counters']
         print(self.counters)
 
         # Rabbit stuff

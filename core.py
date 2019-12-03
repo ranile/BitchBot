@@ -1,7 +1,8 @@
 import discord, random, re, inspect
 from discord.ext import commands
-from keys import bot as BOT_TOKEN
+from keys import bot as BOT_TOKEN, functionsUrl
 from util import HelpCommand
+import aiohttp
 
 bot = commands.Bot(command_prefix=">", case_insensitive=True,
                    owner_ids=[529535587728752644])
@@ -31,6 +32,10 @@ async def on_ready():
         status=discord.Status('online'),
         activity=discord.Game(f"use {bot.command_prefix}help")
     )
+
+    async with aiohttp.ClientSession() as cs:
+        async with cs.get(f'{functionsUrl}/config') as r:
+            bot.config = await r.json()
 
     for i in cogs:
         bot.load_extension(f"cogs.{i}")

@@ -4,10 +4,6 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 
-ENV BOT_TOKEN=not pushing token
-
-ENV FUNCTIONS_LINK=https://us-central1-bitchbot-discordbot.cloudfunctions.net
-
 RUN pip install -r requirements.txt
 
 COPY . .

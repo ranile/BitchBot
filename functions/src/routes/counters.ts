@@ -1,20 +1,16 @@
 import express = require("express")
 import * as admin from 'firebase-admin';
 
-const router = express.Router()
+import { CounterService } from '../services/CountersService'
 
-router.get("/", async (request, response) => {
-    const data = (await admin.firestore().collectionGroup('counters').get()).docs.map(it => it.data())
-    const counters: any = {}
-    data.forEach(counter => {
-        counters[counter['name']] = counter['count']
-    })
-    response.send(counters)
+const router = express.Router()
+const service = CounterService.getInstance()
+router.get("/", async (_, response) => {
+    response.send(await service.getAllCounters())
 })
 
-router.get("/channels", async (request, response) => {
-    const data = (await admin.firestore().collection(`/servers`).doc('quotesChannel').get()).data()
-    response.send(data)
+router.get("/channels", async (_, response) => {
+    response.send(await service.getAllCounterChannels())
 })
 
 router.post("/channel", async (request, response) => {

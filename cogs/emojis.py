@@ -12,7 +12,7 @@ class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        json = requests.get(f'{functionsUrl}/emojis/all').json()
+        json = self.bot.config['emojis']
 
         self.animated_emojis = {}
         self.non_animated_emojis = {}

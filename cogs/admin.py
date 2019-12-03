@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord, inspect
 
 
-class Owner(commands.Cog):
+class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -88,7 +88,7 @@ class Owner(commands.Cog):
         """Kill the bot
         """
 
-        await self.bot.logout()
+        await self.bot.close()
 
 def setup(bot):
-    bot.add_cog(Owner(bot))
+    bot.add_cog(Admin(bot))
