@@ -33,7 +33,9 @@ async def on_ready():
         activity=discord.Game(f"use {bot.command_prefix}help")
     )
 
-    async with aiohttp.ClientSession() as cs:
+    bot.aiohttpClientSession = aiohttp.ClientSession()
+
+    async with bot.aiohttpClientSession as cs:
         async with cs.get(f'{functionsUrl}/config') as r:
             bot.config = await r.json()
 

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from random import randint
 import requests
-from keys import logWebhook
+from keys import logWebhook, rabbitWebhook
 import aiohttp
 import inspect
 import re
@@ -85,3 +85,10 @@ async def log(ctx, username, msg, sentMessage, out = None):
     async with aiohttp.ClientSession() as session:
         webhook = discord.Webhook.from_url(logWebhook, adapter=discord.AsyncWebhookAdapter(session))
         await webhook.send(embed=embed, username=username)
+
+async def sendRabbitCounterUpdate(msg):
+    pfp = 'https://raw.githubusercontent.com/hamza1311/BitchBot/master/res/rabbitman2.jpg'
+
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(session))
+        await webhook.send(msg, username='Rabbit', avatar_url=pfp)
