@@ -2,10 +2,12 @@ import discord
 from discord.ext import commands
 from random import randint
 import requests
-from keys import logWebhook, rabbitWebhook
+from keys import logWebhook, rabbitWebhook, moritvatorWebhook
 import aiohttp
 import inspect
 import re
+import asyncio
+import datetime
 
 def random_discord_color():
     return discord.Color(value=randint(0, 16777215))
@@ -92,3 +94,13 @@ async def sendRabbitCounterUpdate(msg):
     async with aiohttp.ClientSession() as session:
         webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(session))
         await webhook.send(msg, username='Rabbit', avatar_url=pfp)
+
+async def motivate():
+    print('called')
+    timeTillFreedom = datetime.datetime(year=2019,month=12, day=20, hour=12) - datetime.datetime.now()
+
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url(moritvatorWebhook, adapter=discord.AsyncWebhookAdapter(session))        
+        await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')
+        await asyncio.sleep((24 - (datetime.datetime.utcnow().hour + 5)) * 60 * 60)
+        await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')

@@ -1,7 +1,7 @@
 import discord, random, re, inspect
 from discord.ext import commands
 from keys import bot as BOT_TOKEN, functionsUrl
-from util import HelpCommand
+from util import HelpCommand, funs
 import aiohttp
 
 bot = commands.Bot(command_prefix=">", case_insensitive=True,
@@ -41,5 +41,7 @@ async def on_ready():
 
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
+
+bot.loop.create_task(funs.motivate(), name="Motivator")
 
 bot.run(BOT_TOKEN)
