@@ -1,2 +1,3 @@
 wikipedia==1.4.0
 git+https://github.com/Rapptz/discord.py
+fuzzywuzzy

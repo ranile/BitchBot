@@ -1,109 +1,41 @@
 import * as functions from 'firebase-functions';
+import express = require("express")
+import bodyParser = require("body-parser")
 import * as admin from 'firebase-admin';
-const serviceAccount = require('../bitchbot-discordbot-firebase-adminsdk-hyo1e-bfd6127782.json');
+import { EmojiService } from './services/EmojiService';
+import { CounterService } from './services/CountersService';
 
-admin.initializeApp({
-    // credential: admin.credential.applicationDefault(),
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://bitchbot-discordbot.firebaseio.com"
-})
+const app = express()
+admin.initializeApp()
 
+// const serviceAccount = require('../bitchbot-discordbot-firebase-adminsdk-hyo1e-bfd6127782.json');
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: "https://bitchbot-discordbot.firebaseio.com"
+// })
 
-export const allEmojis = functions.https.onRequest(async (request, response) => {
-    const data = await admin.firestore().collection('emoji').get()
-    const list = data.docs
-    const emojis = list.map(it => it.data())
-    response.send(emojis)
-})
+app
+    .use(bodyParser.json())
+    .use(bodyParser.urlencoded({ extended: false }))
+    .use("/counters", require("./routes/counters"))
+    .use("/emojis", require("./routes/emojis"))
 
-export const saveUserInfo = functions.https.onRequest(async (request, response) => {
-    const userInfo = request.body
-    try {
-        await admin.firestore().collection(`servers/${userInfo.serverId}/users`).doc(userInfo.id).set(userInfo)
-        // await admin.firestore().collection('users').doc(userInfo.id).set(userInfo)
-        response.send('OK')
-    } catch (error) {
-        response.send('error')
+const emojiService = EmojiService.getInstance()
+const counterService = CounterService.getInstance()
+
+app.get('/config', async (req, res) => {
+    const config = {
+        emojis: await emojiService.getAllEmojis(),
+        epicEmojis: await emojiService.getEpicEmojis(),
+        counterChannels: await counterService.getAllCounterChannels(),
+        counters: await counterService.getAllCounters()
     }
+
+    res.send(config)
 })
 
+const api = functions.https.onRequest(app)
 
-export const getUserInfo = functions.https.onRequest(async (request, response) => {
-    const userid = request.query.id
-    const serverId = request.query.server_id
-
-    try {
-        const snapshot = await admin.firestore().collection(`servers/${serverId}/users`).doc(userid).get()
-        // const snapshot = await admin.firestore().collection('users').doc(userid).get()
-        const data = snapshot.data()
-        response.send(data)
-    } catch (error) {
-        response.send(error)
-    }
-})
-
-export const epicEmojis = functions.https.onRequest(async (request, response) => {
-    const emojis = await admin.firestore().collection('epic_emojis').get()
-    const list = emojis.docs.map(it => it.data())
-    response.send(list)
-})
-
-export const roles = functions.https.onRequest(async (request, response) => {
-    const serverId = request.query.id
-    console.log(`serverId -> ${serverId}`)
-    try {
-        const snapshot = await admin.firestore().collection(`servers/${serverId}/roles`).get()
-        const data = snapshot.docs.map(it => it.data())
-        console.log(`data -> ${data}`)
-        response.send(data)
-    } catch (error) {
-        console.log(error)
-        response.send(error)
-    }
-})
-
-export const getRoleIdForAssignment = functions.https.onRequest(async (request, response) => {
-    const roleInfo = request.query
-    try {
-        const snapshot = await admin.firestore().collection(`servers/${roleInfo.server_id}/roles`).doc(roleInfo.role_name).get()
-        const role = snapshot.data()
-        response.send(role)
-    } catch (error) {
-        response.send(error)
-    }
-    
-})
-
-export const warnings = functions.https.onRequest(async (request, response) => {
-    const warningInfo = request.query
-    console.log(warningInfo.toString())
-    try {
-        admin.firestore()
-            .collection(`servers/${warningInfo.server_id}/warnings`)
-            .where('user_id', '==', warningInfo.user_id)
-            .get()
-            .then(snapshot => {
-                const docs = snapshot.docs.map(it => it.data())
-                console.log(docs)
-                response.send(docs)
-            })
-        
-    } catch (error) {
-        response.send(error)
-    }
-    
-})
-
-export const warnUser = functions.https.onRequest(async (request, response) => {
-    const warningInfo = request.body
-    try {
-        const doc = await admin.firestore()
-            .collection(`servers/${warningInfo.server_id}/warnings`)
-            .add(warningInfo)
-
-        response.send(doc)
-        
-    } catch (error) {
-        response.send(error)
-    }
-})
+module.exports = {
+    api,
+}

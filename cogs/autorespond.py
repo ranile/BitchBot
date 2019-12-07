@@ -1,17 +1,9 @@
-from discord.ext import commands
-import discord
-import re
-import random
-import requests
-import asyncio
-import os
+from discord.ext import commands, tasks
+from keys import functionsUrl
+import discord, re, random, requests, asyncio, unicodedata
+from fuzzywuzzy import fuzz
+from util import funs
 
-EPIC_EMOJIS_LINK = os.environ['EPIC_EMOJIS_LINK']
-
-
-rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
-
-haiku_bot = 372175794895585280
 
 seals = """What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of 
 my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 
@@ -28,51 +20,59 @@ your little "clever" comment was about to bring down upon you, maybe you would h
 couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will 
 drown in it. You're fucking dead, kiddo. """
 
-def get_temp_if_valid(msg: str):
-    match = re.search(r'(-?\d+\.?\d*) ?°?(c|celsius|f|fahrenheit)', msg, re.IGNORECASE)
+THE_RABBIT = '<:rabbitman:593375171880943636>'
+THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
+rabbits = [THE_RABBIT, THE_RABBIT_V2]
+THE_CAUSE = 505655510263922700
+immune_to_rabbit = [529535587728752644, 453068315858960395]
+
+ignoreAutorespond = {529349973998043146}
+
+def chance(val):
+    return random.randint(0, 4) > val
+
+def isInAutorespondIgnore(message):
+    return message.channel.guild.id in ignoreAutorespond
+
+def fuzzy_rabbit_check(msg, ratioCheck):
+    words = msg.split()
+    for word in words:
+        if not word.startswith("r") or word == 'r':
+            continue
+        
+        ratio = fuzz.partial_ratio(word.lower(), 'rabbit')
+        if ratio >= ratioCheck:
+            return True
     
-    if match:
-        temp = match.group(1)
-        unit_match  = re.search(r'(c|celsius|f|fahrenheit)', match.group(2), re.IGNORECASE)
+    return False
 
-        if unit_match:
-            unit = unit_match.group(1)
-        else:
-            unit = re.search(r'(c|celsius|f|c)', match.group(3), re.IGNORECASE).group(1)
 
-        if re.search(r'(c|celsius)', unit, re.IGNORECASE):
-            result = {
-                'temp': temp,
-                'unit': 'C'
-            }
-        elif re.search(r'(f|fahrenheit)', unit, re.IGNORECASE):
-            result = {
-                'temp': temp,
-                'unit': 'F'
-            }
-    return result
-
-def c_to_f(c: float) -> float:
-    return (c * 9/5) + 32
-
-def f_to_c(f: float) -> float:
-    return (f - 32) * (5/9)
-
-class Autoresponder(commands.Cog):
+class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        req = requests.get(EPIC_EMOJIS_LINK)
-        data = req.json()
-        self.epic_emojis = []
-        for i in data:
-            self.epic_emojis.append(i['command'])
+        config = bot.config
+        
+        print(functionsUrl)
+        self.epic_emojis = config['epicEmojis']
 
+        self.quotes_channels = config['counterChannels']
+        print(self.quotes_channels)
+
+        self.counters = config['counters']
+        print(self.counters)
+
+        # Rabbit stuff
+        self.rabbitRatio = 85
+        self.isRabbitOnCooldown = False
+        self.rabbitCooldownTime = 60
+        self.rabbitAlreadySummoned = []
+        self.updateRabbitCounter.start()
+        self.previousRabbitCount = 0
 
     @commands.command()
     async def ping(self, ctx):
-        """
-        Ping Pong
-        """
+        """Ping Pong"""
+
         await ctx.send("Pong")
 
     @commands.Cog.listener()
@@ -82,87 +82,179 @@ class Autoresponder(commands.Cog):
 
         if ctx.author == self.bot.user:
             return
-         
-        if (re.search(r"\bepic\b", msg)) and 'not epic' not in msg:
-             emoji = random.choice(self.epic_emojis)
-             await cnl.send(emoji)
-            
-
-        elif re.fullmatch(r"\bbich\b", msg):
-            await cnl.send(random.choice(["Bich", "No u"]))
-
-        elif re.fullmatch(r"\bbruh(mius)?( moment(ium)?)?\b", msg):
-            await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
-
-        elif re.search(r"\brip\b", msg):
-            await cnl.send("Not epic")
-
-        elif re.search(r"\bnot epic\b", msg):
-            await cnl.send(random.choice(["Not epic, indeed", "rip"]))
-
-        elif re.search(r"\buh oh\b", msg):
-            await cnl.send("We're in danger")
-
-        # elif ctx.author.id == haiku_bot:
-        #     await cnl.send("Shut the fuck up HaikuBot bot shut the fuck up nobody asked you bitch ass i hate you you bad fucking bot st upid ass")
-
-        elif re.match(r"furr(y|ies) on sight!?", msg):
-            await cnl.send("TARGET DETECTED,\n\nMISSILES ENROUTE")
-
-        elif re.search(r"weea?bs?", msg):
-            if (cnl.guild.id == 505655510263922700) and (cnl.id == 535495420269559828 or cnl.id == 552961964314460181 or cnl.id == 564189039788294154):
-                return
-
-            await cnl.send("NO WEEBS")
-
-        elif re.search(r"\b69\b", ctx.clean_content):
-            await cnl.send("Ha thats the sex number")
         
-        elif re.search(r"\b420\b", ctx.clean_content):
-            await cnl.send("Ha thats the weed number")
-
-        elif re.fullmatch(r"\bsmh\b", msg):
-            await cnl.send(random.choice(["Shaking my smh", "Smh my head", "Ikr", "Shaking my head"]))
-
-        elif re.search(r"good bot", msg):
-            await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
-            
-        elif re.search(r"(bad|stfu) (bitch )?bot", msg):
-            await cnl.send(random.choice(["Rip", "Aww", "K", "You sure about that?", seals, "F", "😦"]))
+        if not isInAutorespondIgnore(ctx):
         
-        elif re.fullmatch(r"\bcreeper\b", msg):
-            await cnl.send('Aww man')
-            
-        # elif re.fullmatch(r'w(ha|u|a)t(\?+)?', msg):
-        #     if str(ctx.content).isupper():
-        #         await cnl.send("YES")
-        #     else:
-        #         await cnl.send("Yes")
-        
-        elif re.fullmatch(r'(-?\d+\.?\d*)°(c|celsius|f|fahrenheit)', msg, re.IGNORECASE):
-            temperature = get_temp_if_valid(msg)
-            if temperature['unit'] == 'F':
-                await cnl.send(f"{temperature['temp']}°{temperature['unit']} = {int(f_to_c(float(temperature['temp'])))}°C")
-            elif temperature['unit'] == 'C':
-                await cnl.send(f"{temperature['temp']}°{temperature['unit']} = {int(c_to_f(float(temperature['temp'])))}°F")
+            if re.search(r"good (bitch)?bot", msg):
+                await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
+
+            elif re.search(r"(bad|stfu|fuck you) (bitch)? ?bot", msg):
+                await cnl.send(random.choice(["Rip", "K", "You sure about that?", seals, "F", "😦"]))
+
+            elif re.fullmatch(r"\bcreeper\b", msg):
+                await cnl.send('Aww man')
+
+            elif re.search(r"\b69\b", ctx.clean_content):
+                await cnl.send("Ha that's the sex number")
+
+            elif re.search(r"\b4:?20\b", ctx.clean_content):
+                await cnl.send("Ha that's the weed number")
+
+            elif (re.search(r"\be(p|b)?ic\b", msg)) and 'not epic' not in msg and chance(2):
+                emoji = random.choice(self.epic_emojis)
+                await cnl.send(emoji)
+
+            elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg) and chance(3):
+                await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
+
+            elif re.search(r"\brip\b", msg) and chance(3):
+                await cnl.send("Not epic")
+
+            elif re.search(r"\bnot epic\b", msg) and chance(3):
+                await cnl.send(random.choice(["Not epic, indeed", "rip"]))
+
+            elif re.search(r"\buh oh\b", msg) and chance(3):
+                await cnl.send("We're in danger")
+
+        for counter in self.counters.keys():
+            rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r ?word)"
+            normalized = unicodedata.normalize('NFKD', msg).encode('ascii', 'ignore').decode('ascii')
+            if (
+                (str(counter).lower() == 'rabbit') and
+                (re.search(rabbitMatch, normalized, re.IGNORECASE) or fuzzy_rabbit_check(normalized, self.rabbitRatio)) and
+                cnl.guild.id == THE_CAUSE and
+                ctx.webhook_id != 651333096829878272 # Rabbit webhook id
+            ):
+                self.counters[counter] += 1
+                if not self.isRabbitOnCooldown:
+
+                    channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
+                    rabbit = random.choice(rabbits)
+
+                    await funs.sendRabbitCounterUpdate(f"{ctx.author.display_name} called the rabbit {rabbit}, Kaylie's man.\n{counter} count: {self.counters[counter]}")
+
+                    await ctx.add_reaction(rabbit)
+                    self.isRabbitOnCooldown = True
+                    await asyncio.sleep(self.rabbitCooldownTime)
+                    self.isRabbitOnCooldown = False
+                    return
+
+
+            if str(counter).lower() in msg and 'rabbit' not in msg:
+                self.counters[counter] += 1
+                requests.patch(f'{functionsUrl}/counters/', json={
+                    'serverId': str(cnl.guild.id),
+                    'counter': counter,
+                    'value': self.counters[counter],
+                })
+
+                channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
+                await channel.send(f'Someone said {counter}.\n{counter} count: {self.counters[counter]}')
+    
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
+
+        if user.id == self.bot.user.id:
+            return
+
         if str(reaction) == "📌":
             await reaction.message.pin()
             await reaction.message.remove_reaction(reaction, user)
             await reaction.message.channel.send(f"{user.mention} Pinned a message!")
 
-    @commands.command(aliases=["rick", "rickroll"])
-    async def rickroulette(self, ctx):
-        """
-        Rick Astley = Loose = Win
-        """
-        await ctx.channel.trigger_typing()
-        await asyncio.sleep(3)
-        await ctx.send(f"Get rick rolled\n {rick}")
+        elif str(reaction) in rabbits:
+            if reaction.message.id in self.rabbitAlreadySummoned:
+                return
 
+            self.counters['rabbit'] += 1
+
+            if not self.isRabbitOnCooldown:
+
+                self.counters['rabbit'] += 1
+
+                rabbit = [r for r in rabbits if r != str(reaction)][0]
+                await funs.sendRabbitCounterUpdate(f"{user.display_name} summoned the rabbit {rabbit}, Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
+                await reaction.message.add_reaction(rabbit)
+
+                self.rabbitAlreadySummoned.append(reaction.message.id)
+                self.isRabbitOnCooldown = True
+                await asyncio.sleep(self.rabbitCooldownTime)
+                self.isRabbitOnCooldown = False
+
+
+    @commands.is_owner()
+    @commands.command()
+    async def setCountersChannel(self, ctx, channel: discord.TextChannel):
+        """
+        Set the channel to send the counter updates into for the guild
+
+        Args:
+            channel: The channel to send counter increment messages in
+        """
+
+        req = requests.post(f'{functionsUrl}/counters/channel', {
+            'guildId': str(ctx.message.guild.id),
+            'channelId': str(channel.id),
+        })
+
+        if req.status_code != 200:
+            await ctx.send('An error occured while saving')
+            return
+        
+        self.quotes_channels = requests.get(f'{functionsUrl}/counters/channels').json()        
+        
+        await ctx.send('Saved')
+
+    @commands.is_owner()
+    @commands.command()
+    async def ignoreAutorespond(self, ctx):
+        """Ignore autoresponder in current guild"""
+
+        ignoreAutorespond.add(ctx.guild.id)
+        await ctx.send(f'Ignoring {ctx.guild.name} until reload')
+
+    @commands.is_owner()
+    @commands.command()
+    async def removeIgnoreAutorespond(self, ctx):
+        """Remove current guild from autoresponder ignore"""
+
+        ignoreAutorespond.remove(ctx.guild.id)
+        await ctx.send(f'Removed autorespond ignore for {ctx.guild.name}')
+
+    @commands.is_owner()
+    @commands.command()
+    async def setRabbitCooldownTime(self, ctx, time):
+        """Set the time after which the rabbit reaction cooldown expires
+
+        Args:
+            time: New cooldown time in seconds
+        """
+
+        self.rabbitCooldownTime = int(time)
+        await ctx.send(f"The rabbit cooldown will now last {time} seconds")
+
+    @tasks.loop(seconds=3600.0)
+    async def updateRabbitCounter(self):
+        
+        if self.previousRabbitCount != self.counters['rabbit']:
+            print('in', self.previousRabbitCount, self.counters['rabbit'])
+            
+            if self.previousRabbitCount == 0:
+                
+                self.previousRabbitCount = self.counters['rabbit']
+                return
+            
+            requests.patch(f'{functionsUrl}/counters/', json={
+                'serverId': THE_CAUSE,
+                'counter': 'rabbit',
+                'value': self.counters['rabbit'],
+            })
+            self.previousRabbitCount = self.counters['rabbit']
+            
+
+    def cog_unload(self):
+        self.updateRabbitCounter.cancel()
 
 def setup(bot):
-    bot.add_cog(Autoresponder(bot))
-
+    bot.add_cog(AutoresponderCounter(bot))
