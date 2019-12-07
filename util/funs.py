@@ -96,11 +96,12 @@ async def sendRabbitCounterUpdate(msg):
         await webhook.send(msg, username='Rabbit', avatar_url=pfp)
 
 async def motivate():
-    print('called')
-    timeTillFreedom = datetime.datetime(year=2019,month=12, day=20, hour=12) - datetime.datetime.now()
+    while True:
+        print('called')
+        timeTillFreedom = datetime.datetime(year=2019,month=12, day=20, hour=12) - datetime.datetime.now()
 
-    async with aiohttp.ClientSession() as session:
-        webhook = discord.Webhook.from_url(moritvatorWebhook, adapter=discord.AsyncWebhookAdapter(session))        
-        await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')
-        await asyncio.sleep((24 - (datetime.datetime.utcnow().hour + 5)) * 60 * 60)
-        await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')
+        async with aiohttp.ClientSession() as session:
+            webhook = discord.Webhook.from_url(moritvatorWebhook, adapter=discord.AsyncWebhookAdapter(session))        
+            await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')
+            await asyncio.sleep((24 - (datetime.datetime.utcnow().hour + 5)) * 60 * 60)
+            await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')

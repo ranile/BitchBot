@@ -42,6 +42,6 @@ async def on_ready():
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
 
-bot.loop.create_task(funs.motivate(), name="Motivator")
+bot.loop.create_task(funs.motivate())
 
 bot.run(BOT_TOKEN)
