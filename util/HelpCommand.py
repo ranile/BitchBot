@@ -3,7 +3,7 @@ from discord.ext import commands
 import itertools
 from util import funs
 
-class PaginatedHelpCommand(commands.HelpCommand):
+class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
         

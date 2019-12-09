@@ -1,15 +1,25 @@
-import discord, random, re, inspect
+import asyncio
+
+import discord
+import tornado.web
 from discord.ext import commands
-from keys import bot as BOT_TOKEN, functionsUrl
+
+from database import database
+from keys import bot as BOT_TOKEN
+from routes.routes import routesList as routes
+from services.article_service import ArticleService
 from util import HelpCommand, funs
 import aiohttp
 
-bot = commands.Bot(command_prefix=">", case_insensitive=True,
-                   owner_ids=[529535587728752644])
+bot = commands.Bot(
+    command_prefix=">",
+    case_insensitive=True,
+    owner_ids=[529535587728752644],
+    help_command=HelpCommand.BloodyHelpCommand()
+)
 
-cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-
-bot.help_command = HelpCommand.PaginatedHelpCommand()
+# cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
+cogs = ["admin", "internet", "misc", "blogify"]
 
 @bot.command()
 @commands.is_owner()
@@ -35,13 +45,24 @@ async def on_ready():
 
     bot.aiohttpClientSession = aiohttp.ClientSession()
 
-    async with bot.aiohttpClientSession as cs:
-        async with cs.get(f'{functionsUrl}/config') as r:
-            bot.config = await r.json()
+    # async with bot.aiohttpClientSession as cs:
+    #     async with cs.get(f'{functionsUrl}/config') as r:
+    #         bot.config = await r.json()
 
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
 
-bot.loop.create_task(funs.motivate())
+    articles = await ArticleService().get()
+    for a in articles:
+        print(a)
 
-bot.run(BOT_TOKEN)
+
+app = tornado.web.Application([(route, handler, dict(bot=bot)) for route, handler in routes], **{
+    'debug': True
+})
+app.listen(6969)
+loop = asyncio.get_event_loop()
+# loop.create_task(funs.motivate())
+asyncio.ensure_future(database.init(), loop=loop)
+# asyncio.ensure_future(bot.start(BOT_TOKEN), loop=loop)
+loop.run_forever()
