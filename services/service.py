@@ -2,20 +2,26 @@ from abc import ABC
 
 
 class Service(ABC):
-    async def get(self, id):
+    @classmethod
+    async def get(cls, id):
         pass
 
-    async def getAll(self):
+    @classmethod
+    async def getAll(cls):
         pass
 
-    async def insert(self, res):
+    @classmethod
+    async def insert(cls, res):
         pass
 
-    async def update(self, replacement):
+    @classmethod
+    async def update(cls, replacement):
         pass
 
-    async def delete(self, id):
+    @classmethod
+    async def delete(cls, id):
         pass
 
-    async def rawQuery(self, query):
+    @classmethod
+    async def rawQuery(cls, query):
         pass

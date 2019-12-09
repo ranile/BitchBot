@@ -4,19 +4,20 @@ from resources import Emoji
 
 
 class EmojiService(services.Service):
-    def __init__(self):
-        self.connection = database.connection
-
-    async def get(self, id):
-        emoji = await self.connection.fetch("""SELECT * FROM Emojis WHERE id = $1;""", id)
+    
+    @classmethod
+    async def get(cls, id):
+        emoji = await database.connection.fetch("""SELECT * FROM Emojis WHERE id = $1;""", id)
         return Emoji.convert(emoji)
 
-    async def getAll(self):
-        emojis = await self.connection.fetch("""SELECT * FROM Emojis""")
+    @classmethod
+    async def getAll(cls):
+        emojis = await database.connection.fetch("""SELECT * FROM Emojis""")
         return Emoji.convertMany(emojis)
 
-    async def insert(self, res):
-        await self.connection.execute(
+    @classmethod
+    async def insert(cls, res):
+        await database.connection.execute(
             """INSERT INTO Emojis VALUES ($1, $2, $3, $4, $5);""",
             res.name,
             res.command,
@@ -25,11 +26,14 @@ class EmojiService(services.Service):
             res.id
         )
 
-    async def update(self, replacement):
+    @classmethod
+    async def update(cls, replacement):
         return await super().update(replacement)
 
-    async def delete(self, id):
+    @classmethod
+    async def delete(cls, id):
         return await super().delete(id)
 
-    async def rawQuery(self, query, *args):
-        return await self.connection.execute(query, args)
+    @classmethod
+    async def rawQuery(cls, query, *args):
+        return await database.connection.execute(query, args)
