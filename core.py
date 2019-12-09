@@ -1,13 +1,14 @@
 import asyncio
 
+# noinspection PyPackageRequirements
 import discord
 import tornado.web
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from database import database
 from keys import bot as BOT_TOKEN
 from routes.routes import routesList as routes
-from services.article_service import ArticleService
 from util import HelpCommand, funs
 import aiohttp
 
@@ -52,15 +53,11 @@ async def on_ready():
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
 
-    articles = await ArticleService().get()
-    for a in articles:
-        print(a)
-
 
 app = tornado.web.Application([(route, handler, dict(bot=bot)) for route, handler in routes], **{
     'debug': True
 })
-app.listen(6969)
+# app.listen(6969)
 loop = asyncio.get_event_loop()
 # loop.create_task(funs.motivate())
 asyncio.ensure_future(database.init(), loop=loop)

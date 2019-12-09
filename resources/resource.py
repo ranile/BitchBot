@@ -1,4 +1,7 @@
-class Resource:
+from abc import ABC
+
+
+class Resource(ABC):
 
     def __str__(self):
         keys = {
@@ -24,4 +27,8 @@ class Resource:
 
     @classmethod
     def convert(cls, record):
+        pass
+
+    @classmethod
+    def convertMany(cls, record):
         pass
