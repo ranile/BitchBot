@@ -19,11 +19,11 @@ class EmojiService(services.Service):
     async def insert(cls, res):
         await database.connection.execute(
             """INSERT INTO Emojis VALUES ($1, $2, $3, $4, $5);""",
+            res.id,
             res.name,
             res.command,
-            res.isAnimated,
             res.isEpic,
-            res.id
+            res.isAnimated,
         )
 
     @classmethod

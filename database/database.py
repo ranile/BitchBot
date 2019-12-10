@@ -11,11 +11,11 @@ async def connect():
 async def createTables():
     await connection.execute('''
     CREATE TABLE IF NOT EXISTS Emojis (
-        name varchar(40) NOT NULL,
-        command varchar(40) NOT NULL,
+        id bigint NOT NULL PRIMARY KEY,
+        name text NOT NULL,
+        command text NOT NULL,
         is_epic bool NOT NULL,
-        is_animated bool NOT NULL,
-        id bigint NOT NULL
+        is_animated bool NOT NULL
     );''')
 
 
