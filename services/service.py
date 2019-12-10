@@ -3,7 +3,7 @@ from abc import ABC
 
 class Service(ABC):
     @classmethod
-    async def get(cls, id):
+    async def get(cls, name, value):
         pass
 
     @classmethod
@@ -23,5 +23,9 @@ class Service(ABC):
         pass
 
     @classmethod
-    async def rawQuery(cls, query):
+    async def rawSelectQuery(cls, query, args):
+        pass
+
+    @classmethod
+    async def rawQuery(cls, query, *args):
         pass

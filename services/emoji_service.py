@@ -4,10 +4,10 @@ from resources import Emoji
 
 
 class EmojiService(services.Service):
-    
+
     @classmethod
-    async def get(cls, id):
-        emoji = await database.connection.fetch("""SELECT * FROM Emojis WHERE id = $1;""", id)
+    async def get(cls, name, value):
+        emoji = await database.connection.fetchrow(f"""SELECT * FROM Emojis WHERE {name} = $1;""", value)
         return Emoji.convert(emoji)
 
     @classmethod
@@ -35,5 +35,6 @@ class EmojiService(services.Service):
         return await super().delete(id)
 
     @classmethod
-    async def rawQuery(cls, query, *args):
-        return await database.connection.execute(query, args)
+    async def rawSelectQuery(cls, query, args):
+        fetched = await database.connection.fetch(f'''SELECT * FROM Emojis WHERE {query}''', *args)
+        return Emoji.convertMany(fetched)

@@ -9,7 +9,7 @@ from discord.ext import commands
 from database import database
 from keys import bot as BOT_TOKEN
 from routes.routes import routesList as routes
-from util import HelpCommand, funs
+from util import HelpCommand
 import aiohttp
 
 bot = commands.Bot(
@@ -20,7 +20,7 @@ bot = commands.Bot(
 )
 
 # cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-cogs = ["admin", "internet", "misc", "blogify"]
+cogs = ["admin", "emojis", "internet", "misc"]
 
 @bot.command()
 @commands.is_owner()
@@ -46,10 +46,6 @@ async def on_ready():
 
     bot.aiohttpClientSession = aiohttp.ClientSession()
 
-    # async with bot.aiohttpClientSession as cs:
-    #     async with cs.get(f'{functionsUrl}/config') as r:
-    #         bot.config = await r.json()
-
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
 
@@ -61,5 +57,5 @@ app = tornado.web.Application([(route, handler, dict(bot=bot)) for route, handle
 loop = asyncio.get_event_loop()
 # loop.create_task(funs.motivate())
 asyncio.ensure_future(database.init(), loop=loop)
-# asyncio.ensure_future(bot.start(BOT_TOKEN), loop=loop)
+asyncio.ensure_future(bot.start(BOT_TOKEN), loop=loop)
 loop.run_forever()

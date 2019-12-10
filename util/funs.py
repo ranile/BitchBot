@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from random import randint
-import requests
 from keys import logWebhook, rabbitWebhook, moritvatorWebhook
 import aiohttp
 import inspect
@@ -105,3 +104,12 @@ async def motivate():
             await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')
             await asyncio.sleep((24 - (datetime.datetime.utcnow().hour + 5)) * 60 * 60)
             await webhook.send(f'Hey <@529535587728752644>, you got {timeTillFreedom.days} days till freedom.\nPull through!!')
+
+
+def generateDollarSigns(collection):
+    dollarSigns = ''
+    for i in range(len(collection)):
+        dollarSigns += f'${i+1},'
+    dollarSigns = dollarSigns[:-1]
+
+    return dollarSigns
