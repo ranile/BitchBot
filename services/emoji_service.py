@@ -35,6 +35,6 @@ class EmojiService(services.Service):
         return await super().delete(id)
 
     @classmethod
-    async def rawSelectQuery(cls, query, args):
+    async def rawSelectQuery(cls, query, args=()):
         fetched = await database.connection.fetch(f'''SELECT * FROM Emojis WHERE {query}''', *args)
         return Emoji.convertMany(fetched)

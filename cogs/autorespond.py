@@ -2,9 +2,8 @@ import random
 import re
 import discord
 from discord.ext import commands
-from fuzzywuzzy import fuzz
 
-from keys import functionsUrl
+from services import EmojiService
 
 seals = """What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of 
 my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 
@@ -25,20 +24,23 @@ ignoreAutorespond = {529349973998043146}
 
 
 def chance(val):
-    return random.randint(0, 4) > val
+    # return random.randint(0, 4) > val
+    return True
 
 
 def isInAutorespondIgnore(message):
     return message.channel.guild.id in ignoreAutorespond
 
 
-class AutoresponderCounter(commands.Cog):
+class Autoresponder(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        config = bot.config
 
-        print(functionsUrl)
-        self.epic_emojis = config['epicEmojis']
+        self.epic_emojis = None
+        print(self.epic_emojis)
+
+    async def setup(self):
+        self.epic_emojis = await EmojiService.rawSelectQuery('''is_epic = true''')
 
     @commands.command()
     async def ping(self, ctx):
@@ -72,7 +74,7 @@ class AutoresponderCounter(commands.Cog):
                 await cnl.send("Ha that's the weed number")
 
             elif (re.search(r"\be(p|b)?ic\b", msg)) and 'not epic' not in msg and chance(2):
-                emoji = random.choice(self.epic_emojis)
+                emoji = random.choice(self.epic_emojis).command
                 await cnl.send(emoji)
 
             elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg) and chance(3):
@@ -105,4 +107,4 @@ class AutoresponderCounter(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(AutoresponderCounter(bot))
+    bot.add_cog(Autoresponder(bot))

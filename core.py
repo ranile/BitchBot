@@ -20,7 +20,7 @@ bot = commands.Bot(
 )
 
 # cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-cogs = ["admin", "counters", "emojis", "internet", "misc"]
+cogs = ["admin", "autorespond", "counters", "emojis", "internet", "misc"]
 
 
 @bot.command()
@@ -50,6 +50,8 @@ async def on_ready():
 
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
+
+    await bot.get_cog('Autoresponder').setup()
 
 
 app = tornado.web.Application([(route, handler, dict(bot=bot)) for route, handler in routes], **{

@@ -3,6 +3,7 @@ import time
 import asyncpg
 
 from resources import RabbitCounter
+# from services import EmojiService
 from services.rabbit_service import RabbitService
 
 connection = None
@@ -47,7 +48,7 @@ async def yeet():
 async def init():
     await connect()
     await createTables()
-    await yeet()
+    # await yeet()
 
 
 async def close():

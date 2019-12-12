@@ -6,8 +6,7 @@ import discord
 from discord.ext import commands
 
 from resources import RabbitCounter
-from services.rabbit_service import RabbitService
-from util import funs
+from services import RabbitService
 
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
