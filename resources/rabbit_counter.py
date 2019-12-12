@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 from resources import Resource
@@ -9,7 +10,7 @@ class RabbitCounter(Resource):
     def __init__(self, **kwargs):
         self.count = kwargs.pop('count', None)
         self.summonedBy = kwargs.pop('summonedBy')
-        self.summonedAt = kwargs.pop('summonedAt')
+        self.summonedAt = kwargs.pop('summonedAt', int(time.time()))
 
     @classmethod
     def convert(cls, record):
