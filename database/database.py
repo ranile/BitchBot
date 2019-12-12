@@ -1,4 +1,9 @@
+import time
+
 import asyncpg
+
+from resources import RabbitCounter
+from services.rabbit_service import RabbitService
 
 connection = None
 
@@ -18,10 +23,31 @@ async def createTables():
         is_animated bool NOT NULL
     );''')
 
+    await connection.execute('''
+    create table if not exists RabbitCounter
+    (
+        count serial not null primary key,
+        summoned_by bigint not null,
+        summoned_at int not null
+    );
+    ''')
+
+
+async def yeet():
+    rabbit = RabbitCounter(
+        summonedAt=int(time.time()),
+        summonedBy=453068315858960395
+    )
+    # res = await RabbitService.insert(rabbit)
+    res = [str(x) for x in await RabbitService.getAll()]
+    print(res)
+    print(type(res))
+
 
 async def init():
     await connect()
     await createTables()
+    await yeet()
 
 
 async def close():

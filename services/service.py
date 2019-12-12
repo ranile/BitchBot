@@ -27,5 +27,5 @@ class Service(ABC):
         pass
 
     @classmethod
-    async def rawQuery(cls, query, *args):
+    async def rawQuery(cls, query, args):
         pass

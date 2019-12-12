@@ -22,6 +22,7 @@ bot = commands.Bot(
 # cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
 cogs = ["admin", "emojis", "internet", "misc"]
 
+
 @bot.command()
 @commands.is_owner()
 async def reload(ctx: commands.Context, module: str):
@@ -35,10 +36,11 @@ async def reload(ctx: commands.Context, module: str):
     bot.reload_extension(f'cogs.{module}')
     await ctx.send("🔄")
 
+
 @bot.event
 async def on_ready():
     print(f"{bot.user.name} is running")
-    print("-"*len(bot.user.name + " is running"))
+    print("-" * len(bot.user.name + " is running"))
     await bot.change_presence(
         status=discord.Status('online'),
         activity=discord.Game(f"use {bot.command_prefix}help")
@@ -56,6 +58,8 @@ app = tornado.web.Application([(route, handler, dict(bot=bot)) for route, handle
 # app.listen(6969)
 loop = asyncio.get_event_loop()
 # loop.create_task(funs.motivate())
-asyncio.ensure_future(database.init(), loop=loop)
-asyncio.ensure_future(bot.start(BOT_TOKEN), loop=loop)
-loop.run_forever()
+# asyncio.ensure_future(database.init(), loop=loop)
+# asyncio.ensure_future(bot.start(BOT_TOKEN), loop=loop)
+# loop.run_forever()
+
+loop.run_until_complete(database.init())
