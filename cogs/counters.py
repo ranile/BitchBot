@@ -1,3 +1,4 @@
+import asyncio
 import re
 import unicodedata
 import random
@@ -18,6 +19,28 @@ class Counters(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        # Rabbit stuff
+        self.rabbitRatio = 85
+        self.isRabbitOnCooldown = False
+        self.rabbitCooldownTime = 10
+        self.rabbitAlreadySummoned = []
+
+    async def put_rabbit_on_cooldown(self):
+        self.isRabbitOnCooldown = True
+        await asyncio.sleep(self.rabbitCooldownTime)
+        self.isRabbitOnCooldown = False
+
+    async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
+        inserted_rabbit = await RabbitService.insert(RabbitCounter(summonedBy=message.author.id))
+
+        await message.channel.send(
+            f"{message.author.display_name} called the rabbit {rabbit}, "
+            f"Kaylie's man.\n{rabbit} count: {inserted_rabbit.count}")
+        await message.add_reaction(rabbit)
+
+        await self.rabbitAlreadySummoned.append(message.id)
+        await self.put_rabbit_on_cooldown()
+
     @commands.Cog.listener()
     async def on_message(self, message):
 
@@ -26,18 +49,20 @@ class Counters(commands.Cog):
 
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
 
-        if re.search(rabbit_match, normalized, re.IGNORECASE):
+        if re.search(rabbit_match, normalized, re.IGNORECASE) and not self.isRabbitOnCooldown:
+            await self.increment_rabbit(message)
 
-            inserted_rabbit = await RabbitService.insert(RabbitCounter(
-                summonedBy=message.author.id
-            ))
-            inserted_rabbit = RabbitCounter.convert(inserted_rabbit)
-            print(inserted_rabbit)
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
 
-            rabbit = random.choice(rabbits)
-            await message.channel.send(
-                f"{message.author.display_name} called the rabbit {rabbit}, "
-                f"Kaylie's man.\n{rabbit} count: {inserted_rabbit.count}")
+        if user.id == self.bot.user.id:
+            return
+
+        if str(reaction) in rabbits:
+            if reaction.message.id in self.rabbitAlreadySummoned or self.isRabbitOnCooldown:
+                return
+
+            await self.increment_rabbit(reaction.message, rabbit=[r for r in rabbits if r != str(reaction)][0])
 
 
 def setup(bot):

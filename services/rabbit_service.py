@@ -16,11 +16,12 @@ class RabbitService(Service):
 
     @classmethod
     async def insert(cls, res):
-        return await database.connection.fetchrow(
+        inserted =  await database.connection.fetchrow(
             """insert into RabbitCounter (summoned_at, summoned_by) values ($1, $2) returning *;""",
             res.summonedAt,
             res.summonedBy,
         )
+        return RabbitCounter.convert(inserted)
 
     @classmethod
     async def update(cls, replacement):
