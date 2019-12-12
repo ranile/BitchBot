@@ -1,9 +1,10 @@
-from discord.ext import commands, tasks
-from keys import functionsUrl
-import discord, re, random, requests, asyncio, unicodedata
+import random
+import re
+import discord
+from discord.ext import commands
 from fuzzywuzzy import fuzz
-from util import funs
 
+from keys import functionsUrl
 
 seals = """What the fuck did you just fucking say about me, you little bitch? I'll have you know I graduated top of 
 my class in the Navy Seals, and I've been involved in numerous secret raids on Al-Quaeda, and I have over 300 
@@ -20,54 +21,24 @@ your little "clever" comment was about to bring down upon you, maybe you would h
 couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will 
 drown in it. You're fucking dead, kiddo. """
 
-THE_RABBIT = '<:rabbitman:593375171880943636>'
-THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
-rabbits = [THE_RABBIT, THE_RABBIT_V2]
-THE_CAUSE = 505655510263922700
-immune_to_rabbit = [529535587728752644, 453068315858960395]
-
 ignoreAutorespond = {529349973998043146}
+
 
 def chance(val):
     return random.randint(0, 4) > val
 
+
 def isInAutorespondIgnore(message):
     return message.channel.guild.id in ignoreAutorespond
-
-def fuzzy_rabbit_check(msg, ratioCheck):
-    words = msg.split()
-    for word in words:
-        if not word.startswith("r") or word == 'r':
-            continue
-        
-        ratio = fuzz.partial_ratio(word.lower(), 'rabbit')
-        if ratio >= ratioCheck:
-            return True
-    
-    return False
 
 
 class AutoresponderCounter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         config = bot.config
-        
+
         print(functionsUrl)
         self.epic_emojis = config['epicEmojis']
-
-        self.quotes_channels = config['counterChannels']
-        print(self.quotes_channels)
-
-        self.counters = config['counters']
-        print(self.counters)
-
-        # Rabbit stuff
-        self.rabbitRatio = 85
-        self.isRabbitOnCooldown = False
-        self.rabbitCooldownTime = 60
-        self.rabbitAlreadySummoned = []
-        self.updateRabbitCounter.start()
-        self.previousRabbitCount = 0
 
     @commands.command()
     async def ping(self, ctx):
@@ -82,9 +53,9 @@ class AutoresponderCounter(commands.Cog):
 
         if ctx.author == self.bot.user:
             return
-        
+
         if not isInAutorespondIgnore(ctx):
-        
+
             if re.search(r"good (bitch)?bot", msg):
                 await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
 
@@ -116,96 +87,6 @@ class AutoresponderCounter(commands.Cog):
             elif re.search(r"\buh oh\b", msg) and chance(3):
                 await cnl.send("We're in danger")
 
-        for counter in self.counters.keys():
-            rabbitMatch = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r ?word)"
-            normalized = unicodedata.normalize('NFKD', msg).encode('ascii', 'ignore').decode('ascii')
-            if (
-                (str(counter).lower() == 'rabbit') and
-                (re.search(rabbitMatch, normalized, re.IGNORECASE) or fuzzy_rabbit_check(normalized, self.rabbitRatio)) and
-                cnl.guild.id == THE_CAUSE and
-                ctx.webhook_id != 651333096829878272 # Rabbit webhook id
-            ):
-                self.counters[counter] += 1
-                if not self.isRabbitOnCooldown:
-
-                    channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
-                    rabbit = random.choice(rabbits)
-
-                    await funs.sendRabbitCounterUpdate(f"{ctx.author.display_name} called the rabbit {rabbit}, Kaylie's man.\n{counter} count: {self.counters[counter]}")
-
-                    await ctx.add_reaction(rabbit)
-                    self.isRabbitOnCooldown = True
-                    await asyncio.sleep(self.rabbitCooldownTime)
-                    self.isRabbitOnCooldown = False
-                    return
-
-
-            if str(counter).lower() in msg and 'rabbit' not in msg:
-                self.counters[counter] += 1
-                requests.patch(f'{functionsUrl}/counters/', json={
-                    'serverId': str(cnl.guild.id),
-                    'counter': counter,
-                    'value': self.counters[counter],
-                })
-
-                channel = cnl.guild.get_channel(int(self.quotes_channels[str(cnl.guild.id)]))
-                await channel.send(f'Someone said {counter}.\n{counter} count: {self.counters[counter]}')
-    
-
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-
-        if user.id == self.bot.user.id:
-            return
-
-        if str(reaction) == "📌":
-            await reaction.message.pin()
-            await reaction.message.remove_reaction(reaction, user)
-            await reaction.message.channel.send(f"{user.mention} Pinned a message!")
-
-        elif str(reaction) in rabbits:
-            if reaction.message.id in self.rabbitAlreadySummoned:
-                return
-
-            self.counters['rabbit'] += 1
-
-            if not self.isRabbitOnCooldown:
-
-                self.counters['rabbit'] += 1
-
-                rabbit = [r for r in rabbits if r != str(reaction)][0]
-                await funs.sendRabbitCounterUpdate(f"{user.display_name} summoned the rabbit {rabbit}, Kaylie's man.\nRabbit count: {self.counters['rabbit']}")
-                await reaction.message.add_reaction(rabbit)
-
-                self.rabbitAlreadySummoned.append(reaction.message.id)
-                self.isRabbitOnCooldown = True
-                await asyncio.sleep(self.rabbitCooldownTime)
-                self.isRabbitOnCooldown = False
-
-
-    @commands.is_owner()
-    @commands.command()
-    async def setCountersChannel(self, ctx, channel: discord.TextChannel):
-        """
-        Set the channel to send the counter updates into for the guild
-
-        Args:
-            channel: The channel to send counter increment messages in
-        """
-
-        req = requests.post(f'{functionsUrl}/counters/channel', {
-            'guildId': str(ctx.message.guild.id),
-            'channelId': str(channel.id),
-        })
-
-        if req.status_code != 200:
-            await ctx.send('An error occured while saving')
-            return
-        
-        self.quotes_channels = requests.get(f'{functionsUrl}/counters/channels').json()        
-        
-        await ctx.send('Saved')
-
     @commands.is_owner()
     @commands.command()
     async def ignoreAutorespond(self, ctx):
@@ -222,39 +103,6 @@ class AutoresponderCounter(commands.Cog):
         ignoreAutorespond.remove(ctx.guild.id)
         await ctx.send(f'Removed autorespond ignore for {ctx.guild.name}')
 
-    @commands.is_owner()
-    @commands.command()
-    async def setRabbitCooldownTime(self, ctx, time):
-        """Set the time after which the rabbit reaction cooldown expires
-
-        Args:
-            time: New cooldown time in seconds
-        """
-
-        self.rabbitCooldownTime = int(time)
-        await ctx.send(f"The rabbit cooldown will now last {time} seconds")
-
-    @tasks.loop(seconds=3600.0)
-    async def updateRabbitCounter(self):
-        
-        if self.previousRabbitCount != self.counters['rabbit']:
-            print('in', self.previousRabbitCount, self.counters['rabbit'])
-            
-            if self.previousRabbitCount == 0:
-                
-                self.previousRabbitCount = self.counters['rabbit']
-                return
-            
-            requests.patch(f'{functionsUrl}/counters/', json={
-                'serverId': THE_CAUSE,
-                'counter': 'rabbit',
-                'value': self.counters['rabbit'],
-            })
-            self.previousRabbitCount = self.counters['rabbit']
-            
-
-    def cog_unload(self):
-        self.updateRabbitCounter.cancel()
 
 def setup(bot):
     bot.add_cog(AutoresponderCounter(bot))

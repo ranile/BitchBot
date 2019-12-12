@@ -2,7 +2,7 @@ import asyncio
 import re
 import unicodedata
 import random
-
+import discord
 from discord.ext import commands
 
 from resources import RabbitCounter
@@ -13,6 +13,7 @@ THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 rabbits = [THE_RABBIT, THE_RABBIT_V2]
 rabbit_match = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r ?word)"
+THE_CAUSE = 505655510263922700
 
 
 class Counters(commands.Cog):
@@ -63,6 +64,18 @@ class Counters(commands.Cog):
                 return
 
             await self.increment_rabbit(reaction.message, rabbit=[r for r in rabbits if r != str(reaction)][0])
+
+    @commands.is_owner()
+    @commands.command()
+    async def setCountersChannel(self, ctx, channel: discord.TextChannel):
+        """
+        Set the channel to send the counter updates into for the guild
+
+        Args:
+            channel: The channel to send counter increment messages in
+        """
+
+        await ctx.send('Saved')
 
 
 def setup(bot):

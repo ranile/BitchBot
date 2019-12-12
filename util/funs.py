@@ -1,6 +1,9 @@
 import discord
 from discord.ext import commands
 from random import randint
+
+from fuzzywuzzy import fuzz
+
 from keys import logWebhook, rabbitWebhook, moritvatorWebhook
 import aiohttp
 import inspect
@@ -113,3 +116,15 @@ def generateDollarSigns(collection):
     dollarSigns = dollarSigns[:-1]
 
     return dollarSigns
+
+def fuzzy_rabbit_check(msg, ratioCheck):
+    words = msg.split()
+    for word in words:
+        if not word.startswith("r") or word == 'r':
+            continue
+
+        ratio = fuzz.partial_ratio(word.lower(), 'rabbit')
+        if ratio >= ratioCheck:
+            return True
+
+    return False
