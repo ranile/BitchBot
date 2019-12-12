@@ -1,6 +1,6 @@
 import random
 import re
-import discord
+# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from services import EmojiService
@@ -20,22 +20,14 @@ your little "clever" comment was about to bring down upon you, maybe you would h
 couldn't, you didn't, and now you're paying the price, you goddamn idiot. I will shit fury all over you and you will 
 drown in it. You're fucking dead, kiddo. """
 
-ignoreAutorespond = {529349973998043146}
 
-
-def chance(val):
-    return random.randint(0, 4) > val
-
-
-def isInAutorespondIgnore(message):
-    return message.channel.guild.id in ignoreAutorespond
-
-
-class Autoresponder(commands.Cog):
+# noinspection PyPep8Naming,PyMethodMayBeStatic
+class AutoResponder(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
         self.epic_emojis = None
+        self.ignoreAutoRespond = {529349973998043146}
         print(self.epic_emojis)
 
     async def setup(self):
@@ -47,63 +39,67 @@ class Autoresponder(commands.Cog):
 
         await ctx.send("Pong")
 
-    @commands.Cog.listener()
-    async def on_message(self, ctx):
-        msg = ctx.content.lower()
-        cnl = ctx.channel
+    def chance(self, val):
+        return random.randint(0, 4) > val
 
-        if ctx.author == self.bot.user:
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        msg = message.content.lower()
+        cnl = message.channel
+
+        if message.author == self.bot.user:
             return
 
-        if not isInAutorespondIgnore(ctx):
+        if message.channel.guild.id in self.ignoreAutoRespond:
+            return
 
-            if re.search(r"good (bitch)?bot", msg):
-                await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
+        if re.search(r"good (bitch)?bot", msg):
+            await cnl.send(random.choice(["Dank you", "Aww", "Well you're breathtaking"]))
 
-            elif re.search(r"(bad|stfu|fuck you) (bitch)? ?bot", msg):
-                await cnl.send(random.choice(["Rip", "K", "You sure about that?", seals, "F", "😦"]))
+        elif re.search(r"(bad|stfu|fuck you) (bitch)? ?bot", msg):
+            await cnl.send(random.choice(["Rip", "K", "You sure about that?", seals, "F", "😦"]))
 
-            elif re.fullmatch(r"\bcreeper\b", msg):
-                await cnl.send('Aww man')
+        elif re.fullmatch(r"\bcreeper\b", msg):
+            await cnl.send('Aww man')
 
-            elif re.search(r"\b69\b", ctx.clean_content):
-                await cnl.send("Ha that's the sex number")
+        elif re.search(r"\b69\b", msg):
+            await cnl.send("Ha that's the sex number")
 
-            elif re.search(r"\b4:?20\b", ctx.clean_content):
-                await cnl.send("Ha that's the weed number")
+        elif re.search(r"\b4:?20\b", msg):
+            await cnl.send("Ha that's the weed number")
 
-            elif (re.search(r"\be([pb])?ic\b", msg)) and 'not epic' not in msg and chance(2):
-                emoji = random.choice(self.epic_emojis).command
-                await cnl.send(emoji)
+        elif (re.search(r"\be([pb])?ic\b", msg)) and 'not epic' not in msg and self.chance(2):
+            emoji = random.choice(self.epic_emojis).command
+            await cnl.send(emoji)
 
-            elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg) and chance(3):
-                await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
+        elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg) and self.chance(3):
+            await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
 
-            elif re.search(r"\brip\b", msg) and chance(3):
-                await cnl.send("Not epic")
+        elif re.search(r"\brip\b", msg) and self.chance(3):
+            await cnl.send("Not epic")
 
-            elif re.search(r"\bnot epic\b", msg) and chance(3):
-                await cnl.send(random.choice(["Not epic, indeed", "rip"]))
+        elif re.search(r"\bnot epic\b", msg) and self.chance(3):
+            await cnl.send(random.choice(["Not epic, indeed", "rip"]))
 
-            elif re.search(r"\buh oh\b", msg) and chance(3):
-                await cnl.send("We're in danger")
+        elif re.search(r"\buh oh\b", msg) and self.chance(3):
+            await cnl.send("We're in danger")
 
     @commands.is_owner()
     @commands.command()
-    async def ignoreAutorespond(self, ctx):
-        """Ignore autoresponder in current guild"""
+    async def ignoreAutoRespond(self, ctx):
+        """Ignore auto responder in current guild"""
 
-        ignoreAutorespond.add(ctx.guild.id)
+        self.ignoreAutoRespond.add(ctx.guild.id)
         await ctx.send(f'Ignoring {ctx.guild.name} until reload')
 
     @commands.is_owner()
     @commands.command()
-    async def removeIgnoreAutorespond(self, ctx):
-        """Remove current guild from autoresponder ignore"""
+    async def removeIgnoreAutoRespond(self, ctx):
+        """Remove current guild from auto responder ignore"""
 
-        ignoreAutorespond.remove(ctx.guild.id)
+        self.ignoreAutoRespond.remove(ctx.guild.id)
         await ctx.send(f'Removed autorespond ignore for {ctx.guild.name}')
 
 
 def setup(bot):
-    bot.add_cog(Autoresponder(bot))
+    bot.add_cog(AutoResponder(bot))
