@@ -24,8 +24,7 @@ ignoreAutorespond = {529349973998043146}
 
 
 def chance(val):
-    # return random.randint(0, 4) > val
-    return True
+    return random.randint(0, 4) > val
 
 
 def isInAutorespondIgnore(message):
@@ -73,7 +72,7 @@ class Autoresponder(commands.Cog):
             elif re.search(r"\b4:?20\b", ctx.clean_content):
                 await cnl.send("Ha that's the weed number")
 
-            elif (re.search(r"\be(p|b)?ic\b", msg)) and 'not epic' not in msg and chance(2):
+            elif (re.search(r"\be([pb])?ic\b", msg)) and 'not epic' not in msg and chance(2):
                 emoji = random.choice(self.epic_emojis).command
                 await cnl.send(emoji)
 

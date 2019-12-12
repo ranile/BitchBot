@@ -1,10 +1,11 @@
-from discord.ext import commands
 import discord
-import random
+from discord.ext import commands
+
 from services import EmojiService
 from util import funs
 
 
+# noinspection PyIncorrectDocstring
 class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -25,8 +26,8 @@ class Emojis(commands.Cog):
     async def emoji(self, ctx, *emojis):
         """Send any one of the emoji given by 'emojis' command
 
-        Args:
-            emojis: The emoji to send. This can take variable number of value. If the last value is a number, it repeats the every emoji that amount of times
+        Args: emojis: The emoji to send. This can take variable number of value. If the last value is a number,
+        it repeats the every emoji that amount of times
         """
 
         emojis = list(emojis)
@@ -36,15 +37,14 @@ class Emojis(commands.Cog):
         else:
             amount = 1
 
-        dollarSigns = funs.generateDollarSigns(emojis)
-        fetched = await EmojiService.rawSelectQuery(f'''name IN ({dollarSigns})''', emojis)
+        fetched = await EmojiService.rawSelectQuery(f'''name IN ({funs.generateDollarSigns(emojis)})''', emojis)
 
         out = ""
         for emoji in fetched:
             out += f'{emoji.command} ' * amount
 
         await ctx.send(out)
-        await ctx.message.delete(delay=2)        
+        await ctx.message.delete(delay=2)
 
     @commands.command()
     async def emojis(self, ctx):
@@ -63,18 +63,17 @@ class Emojis(commands.Cog):
         out_non_animated = ''
 
         for i in range(0, len(animated)):
-            out_animated += f'{i+ 1}. {emojis[i].name}: {animated[i].command}\n'
-        
+            out_animated += f'{i + 1}. {emojis[i].name}: {animated[i].command}\n'
+
         for i in range(0, len(non_animated)):
-            out_non_animated += f'{i+ 1}. {emojis[i].name}: {non_animated[i].command}\n'
-        
-        embed = discord.Embed(title='Available emojis')
+            out_non_animated += f'{i + 1}. {emojis[i].name}: {non_animated[i].command}\n'
+
+        embed = discord.Embed(title='Available emojis', color=funs.random_discord_color())
         embed.add_field(name='Animated:', value=out_animated if out_animated != '' else 'None', inline=False)
         embed.add_field(name='Non animated:', value=out_non_animated if out_non_animated != '' else 'None', inline=True)
         embed.set_footer(text='@hamza to add more')
-        embed.colour = discord.Color(value=random.randint(0, 16777215))  # TODO: Use the fun
-        
-        await ctx.send(embed = embed)
+
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["emoji2"])
     async def emojiembed(self, ctx, emoji):
@@ -97,4 +96,3 @@ class Emojis(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Emojis(bot))
-
