@@ -1,5 +1,6 @@
 from discord.ext import commands
-import discord, inspect
+import discord
+import inspect
 
 
 class Admin(commands.Cog):

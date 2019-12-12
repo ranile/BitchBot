@@ -1,6 +1,5 @@
 import random
 import re
-# noinspection PyPackageRequirements
 from discord.ext import commands
 
 from services import EmojiService
