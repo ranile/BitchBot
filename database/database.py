@@ -25,9 +25,10 @@ async def createTables():
     );''')
 
     await connection.execute('''
-    create table if not exists RabbitCounter
+    create table if not exists Counters
     (
         count serial not null primary key,
+        name text not null,
         summoned_by bigint not null,
         summoned_at int not null
     );
@@ -40,9 +41,13 @@ async def yeet():
         summonedBy=453068315858960395
     )
     # res = await RabbitService.insert(rabbit)
-    res = [str(x) for x in await RabbitService.getAll()]
-    print(res)
-    print(type(res))
+    # print(res)
+    # print(type(res))
+    # print('---------------------------------------')
+    [print(x) for x in await RabbitService.getAll()]
+    # res = await RabbitService.get('count', 2)
+    # print(res)
+    # print(type(res))
 
 
 async def init():
