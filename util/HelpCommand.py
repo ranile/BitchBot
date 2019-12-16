@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import itertools
-from util import funs
+from util import funs, paginator
 
 class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
@@ -58,6 +58,7 @@ class BloodyHelpCommand(commands.HelpCommand):
         entries = await self.filter_commands(bot.commands, sort=True, key=key)
 
         embed = self.generateBaseHelpEmbed()
+        data = []
 
         for cog, cmds in itertools.groupby(entries, key=key):
             cmds = sorted(cmds, key=lambda c: c.name)
@@ -69,9 +70,19 @@ class BloodyHelpCommand(commands.HelpCommand):
             if actualCog is None:
                 continue
 
-            embed = self.addCommandsToEmbed(bot, actualCog.get_commands(), actualCog.qualified_name, embed)
-                    
-        await self.context.send(embed=embed)
+            out = ''
+
+            for cmd in actualCog.get_commands():
+                try:
+                    helpStr = str(cmd.help).split('\n')[0]
+                    out += f"**{cmd.name}**:\t{helpStr}\n"
+                except:
+                    continue
+
+            data.append(paginator.EmbedField(name = actualCog.qualified_name, value = out, inline = False))
+
+        pages = paginator.Paginator(self.context, paginator.PaginatorData(data), base_embed=embed) 
+        await pages.paginate()
                 
     async def send_cog_help(self, cog):
         commands = await self.filter_commands(cog.get_commands(), sort=True)

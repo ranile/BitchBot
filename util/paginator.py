@@ -30,14 +30,13 @@ class EmbedField:
             new_embed.remove_field(i)
         
         new_embed.add_field(name = self.name, value = self.value, inline=self.inline)
-        embed.set_footer(text = 'bruh')
         footer = f'{embed.footer.text}\nPage {pages[0]} of {pages[1]}'
         new_embed.set_footer(text=footer)
         return new_embed
         
 
 class PaginatorData:
-    def __init__(self, data, is_embed):
+    def __init__(self, data, is_embed = True):
         if is_embed:
             self.data = [EmbedField.build(d) for d in data]
         else:
