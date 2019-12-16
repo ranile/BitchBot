@@ -1,6 +1,5 @@
 import asyncio
 import discord
-from discord.ext.commands import Paginator as CommandPaginator
 
 class EmbedField:
     def __init__(self, name, value, inline = True):
