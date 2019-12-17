@@ -3,37 +3,40 @@ from discord.ext import commands
 import itertools
 from util import funs, paginator
 
+
+# noinspection PyPep8Naming,PyMethodMayBeStatic,PyShadowingNames,PyBroadException
 class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
-        
+
     async def on_help_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send(str(error.original))
         else:
+            # noinspection PyUnresolvedReferences
             raise error.original
 
     def get_command_signature(self, command):
         parent = command.full_parent_name
         out = command.name
-        
+
         aliases = ''
         if len(command.aliases) > 0:
             aliases = ', '.join(command.aliases)
             out = f'[{command.name}, {aliases}]'
-        
+
         if parent:
             aliases = f" , {aliases}" if (aliases != '') else ""
             out = f'[{parent} {command.name}{aliases}]'
 
         return f'{out} {command.signature}'
 
-    def addCommandsToEmbed(self, bot, commands, cogName, embed, description = None):
-        
+    def addCommandsToEmbed(self, commands, cogName, embed, description=None):
+
         out = ''
         embed.description = description
         for cmd in commands:
-            
+
             try:
                 helpStr = str(cmd.help).split('\n')[0]
                 out += f"**{cmd.name}**:\t{helpStr}\n"
@@ -46,8 +49,8 @@ class BloodyHelpCommand(commands.HelpCommand):
         return embed
 
     def generateBaseHelpEmbed(self):
-        embed = discord.Embed(title='**You wanted help? Help is provided**', color = funs.random_discord_color())
-        embed.set_footer(text = 'Do >help command/group name for information about it')
+        embed = discord.Embed(title='**You wanted help? Help is provided**', color=funs.random_discord_color())
+        embed.set_footer(text='Do >help command/group name for information about it')
         return embed
 
     async def send_bot_help(self, mapping):
@@ -63,9 +66,9 @@ class BloodyHelpCommand(commands.HelpCommand):
             cmds = sorted(cmds, key=lambda c: c.name)
             if len(cmds) == 0:
                 continue
-            
+
             actualCog = bot.get_cog(cog)
-        
+
             if actualCog is None:
                 continue
 
@@ -82,7 +85,7 @@ class BloodyHelpCommand(commands.HelpCommand):
 
         pages = paginator.Paginator(self.context, data)
         await pages.paginate()
-                
+
     async def send_cog_help(self, cog):
         commands = await self.filter_commands(cog.get_commands(), sort=True)
         data = []
@@ -90,7 +93,7 @@ class BloodyHelpCommand(commands.HelpCommand):
             embed = self.generateBaseHelpEmbed()
             embed.title += f'\n {cog.qualified_name} Commands'
             try:
-                embed.add_field(name = f'**{cmd.name}**', value=cmd.help)
+                embed.add_field(name=f'**{cmd.name}**', value=cmd.help)
             except:
                 continue
             finally:
@@ -99,7 +102,7 @@ class BloodyHelpCommand(commands.HelpCommand):
         await paginator.Paginator(self.context, data).paginate()
 
     def formatCommandEmbed(self, embed, command):
-        embed.add_field(name = 'Format', value = self.get_command_signature(command), inline=False)
+        embed.add_field(name='Format', value=self.get_command_signature(command), inline=False)
 
         try:
             commandHelp = funs.getInfoFromDocstring(command.help)
@@ -113,10 +116,10 @@ class BloodyHelpCommand(commands.HelpCommand):
             argsString = ''
 
         if argsString != "":
-            embed.add_field(name = f'Parameters', value = argsString, inline=False)
+            embed.add_field(name=f'Parameters', value=argsString, inline=False)
         elif argsString == "" and list(command.clean_params):
-            embed.add_field(name = f'Parameters', value = 'The docs are incomplete', inline=False)
-        
+            embed.add_field(name=f'Parameters', value='The docs are incomplete', inline=False)
+
         return embed
 
     async def send_command_help(self, command):
@@ -130,9 +133,8 @@ class BloodyHelpCommand(commands.HelpCommand):
             return await self.send_command_help(group)
 
         subcommands = await self.filter_commands(subcommands, sort=True)
-        
+
         embed = self.addCommandsToEmbed(
-            self.context.bot,
             subcommands,
             group.qualified_name,
             self.generateBaseHelpEmbed(),
@@ -143,5 +145,4 @@ class BloodyHelpCommand(commands.HelpCommand):
             if subcommand.invoke_without_command:
                 pass
 
-        await self.context.send(embed = embed)
-
+        await self.context.send(embed=embed)
