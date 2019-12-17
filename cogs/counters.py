@@ -7,12 +7,14 @@ from discord.ext import commands
 
 from resources import RabbitCounter
 from services import RabbitService
+from util import funs
 
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 rabbits = [THE_RABBIT, THE_RABBIT_V2]
 rabbit_match = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r ?word)"
 THE_CAUSE = 505655510263922700
+RABBIT_WEBHOOK = 651333096829878272
 
 
 class Counters(commands.Cog):
@@ -33,12 +35,12 @@ class Counters(commands.Cog):
     async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
         inserted_rabbit = await RabbitService.insert(RabbitCounter(summonedBy=message.author.id))
 
-        await message.channel.send(
+        await funs.sendRabbitCounterUpdate(
             f"{message.author.display_name} called the rabbit {rabbit}, "
-            f"Kaylie's man.\n{rabbit} count: {inserted_rabbit.count}")
+            f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
         await message.add_reaction(rabbit)
 
-        await self.rabbitAlreadySummoned.append(message.id)
+        self.rabbitAlreadySummoned.append(message.id)
         await self.put_rabbit_on_cooldown()
 
     @commands.Cog.listener()
@@ -49,7 +51,11 @@ class Counters(commands.Cog):
 
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
 
-        if re.search(rabbit_match, normalized, re.IGNORECASE) and not self.isRabbitOnCooldown:
+        if (re.search(rabbit_match, normalized, re.IGNORECASE) and
+            not self.isRabbitOnCooldown and
+            message.guild.id == THE_CAUSE and
+            message.webhook_id != RABBIT_WEBHOOK
+        ):
             await self.increment_rabbit(message)
 
     @commands.Cog.listener()
