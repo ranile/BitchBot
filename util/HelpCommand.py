@@ -39,7 +39,7 @@ class BloodyHelpCommand(commands.HelpCommand):
                 out += f"**{cmd.name}**:\t{helpStr}\n"
             except:
                 continue
-            
+
         if out:
             embed.add_field(name=f'**{cogName}**', value=out, inline=False)
 
@@ -57,7 +57,6 @@ class BloodyHelpCommand(commands.HelpCommand):
         bot = self.context.bot
         entries = await self.filter_commands(bot.commands, sort=True, key=key)
 
-        embed = self.generateBaseHelpEmbed()
         data = []
 
         for cog, cmds in itertools.groupby(entries, key=key):
@@ -70,25 +69,34 @@ class BloodyHelpCommand(commands.HelpCommand):
             if actualCog is None:
                 continue
 
-            out = ''
-
+            embed = self.generateBaseHelpEmbed()
+            embed.title += f'\n{actualCog.qualified_name} Commands'
+            embed.description = actualCog.description
             for cmd in actualCog.get_commands():
                 try:
-                    helpStr = str(cmd.help).split('\n')[0]
-                    out += f"**{cmd.name}**:\t{helpStr}\n"
+                    embed.add_field(name=f'**{cmd.name}**', value=str(cmd.help).split('\n')[0], inline=False)
                 except:
                     continue
 
-            data.append(paginator.EmbedField(name = actualCog.qualified_name, value = out, inline = False))
+            data.append(embed)
 
-        pages = paginator.Paginator(self.context, paginator.PaginatorData(data), base_embed=embed) 
+        pages = paginator.Paginator(self.context, data)
         await pages.paginate()
                 
     async def send_cog_help(self, cog):
         commands = await self.filter_commands(cog.get_commands(), sort=True)
-        embed = self.generateBaseHelpEmbed()
-        embed = self.addCommandsToEmbed(self.context.bot, commands, f'{cog.qualified_name} Commands', embed, cog.description)
-        await self.context.send(embed=embed)
+        data = []
+        for cmd in commands:
+            embed = self.generateBaseHelpEmbed()
+            embed.title += f'\n {cog.qualified_name} Commands'
+            try:
+                embed.add_field(name = f'**{cmd.name}**', value=cmd.help)
+            except:
+                continue
+            finally:
+                data.append(embed)
+
+        await paginator.Paginator(self.context, data).paginate()
 
     def formatCommandEmbed(self, embed, command):
         embed.add_field(name = 'Format', value = self.get_command_signature(command), inline=False)
