@@ -1,8 +1,16 @@
 import discord
 from discord.ext import commands
 
+from database import database
+from resources import Emoji
 from services import EmojiService
-from util import funs
+from util import funs, paginator
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 # noinspection PyIncorrectDocstring
@@ -50,30 +58,24 @@ class Emojis(commands.Cog):
     async def emojis(self, ctx):
         """Shows the emojis that can be sent by 'emoji' command"""
 
-        emojis = await EmojiService.getAll()
+        fetched_emojis = await EmojiService.getAll()
 
-        print([str(x) for x in emojis])
+        chunked_emojis = list(chunks(fetched_emojis, 20))
+        count = 1
+        data = []
+        for emojis in chunked_emojis:
+            embed = discord.Embed(title='Available emojis', color=funs.random_discord_color())
+            embed.set_footer(text='@hamza to add more')
+            out = []
+            for emoji in emojis:
+                out.append(f'{count}. {emoji.name} \t{emoji.command}')
+                count += 1
 
-        animated = [emoji for emoji in emojis if emoji.isAnimated]
-        non_animated = [emoji for emoji in emojis if not emoji.isAnimated]
-        print([str(x) for x in animated])
-        print([str(x) for x in non_animated])
-        print('-------------------')
-        out_animated = ''
-        out_non_animated = ''
+            embed.description = '\n'.join(out)
+            data.append(embed)
 
-        for i in range(0, len(animated)):
-            out_animated += f'{i + 1}. {emojis[i].name}: {animated[i].command}\n'
-
-        for i in range(0, len(non_animated)):
-            out_non_animated += f'{i + 1}. {emojis[i].name}: {non_animated[i].command}\n'
-
-        embed = discord.Embed(title='Available emojis', color=funs.random_discord_color())
-        embed.add_field(name='Animated:', value=out_animated if out_animated != '' else 'None', inline=False)
-        embed.add_field(name='Non animated:', value=out_non_animated if out_non_animated != '' else 'None', inline=True)
-        embed.set_footer(text='@hamza to add more')
-
-        await ctx.send(embed=embed)
+        pages = paginator.Paginator(ctx, data)
+        await pages.paginate()
 
     @commands.command(aliases=["emoji2"])
     async def emojiembed(self, ctx, emoji):
@@ -93,6 +95,32 @@ class Emojis(commands.Cog):
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=2)
 
+    @commands.command()
+    async def update_emojis(self, ctx):
+        await database.connection.execute('''drop table if exists emojis''')
+        await database.connection.execute('''
+        CREATE TABLE IF NOT EXISTS Emojis (
+            id bigint NOT NULL PRIMARY KEY,
+            name text NOT NULL,
+            command text NOT NULL,
+            is_epic bool NOT NULL,
+            is_animated bool NOT NULL
+        );''')
+
+        count = 0
+        for emoji in self.bot.emojis[20:]:
+            to_be_inserted = Emoji(
+                name=emoji.name,
+                command=str(emoji),
+                isAnimated=emoji.animated,
+                isEpic=False,
+                id=emoji.id
+            )
+
+            await EmojiService.insert(to_be_inserted)
+            count += 1
+
+        await ctx.send(f'Added {count} emojis')
 
 def setup(bot):
     bot.add_cog(Emojis(bot))
