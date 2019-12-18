@@ -5,13 +5,15 @@ import asyncpg
 from resources import RabbitCounter
 # from services import EmojiService
 from services.rabbit_service import RabbitService
-
+from keys import db
 connection = None
 
 
 async def connect():
     global connection
-    connection = await asyncpg.connect(user="postgres", password="", host="172.18.0.2", port=5432, database='bitch_bot')
+    connection = await asyncpg.connect(
+        user=db['user'], password=db['password'], host=db['host'], port=db['port'], database='bitch_bot'
+    )
 
 
 async def createTables():
