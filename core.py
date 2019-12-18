@@ -21,7 +21,7 @@ bot = commands.Bot(
 )
 
 # cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-cogs = ["admin", "autorespond", "emojis", "internet", "misc"]
+cogs = ["admin", "autorespond", "counters", "emojis", "internet", "misc", "blogify"]
 
 
 @bot.command()
@@ -52,7 +52,7 @@ async def on_ready():
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
 
-    await bot.get_cog('AutoResponder').setup()
+    # await bot.get_cog('AutoResponder').setup()
 
 
 async def close():
