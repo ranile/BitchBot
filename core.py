@@ -21,7 +21,7 @@ bot = commands.Bot(
 )
 
 # cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-cogs = ["admin", "autorespond", "counters", "emojis", "internet", "misc"]
+cogs = ["admin", "autorespond", "emojis", "internet", "misc"]
 
 
 @bot.command()
@@ -68,7 +68,7 @@ async def start():
         await bot.close()
 
 
-def stop_loop_on_completion():
+def stop_loop_on_completion(f):
     loop.stop()
 
 

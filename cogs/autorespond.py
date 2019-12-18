@@ -25,12 +25,12 @@ class AutoResponder(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        self.epic_emojis = None
+        # self.epic_emojis = None
         self.ignoreAutoRespond = {529349973998043146}
-        print(self.epic_emojis)
+        # print(self.epic_emojis)
 
-    async def setup(self):
-        self.epic_emojis = await EmojiService.rawSelectQuery('''is_epic = true''')
+    # async def setup(self):
+    #     self.epic_emojis = await EmojiService.rawSelectQuery('''is_epic = true''')
 
     @commands.command()
     async def ping(self, ctx):
@@ -67,9 +67,9 @@ class AutoResponder(commands.Cog):
         elif re.search(r"\b4:?20\b", msg):
             await cnl.send("Ha that's the weed number")
 
-        elif (re.search(r"\be([pb])?ic\b", msg)) and 'not epic' not in msg and self.chance(2):
-            emoji = random.choice(self.epic_emojis).command
-            await cnl.send(emoji)
+        # elif (re.search(r"\be([pb])?ic\b", msg)) and 'not epic' not in msg and self.chance(2):
+        #     emoji = random.choice(self.epic_emojis).command
+        #     await cnl.send(emoji)
 
         elif re.search(r"\bbruh(mius)?( moment(ium)?)?\b", msg) and self.chance(3):
             await cnl.send(random.choice(["THAT is a bruh moment", "<:bruh:610799376377577473>"]))
