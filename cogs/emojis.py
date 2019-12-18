@@ -1,9 +1,6 @@
 import discord
 from discord.ext import commands
 
-from database import database
-from resources import Emoji
-from services import EmojiService
 from util import funs, paginator
 
 
@@ -26,8 +23,7 @@ class Emojis(commands.Cog):
             emoji: The emoji to link
         """
 
-        fetched = await EmojiService.get('name', emoji)
-        await ctx.send(f"https://cdn.discordapp.com/emojis/{fetched.id}.{'gif' if fetched.isAnimated else 'png'}")
+        await ctx.send(discord.utils.get(self.bot.emojis, name=emoji).url)
         await ctx.message.delete(delay=2)
 
     @commands.command(aliases=["e"])
@@ -45,22 +41,18 @@ class Emojis(commands.Cog):
         else:
             amount = 1
 
-        fetched = await EmojiService.rawSelectQuery(f'''name IN ({funs.generateDollarSigns(emojis)})''', emojis)
+        out = []
+        for emoji in emojis:
+            out.append(f'{discord.utils.get(self.bot.emojis, name=emoji)}' * amount)
 
-        out = ""
-        for emoji in fetched:
-            out += f'{emoji.command} ' * amount
-
-        await ctx.send(out)
+        await ctx.send(' '.join(out))
         await ctx.message.delete(delay=2)
 
     @commands.command()
     async def emojis(self, ctx):
         """Shows the emojis that can be sent by 'emoji' command"""
 
-        fetched_emojis = await EmojiService.getAll()
-
-        chunked_emojis = list(chunks(fetched_emojis, 20))
+        chunked_emojis = list(chunks(self.bot.emojis, 20))
         count = 1
         data = []
         for emojis in chunked_emojis:
@@ -68,7 +60,7 @@ class Emojis(commands.Cog):
             embed.set_footer(text='@hamza to add more')
             out = []
             for emoji in emojis:
-                out.append(f'{count}. {emoji.name} \t{emoji.command}')
+                out.append(f'{count}. {emoji.name} \t{emoji}')
                 count += 1
 
             embed.description = '\n'.join(out)
@@ -86,41 +78,14 @@ class Emojis(commands.Cog):
             emoji: The emoji to send in an the embed
         """
 
-        fetched = await EmojiService.get('name', emoji)
-        url = f"https://cdn.discordapp.com/emojis/{fetched.id}.{'gif' if fetched.isAnimated else 'png'}"
+        emoji = discord.utils.get(self.bot.emojis, name=emoji)
         await ctx.message.delete(delay=2)
 
         embed = discord.Embed()
-        embed.set_image(url=url)
+        embed.set_image(url=str(emoji.url))
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=2)
 
-    @commands.command()
-    async def update_emojis(self, ctx):
-        await database.connection.execute('''drop table if exists emojis''')
-        await database.connection.execute('''
-        CREATE TABLE IF NOT EXISTS Emojis (
-            id bigint NOT NULL PRIMARY KEY,
-            name text NOT NULL,
-            command text NOT NULL,
-            is_epic bool NOT NULL,
-            is_animated bool NOT NULL
-        );''')
-
-        count = 0
-        for emoji in self.bot.emojis[20:]:
-            to_be_inserted = Emoji(
-                name=emoji.name,
-                command=str(emoji),
-                isAnimated=emoji.animated,
-                isEpic=False,
-                id=emoji.id
-            )
-
-            await EmojiService.insert(to_be_inserted)
-            count += 1
-
-        await ctx.send(f'Added {count} emojis')
 
 def setup(bot):
     bot.add_cog(Emojis(bot))
