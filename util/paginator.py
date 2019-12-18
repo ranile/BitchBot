@@ -10,17 +10,17 @@ class Paginator:
         self.current = 0
         self.paginating = True
         self.max_pages = len(data) - 1
-        self.reactions = [('\N{BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}', self.first_page),
-                          ('\N{BLACK LEFT-POINTING TRIANGLE}', self.previous_page),
-                          ('\N{BLACK RIGHT-POINTING TRIANGLE}', self.next_page),
-                          ('\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}', self.last_page), ]
+        self.reactions = [('<:backward:656488824129454080>', self.first_page),
+                          ('<:previous:656488303243034654>', self.previous_page),
+                          ('<:next:656487474297569318>', self.next_page),
+                          ('<:forward:656487435957698560>', self.last_page), ]
 
     def _check(self, reaction, user):
         if user.id != self.ctx.author.id or reaction.message.id != self.msg.id:
             return False
 
         for (emoji, func) in self.reactions:
-            if reaction.emoji == emoji:
+            if str(reaction.emoji) == emoji:
                 self.execute = func
                 return True
         return False
