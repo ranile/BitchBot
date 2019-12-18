@@ -22,7 +22,6 @@ class Counters(commands.Cog):
         self.bot = bot
 
         # Rabbit stuff
-        self.rabbitRatio = 85
         self.isRabbitOnCooldown = False
         self.rabbitCooldownTime = 10
         self.rabbitAlreadySummoned = []
@@ -52,10 +51,9 @@ class Counters(commands.Cog):
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
 
         if (re.search(rabbit_match, normalized, re.IGNORECASE) and
-            not self.isRabbitOnCooldown and
-            message.guild.id == THE_CAUSE and
-            message.webhook_id != RABBIT_WEBHOOK
-        ):
+                not self.isRabbitOnCooldown and
+                message.guild.id == THE_CAUSE and
+                message.webhook_id != RABBIT_WEBHOOK):
             await self.increment_rabbit(message)
 
     @commands.Cog.listener()
@@ -70,6 +68,7 @@ class Counters(commands.Cog):
 
             await self.increment_rabbit(reaction.message, rabbit=[r for r in rabbits if r != str(reaction)][0])
 
+    # noinspection PyUnusedLocal,PyPep8Naming,PyIncorrectDocstring
     @commands.is_owner()
     @commands.command()
     async def setCountersChannel(self, ctx, channel: discord.TextChannel):
