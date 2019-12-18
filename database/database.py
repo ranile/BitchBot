@@ -15,14 +15,14 @@ async def connect():
 
 
 async def createTables():
-    await connection.execute('''
-    CREATE TABLE IF NOT EXISTS Emojis (
-        id bigint NOT NULL PRIMARY KEY,
-        name text NOT NULL,
-        command text NOT NULL,
-        is_epic bool NOT NULL,
-        is_animated bool NOT NULL
-    );''')
+    # await connection.execute('''
+    # CREATE TABLE IF NOT EXISTS Emojis (
+    #     id bigint NOT NULL PRIMARY KEY,
+    #     name text NOT NULL,
+    #     command text NOT NULL,
+    #     is_epic bool NOT NULL,
+    #     is_animated bool NOT NULL
+    # );''')
 
     await connection.execute('''
     create table if not exists Counters
