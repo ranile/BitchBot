@@ -75,9 +75,11 @@ class BloodyHelpCommand(commands.HelpCommand):
             embed = self.generateBaseHelpEmbed()
             embed.title += f'\n{actualCog.qualified_name} Commands'
             embed.description = actualCog.description
-            for cmd in actualCog.get_commands():
+            for cmd in actualCog.walk_commands():
+                if isinstance(cmd, commands.Group) and not cmd.invoke_without_command:
+                    continue
                 try:
-                    embed.add_field(name=f'**{cmd.name}**', value=str(cmd.help).split('\n')[0], inline=False)
+                    embed.add_field(name=f'**{cmd.qualified_name}**', value=str(cmd.help).split('\n')[0], inline=False)
                 except:
                     continue
 
@@ -87,9 +89,8 @@ class BloodyHelpCommand(commands.HelpCommand):
         await pages.paginate()
 
     async def send_cog_help(self, cog):
-        commands = await self.filter_commands(cog.get_commands(), sort=True)
         data = []
-        for cmd in commands:
+        for cmd in cog.walk_commands():
             embed = self.generateBaseHelpEmbed()
             embed.title += f'\n {cog.qualified_name} Commands'
             try:
