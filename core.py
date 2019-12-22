@@ -21,7 +21,7 @@ bot = commands.Bot(
 )
 
 # cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-cogs = ["admin", "autorespond", "counters", "emojis", "internet", "misc", "blogify"]
+cogs = ["admin", "counters", "emojis", "internet", "misc", "blogify", "test"]
 
 
 @bot.command()
@@ -47,7 +47,7 @@ async def on_ready():
         activity=discord.Game(f"use {bot.command_prefix}help")
     )
 
-    bot.aiohttpClientSession = aiohttp.ClientSession()
+    bot.clientSession = aiohttp.ClientSession()
 
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
@@ -63,6 +63,7 @@ async def close():
 async def start():
     try:
         await database.init()
+        bot.db = database.connection
         await bot.start(BOT_TOKEN)
     finally:
         await bot.close()
