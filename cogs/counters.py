@@ -34,7 +34,7 @@ class Counters(commands.Cog):
     async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
         inserted_rabbit = await RabbitService.insert(RabbitCounter(summonedBy=message.author.id))
 
-        await funs.sendRabbitCounterUpdate(
+        await funs.sendRabbitCounterUpdate(self.bot,
             f"{message.author.display_name} called the rabbit {rabbit}, "
             f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
         await message.add_reaction(rabbit)
@@ -80,6 +80,57 @@ class Counters(commands.Cog):
         """
 
         await ctx.send('Saved')
+
+    @commands.group()
+    async def stats(self, ctx):
+        pass
+
+    @stats.group(invoke_without_command=True)
+    async def rabbit(self, ctx, member: discord.Member = None):
+        if member is not None:
+            of = member.id
+        else:
+            of = ctx.author.id
+
+        query = """select count(count) from counters where summoned_by = $1 and name = 'rabbit';"""
+        count = await self.bot.db.fetchval(query, of)
+
+        await ctx.send(f'{"You" if of == ctx.author.id else member.display_name} have called rabbit {count} times')
+
+    @rabbit.command()
+    async def top(self, ctx, limit=10):
+        fetched = await self.bot.db.fetch('''
+        select summoned_by, count(count) from counters
+        where name = 'rabbit'
+        group by summoned_by
+        order by count(count) desc
+        limit $1;
+        ''', limit)
+        length = 0
+        paginator = commands.Paginator(prefix='```md')
+        for item in fetched:
+            member = ctx.guild.get_member(item['summoned_by'])
+            line = f"{member.display_name}: {item['count']}"
+            paginator.add_line(line)
+            print(length, len(line), False)
+            if length < len(line):
+                length = len(line)
+
+            print(length, len(line), True)
+
+        fetched_me = await self.bot.db.fetchrow('''
+        select summoned_by, count(count) from counters
+        where name = 'rabbit' and summoned_by = $1
+        group by summoned_by
+        order by count(count) desc;
+        ''', ctx.author.id)
+
+        paginator.add_line()
+        paginator.add_line('-' * length)
+        paginator.add_line(f"You: {fetched_me['count']}")
+
+        for page in paginator.pages:
+            await ctx.send(page)
 
 
 def setup(bot):
