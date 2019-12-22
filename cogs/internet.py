@@ -89,7 +89,8 @@ class Internet(commands.Cog):
                 embed.set_footer(text=post['subreddit_name_prefixed'])
 
                 if post['is_self']:
-                    embed.description = post['selftext'][:800]
+                    text = post['selftext']
+                    embed.description = text[:800] if len(text) < 800 else f'{text[:800]} **--Snippet--**'
                 elif re.match(self.is_image_regex, post['url']):
                     embed.set_image(url=post['url'])
 
