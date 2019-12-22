@@ -112,11 +112,8 @@ class Counters(commands.Cog):
             member = ctx.guild.get_member(item['summoned_by'])
             line = f"{member.display_name} ({member.name}#{member.discriminator}): {item['count']}"
             paginator.add_line(line)
-            print(length, len(line), False)
             if length < len(line):
                 length = len(line)
-
-            print(length, len(line), True)
 
         fetched_me = await self.bot.db.fetchrow('''
         select summoned_by, count(count) from counters
