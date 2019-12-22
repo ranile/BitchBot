@@ -110,7 +110,7 @@ class Counters(commands.Cog):
         paginator = commands.Paginator(prefix='```md')
         for item in fetched:
             member = ctx.guild.get_member(item['summoned_by'])
-            line = f"{member.display_name}: {item['count']}"
+            line = f"{member.display_name} ({member.name}#{member.discriminator}): {item['count']}"
             paginator.add_line(line)
             print(length, len(line), False)
             if length < len(line):
