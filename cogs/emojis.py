@@ -15,18 +15,7 @@ class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["emojiimg", "emoji1"])
-    async def emojilink(self, ctx, emoji):
-        """Send link of any one of the emoji given by 'emojis' command
-
-        Args:
-            emoji: The emoji to link
-        """
-
-        await ctx.send(discord.utils.get(self.bot.emojis, name=emoji).url)
-        await ctx.message.delete(delay=2)
-
-    @commands.command(aliases=["e"])
+    @commands.group(aliases=["e"], invoke_without_command=True)
     async def emoji(self, ctx, *emojis):
         """Send any one of the emoji given by 'emojis' command
 
@@ -48,8 +37,19 @@ class Emojis(commands.Cog):
         await ctx.send(' '.join(out))
         await ctx.message.delete(delay=2)
 
-    @commands.command()
-    async def emojis(self, ctx):
+    @emoji.command(aliases=["emojiimg", "emoji1"])
+    async def link(self, ctx, emoji):
+        """Send link of any one of the emoji given by 'emojis' command
+
+        Args:
+            emoji: The emoji to link
+        """
+
+        await ctx.send(discord.utils.get(self.bot.emojis, name=emoji).url)
+        await ctx.message.delete(delay=2)
+
+    @emoji.command()
+    async def list(self, ctx):
         """Shows the emojis that can be sent by 'emoji' command"""
 
         chunked_emojis = list(chunks(self.bot.emojis, 20))
@@ -69,8 +69,8 @@ class Emojis(commands.Cog):
         pages = paginator.Paginator(ctx, data)
         await pages.paginate()
 
-    @commands.command(aliases=["emoji2"])
-    async def emojiembed(self, ctx, emoji):
+    @emoji.command(aliases=["emoji2"])
+    async def embed(self, ctx, emoji):
         """
         Send embed of any one of the emoji given by 'emojis' command
 
