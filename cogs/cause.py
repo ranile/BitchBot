@@ -16,8 +16,10 @@ rabbit_match = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r 
 THE_CAUSE = 505655510263922700
 RABBIT_WEBHOOK = 651333096829878272
 
+RES_PATH = 'res/'
 
-class Counters(commands.Cog):
+
+class Cause(commands.Cog, name="The Cause"):
     def __init__(self, bot):
         self.bot = bot
 
@@ -25,6 +27,9 @@ class Counters(commands.Cog):
         self.isRabbitOnCooldown = False
         self.rabbitCooldownTime = 10
         self.rabbitAlreadySummoned = []
+
+    def cog_check(self, ctx):
+        return ctx.guild.id == THE_CAUSE
 
     async def put_rabbit_on_cooldown(self):
         self.isRabbitOnCooldown = True
@@ -35,8 +40,8 @@ class Counters(commands.Cog):
         inserted_rabbit = await RabbitService.insert(RabbitCounter(summonedBy=message.author.id))
 
         await funs.sendRabbitCounterUpdate(self.bot,
-            f"{message.author.display_name} called the rabbit {rabbit}, "
-            f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
+                                           f"{message.author.display_name} called the rabbit {rabbit}, "
+                                           f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
         await message.add_reaction(rabbit)
 
         self.rabbitAlreadySummoned.append(message.id)
@@ -68,25 +73,13 @@ class Counters(commands.Cog):
 
             await self.increment_rabbit(reaction.message, rabbit=[r for r in rabbits if r != str(reaction)][0])
 
-    # noinspection PyUnusedLocal,PyPep8Naming,PyIncorrectDocstring
-    @commands.is_owner()
-    @commands.command()
-    async def setCountersChannel(self, ctx, channel: discord.TextChannel):
-        """
-        Set the channel to send the counter updates into for the guild
+    @commands.group(invoke_without_command=True, aliases=["kayliesman"])
+    async def rabbit(self, ctx):
 
-        Args:
-            channel: The channel to send counter increment messages in
-        """
+        await ctx.channel.send(file=discord.File(f'{RES_PATH}rabbitman{random.randint(1, 9)}.jpg'))
 
-        await ctx.send('Saved')
-
-    @commands.group()
-    async def stats(self, ctx):
-        pass
-
-    @stats.group(invoke_without_command=True)
-    async def rabbit(self, ctx, member: discord.Member = None):
+    @rabbit.group(invoke_without_command=True)
+    async def stats(self, ctx, member: discord.Member = None):
         if member is not None:
             of = member.id
         else:
@@ -97,7 +90,7 @@ class Counters(commands.Cog):
 
         await ctx.send(f'{"You" if of == ctx.author.id else member.display_name} have called rabbit {count} times')
 
-    @rabbit.command()
+    @stats.command()
     async def top(self, ctx, limit=10):
         fetched = await self.bot.db.fetch('''
         select summoned_by, count(count) from counters
@@ -129,6 +122,12 @@ class Counters(commands.Cog):
         for page in paginator.pages:
             await ctx.send(page)
 
+    @commands.command()
+    async def baby(self, ctx):
+        """Sends a Baby picture"""
+
+        await ctx.channel.send(file=discord.File(f'{RES_PATH}baby{random.randint(1, 9)}.jpg'))
+
 
 def setup(bot):
-    bot.add_cog(Counters(bot))
+    bot.add_cog(Cause(bot))

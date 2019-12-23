@@ -1,15 +1,12 @@
 import aiohttp
 import asyncio
 import discord
-import random
 import re
 import string
 from discord.ext import commands
 
 from keys import logWebhook
 from util import funs  # pylint: disable=no-name-in-module
-
-RES_PATH = 'res/'
 
 
 def c_to_f(c: float) -> float:
@@ -108,31 +105,6 @@ class Miscellaneous(commands.Cog):
             webhook = discord.Webhook.from_url(logWebhook, adapter=discord.AsyncWebhookAdapter(session))
             await webhook.send(embed=embed, username='sayembed')
 
-    @commands.command(aliases=["kayliesman"])
-    @funs.cause_check()
-    async def rabbitman(self, ctx):
-        """
-        Sends a rabbitman picture
-        """
-
-        files = []
-        for i in range(1, 11):
-            files.append(f'{RES_PATH}rabbitman{i}.jpg')
-
-        await ctx.channel.send(file=discord.File(files[random.randint(0, len(files) - 1)]))
-
-    @commands.command()
-    @funs.cause_check()
-    async def baby(self, ctx):
-        """
-        Sends a Baby picture
-        """
-        files = []
-        for i in range(1, 9):
-            files.append(f'{RES_PATH}baby{i}.jpg')
-
-        await ctx.channel.send(file=discord.File(files[random.randint(0, len(files) - 1)]))
-
     @commands.command(aliases=["addreaction"])
     async def react(self, ctx, msg: discord.Message, text):
         """
@@ -149,7 +121,7 @@ class Miscellaneous(commands.Cog):
                     await msg.add_reaction(self.emoji_chars[emoji])
                 sent.append(i)
 
-        await funs.log(ctx, 'react', text, ctx.message, ''.join(sent))
+        await funs.log(ctx, text, ctx.message, ''.join(sent))
 
     @commands.command()
     async def totogglecase(self, ctx, *, msg):
@@ -162,7 +134,7 @@ class Miscellaneous(commands.Cog):
             out += message[i].lower() if (i % 2 == 0) else message[i].upper()
 
         sentMessage = await ctx.send(out)
-        await funs.log(ctx, 'toggle case', msg, sentMessage, out)
+        await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["yell"])
@@ -172,7 +144,7 @@ class Miscellaneous(commands.Cog):
         """
         out = str(msg).upper()
         sentMessage = await ctx.send(out)
-        await funs.log(ctx, 'touppercase', msg, sentMessage, out)
+        await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete()
 
     @commands.command(aliases=["wide"])
@@ -185,7 +157,7 @@ class Miscellaneous(commands.Cog):
         between = spaces * ' '
         out = between.join(list(str(msg)))
         sentMessage = await ctx.send(out)
-        await funs.log(ctx, 'addspaces', msg, sentMessage, out)
+        await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
     @commands.command()
@@ -215,7 +187,7 @@ class Miscellaneous(commands.Cog):
 
         out = ' '.join(msgBack.split())
         sentMessage = await ctx.send(out)
-        await funs.log(ctx, 'flip', msg, sentMessage, out)
+        await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["rick", "rickroll"])
