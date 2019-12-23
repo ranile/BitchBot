@@ -39,10 +39,11 @@ class Cause(commands.Cog, name="The Cause"):
     async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
         inserted_rabbit = await RabbitService.insert(RabbitCounter(summonedBy=message.author.id))
 
-        await funs.sendRabbitCounterUpdate(self.bot,
-                                           f"{message.author.display_name} called the rabbit {rabbit}, "
-                                           f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
-        await message.add_reaction(rabbit)
+        if not self.isRabbitOnCooldown:
+            await funs.sendRabbitCounterUpdate(self.bot,
+                                               f"{message.author.display_name} called the rabbit {rabbit}, "
+                                               f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
+            await message.add_reaction(rabbit)
 
         self.rabbitAlreadySummoned.append(message.id)
         await self.put_rabbit_on_cooldown()
@@ -56,7 +57,6 @@ class Cause(commands.Cog, name="The Cause"):
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
 
         if (re.search(rabbit_match, normalized, re.IGNORECASE) and
-                not self.isRabbitOnCooldown and
                 message.guild.id == THE_CAUSE and
                 message.webhook_id != RABBIT_WEBHOOK):
             await self.increment_rabbit(message)
