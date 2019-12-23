@@ -88,8 +88,11 @@ class Admin(commands.Cog):
     async def exit(self, ctx):
         """Kill the bot
         """
-
+        await ctx.send('Closing...')
+        await self.bot.clientSession.close()
         await self.bot.close()
+        await self.bot.loop.stop()
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
