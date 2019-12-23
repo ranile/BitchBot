@@ -77,11 +77,12 @@ class Blogify(commands.Cog):
         
         await ctx.send(embed=embed)
 
-    @blogify.group(invoke_without_command=False)
+    @blogify.group(invoke_without_command=True)
     async def users(self, ctx):
         """Users group
         """
-        pass
+        # TODO: Show all (actually not all) users
+        await ctx.send('Not Implemented')
 
     @users.command()
     async def profile(self, ctx, username):

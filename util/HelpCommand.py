@@ -78,9 +78,11 @@ class BloodyHelpCommand(commands.HelpCommand):
             for cmd in actualCog.walk_commands():
                 if isinstance(cmd, commands.Group) and not cmd.invoke_without_command:
                     continue
-                try:
-                    embed.add_field(name=f'**{cmd.qualified_name}**', value=str(cmd.help).split('\n')[0], inline=False)
-                except:
+
+                helpString = str(cmd.help).strip().split('\n')[0]
+                if helpString is not None and len(helpString) > 0:
+                    embed.add_field(name=f'**{cmd.qualified_name}**', value=helpString, inline=False)
+                else:
                     continue
 
             data.append(embed)
