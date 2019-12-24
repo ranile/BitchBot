@@ -21,7 +21,7 @@ bot = commands.Bot(
 )
 
 # cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-cogs = ["admin", "cause", "emojis", "internet", "misc", "blogify"]
+cogs = ["admin", "cause", "emojis", "internet", "misc", "blogify", 'chatbot']
 
 
 @bot.command()
