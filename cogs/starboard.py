@@ -11,6 +11,19 @@ class Starboard(commands.Cog):
     • TODO: Allow users to see their star stats
     • TODO: Allow users to see top users who gets stared in a guild
     • TODO: Allow users to pull up a stared message by using the id
+
+    SQL table:
+        ```create table if not exists Starboard
+        (
+            message_id      bigint    not null,
+            id              serial    not null primary key,
+            started_at      timestamp not null default now(),
+            message_content text,
+            attachment      text,
+            stars_count     int       not null
+        );
+
+        create unique index unique_message on Starboard (message_id);```
     """
 
     def __init__(self, bot):
@@ -18,7 +31,7 @@ class Starboard(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, message):
-        # Track activity here
+        # Track stars here
         pass
 
     @commands.group(invoke_without_command=True)
