@@ -4,8 +4,9 @@ import discord
 import re
 import string
 from discord.ext import commands
+import dialogflow_v2 as dialogflow
 
-from keys import logWebhook
+from keys import logWebhook, project_id
 from util import funs  # pylint: disable=no-name-in-module
 
 
@@ -21,6 +22,7 @@ def f_to_c(f: float) -> float:
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.session_client = dialogflow.SessionsClient()
         self.emoji_chars = {
             'a': '🇦',
             'b': '🇧',
@@ -236,8 +238,7 @@ class Miscellaneous(commands.Cog):
 
         Args:
             question: The question you want to ask. This will be title of embed
-            answers: The answers for the poll. If no answers are provided, it will default to yes/no.
-             Max of 10 answers are allowed
+            answers: The answers for the poll. If omitted, it will default to yes/no. Max of 10 answers are allowed
         """
 
         if answers == ():
@@ -254,8 +255,20 @@ class Miscellaneous(commands.Cog):
             msg = await ctx.send(embed=embed)
             for i in range(len(answers)):
                 await msg.add_reaction(letter_emote[i])
-        else:
-            pass
+
+    # noinspection PyUnresolvedReferences
+    @commands.command(aliases=['talk', 't'])
+    async def chat(self, ctx, *, text):
+        """Talk to me"""
+        session = self.session_client.session_path(project_id, ctx.author.id)
+
+        text_input = dialogflow.types.TextInput(text=text, language_code='en-US')
+
+        query_input = dialogflow.types.QueryInput(text=text_input)
+
+        response = self.session_client.detect_intent(session=session, query_input=query_input)
+
+        await ctx.send(response.query_result.fulfillment_text)
 
 
 def setup(bot):
