@@ -37,9 +37,8 @@ class ActivityService(Service):
         ''')
 
     @classmethod
-    async def last_updated(cls, user_id, guild_id):
+    async def get(cls, user_id, guild_id):
         fetched = await database.connection.fetchrow('''
             select pg_xact_commit_timestamp(xmin) as last_time_updated, * from activity where user_id = $1 and guild_id = $2;
         ''', user_id, guild_id)
-        last_updated = fetched['last_time_updated']
-        return last_updated
+        return fetched

@@ -1,8 +1,10 @@
 import datetime
 
+import discord
 from discord.ext import commands
 
 from services import ActivityService
+from util import funs
 
 
 class Activity(commands.Cog, name='Activity Tracking'):
@@ -32,7 +34,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         if cached is None or (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(seconds=5):
             incremented = await ActivityService.increment(message.author.id, message.guild.id, 5)
 
-            last_updated = await ActivityService.last_updated(message.author.id, message.guild.id)
+            last_updated = (await ActivityService.get(message.author.id, message.guild.id))['last_time_updated']
             self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
 
             await message.channel.send(f'yes {incremented["points"]}')
@@ -41,7 +43,13 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @commands.group(invoke_without_command=True)
     async def activity(self, ctx):
-        await ctx.send('Stub!')
+        fetched = await ActivityService.get(ctx.author.id, ctx.guild.id)
+        embed = discord.Embed(color=funs.random_discord_color())
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        embed.add_field(name='Activity Points', value=fetched['points'])
+        embed.set_footer(text='Last updated at')
+        embed.timestamp = fetched['last_time_updated']
+        await ctx.send(embed=embed)
 
     @activity.command(name='top')
     async def top_users(self, ctx):
