@@ -1,4 +1,8 @@
+import datetime
+
 from discord.ext import commands
+
+from services import ActivityService
 
 
 class Activity(commands.Cog, name='Activity Tracking'):
@@ -13,11 +17,27 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     def __init__(self, bot):
         self.bot = bot
+        self.cache = {}
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        # Track activity here
-        pass
+        if message.author == self.bot.user:
+            return
+
+        try:
+            cached = self.cache[f'{message.author.id}-{message.guild.id}']
+        except KeyError:
+            cached = None
+
+        if cached is None or (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(seconds=5):
+            incremented = await ActivityService.increment(message.author.id, message.guild.id, 5)
+
+            last_updated = await ActivityService.last_updated(message.author.id, message.guild.id)
+            self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
+
+            await message.channel.send(f'yes {incremented["points"]}')
+        else:
+            await message.channel.send('no')
 
     @commands.group(invoke_without_command=True)
     async def activity(self, ctx):
