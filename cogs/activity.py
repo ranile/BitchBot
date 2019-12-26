@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import discord
 from discord.ext import commands
@@ -20,18 +21,29 @@ class Activity(commands.Cog, name='Activity Tracking'):
     def __init__(self, bot):
         self.bot = bot
         self.cache = {}
+        self.bot_channel_pattern = re.compile(r'(bot-?commands|spam)')
+        self.command_pattern = re.compile(rf'>[a-z]+')
+
+    def should_increment(self, message):
+        try:
+            cached = self.cache[f'{message.author.id}-{message.guild.id}']
+        except KeyError:
+            cached = None
+
+        return (
+                (cached is None or
+                 (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(seconds=30)) and
+                (not re.match(self.command_pattern, message.content) and
+                 not message.author.bot and
+                 not re.match(self.bot_channel_pattern, message.channel.name))
+        )
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
 
-        try:
-            cached = self.cache[f'{message.author.id}-{message.guild.id}']
-        except KeyError:
-            cached = None
-
-        if cached is None or (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(seconds=30):
+        if self.should_increment(message):
             incremented = await ActivityService.increment(message.author.id, message.guild.id, 5)
 
             last_updated = (await ActivityService.get(message.author.id, message.guild.id)).last_updated_time
