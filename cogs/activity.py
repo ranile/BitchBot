@@ -12,10 +12,6 @@ class Activity(commands.Cog, name='Activity Tracking'):
     """Tracks your activity in the guild and give them activity points for being active.
     With the end goal being the ability to spend these points on a virtual store
     Currently a WIP
-    TODOs (for now):
-    • TODO: Implement basic tracking of user's activity
-    • TODO: Allow users to see their activity
-    • TODO: Allow users to see top users in a guild
     """
 
     def __init__(self, bot):
