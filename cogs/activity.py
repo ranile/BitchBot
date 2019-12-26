@@ -31,10 +31,10 @@ class Activity(commands.Cog, name='Activity Tracking'):
         except KeyError:
             cached = None
 
-        if cached is None or (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(seconds=5):
+        if cached is None or (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(seconds=30):
             incremented = await ActivityService.increment(message.author.id, message.guild.id, 5)
 
-            last_updated = (await ActivityService.get(message.author.id, message.guild.id))['last_time_updated']
+            last_updated = (await ActivityService.get(message.author.id, message.guild.id)).last_updated_time
             self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
 
             await message.channel.send(f'yes {incremented["points"]}')
@@ -46,14 +46,32 @@ class Activity(commands.Cog, name='Activity Tracking'):
         fetched = await ActivityService.get(ctx.author.id, ctx.guild.id)
         embed = discord.Embed(color=funs.random_discord_color())
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-        embed.add_field(name='Activity Points', value=fetched['points'])
+        embed.add_field(name='Activity Points', value=fetched.points)
+        embed.add_field(name='Position', value=fetched.position)
         embed.set_footer(text='Last updated at')
-        embed.timestamp = fetched['last_time_updated']
+        embed.timestamp = fetched.last_updated_time
         await ctx.send(embed=embed)
 
     @activity.command(name='top')
     async def top_users(self, ctx):
-        await ctx.send('Stub!')
+        top = await ActivityService.get_top(guild=ctx.guild)
+
+        paginator = commands.Paginator(prefix='```md')
+
+        length = 0
+        for user in top:
+            line = f'{user.position}. {user.user.display_name} - {user.points} points'
+            paginator.add_line(line)
+            if length < len(line):
+                length = len(line)
+
+        paginator.add_line()
+        paginator.add_line('-' * length)
+        me = await ActivityService.get(ctx.author.id, ctx.guild.id)
+        paginator.add_line(f'{me.position}. You - {me.points}')
+
+        for page in paginator.pages:
+            await ctx.send(page)
 
 
 def setup(bot):
