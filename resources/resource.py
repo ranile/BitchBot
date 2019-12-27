@@ -31,4 +31,4 @@ class Resource(ABC):
 
     @classmethod
     def convertMany(cls, record):
-        pass
+        return [cls.convert(x) for x in record]

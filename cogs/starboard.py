@@ -1,4 +1,11 @@
+import discord
 from discord.ext import commands
+
+from services import StarboardService
+from services import ConfigService
+from util import funs
+
+STAR = '\N{WHITE MEDIUM STAR}'
 
 
 class Starboard(commands.Cog):
@@ -28,15 +35,31 @@ class Starboard(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.already_starred = []
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, message):
-        # Track stars here
-        pass
+    async def on_reaction_add(self, reaction, user):
+        if str(reaction) != STAR:
+            return
+
+        if reaction.count >= 1 and reaction.message.id not in self.already_starred and not reaction.message.author.bot:
+            config = await ConfigService.get(reaction.message.guild.id)
+            should_send, starred = await StarboardService.star(reaction)
+            if should_send:
+                author = reaction.message.author
+                embed = discord.Embed(color=funs.random_discord_color())
+                embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+                embed.description = starred.message_content
+                embed.add_field(name='Original', value=f'[Link]({reaction.message.jump_url})')
+                if starred.attachment:
+                    embed.set_image(url=starred.attachment)
+                embed.set_footer(text='Starred at')
+                embed.timestamp = starred.started_at
+                await reaction.message.guild.get_channel(config.starboard_channel).send(embed=embed)
 
     @commands.group(invoke_without_command=True)
     async def star(self, ctx, message):
-        pass
+        await ctx.send('Stub!')
 
     @star.group(invoke_without_command=True)
     async def stats(self, ctx):
