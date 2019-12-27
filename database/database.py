@@ -1,11 +1,10 @@
+import asyncio
 import time
-
 import asyncpg
-
-from resources import RabbitCounter
-# from services import EmojiService
-from services.rabbit_service import RabbitService
+import services
 from keys import db
+import datetime
+
 connection = None
 
 
@@ -36,20 +35,70 @@ async def createTables():
     );
     ''')
 
+    await connection.execute(services.ActivityService.sql().createTable)
+
 
 async def yeet():
-    rabbit = RabbitCounter(
-        summonedAt=int(time.time()),
-        summonedBy=453068315858960395
-    )
+    pass
+    # rabbit = RabbitCounter(
+    #     summonedAt=int(time.time()),
+    #     summonedBy=453068315858960395
+    # )
     # res = await RabbitService.insert(rabbit)
     # print(res)
     # print(type(res))
     # print('---------------------------------------')
-    [print(x) for x in await RabbitService.getAll()]
+    # [print(x) for x in await RabbitService.getAll()]
     # res = await RabbitService.get('count', 2)
     # print(res)
     # print(type(res))
+
+    # f = await connection.fetchrow('''
+    # update activity
+    # set points = activity.points + 2
+    # where user_id = 644563454648254475
+    # returning points;
+    # ''')
+    #
+    # print(f)
+    # print(type(f))
+    #
+    # if f is None:
+    #     f = await connection.fetchrow('''insert into Activity (user_id, guild_id)
+    #         values (644563454648254475, 453068315858960395) returning points;''')
+    #     print(f)
+    #     print(type(f))
+
+    start = datetime.datetime.now()
+    fetched = await connection.fetchrow(
+        '''select pg_xact_commit_timestamp(xmin) as last_time_updated, * from activity where user_id = 453068315858960395;''')
+    last_updated = fetched['last_time_updated']
+    # print(fetched['last_time_updated'])
+    # print(type(fetched['last_time_updated']))
+    # print(last_updated.tzinfo)
+    delta = (datetime.datetime.now(tz=last_updated.tzinfo) - last_updated)  # > datetime.timedelta(seconds=5)
+    end = datetime.datetime.now()
+    cache = {}
+    print(delta)
+    for i in range(5):
+        try:
+            fetched_c = cache['453068315858960395-644563454648254475']
+        except KeyError:
+            fetched_c = None
+
+        print(fetched_c is None)
+        if fetched_c is None or fetched_c > datetime.timedelta(seconds=5):
+            await services.ActivityService.increment(453068315858960395, 644563454648254475, 2)
+            fetched = await connection.fetchrow(
+                '''select pg_xact_commit_timestamp(xmin) as last_time_updated, * from activity where user_id = 453068315858960395;''')
+            last_updated = fetched['last_time_updated']
+            delta = (datetime.datetime.now(tz=last_updated.tzinfo) - last_updated)  # > datetime.timedelta(seconds=5)
+            cache['453068315858960395-644563454648254475'] = delta
+            print(cache)
+            await asyncio.sleep(2)
+        else:
+            print('no')
+    print((end - start).microseconds)
 
 
 async def init():
