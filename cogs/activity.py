@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 
 from services import ActivityService
-from util import funs
+from util import funs, checks
 
 
 class Activity(commands.Cog, name='Activity Tracking'):
@@ -28,7 +28,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         return (
                 (cached is None or
-                 (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(seconds=30)) and
+                 (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(minutes=2)) and
                 (not re.match(self.command_pattern, message.content) and
                  not message.author.bot and
                  not re.match(self.bot_channel_pattern, message.channel.name))
@@ -40,16 +40,18 @@ class Activity(commands.Cog, name='Activity Tracking'):
             return
 
         if self.should_increment(message):
-            incremented = await ActivityService.increment(message.author.id, message.guild.id, 5)
+            await ActivityService.increment(message.author.id, message.guild.id, 2)
 
             last_updated = (await ActivityService.get(message.author.id, message.guild.id)).last_updated_time
             self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
 
-            await message.channel.send(f'yes {incremented["points"]}')
+            # await message.channel.send(f'yes {incremented["points"]}')
         else:
-            await message.channel.send('no')
+            # await message.channel.send('no')
+            pass
 
     @commands.group(invoke_without_command=True)
+    @checks.private_command()
     async def activity(self, ctx):
         fetched = await ActivityService.get(ctx.author.id, ctx.guild.id)
         embed = discord.Embed(color=funs.random_discord_color())
@@ -61,6 +63,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         await ctx.send(embed=embed)
 
     @activity.command(name='top')
+    @checks.private_command()
     async def top_users(self, ctx):
         top = await ActivityService.get_top(guild=ctx.guild)
 
