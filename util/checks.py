@@ -11,3 +11,13 @@ def private_command():
             return True
 
     return commands.check(predicate)
+
+
+def can_config():
+    async def predicate(ctx):
+        if ctx.author.id == ctx.bot.owner_id or ctx.guild.permissions_for(ctx.author).manage_guild:
+            return True
+        else:
+            return False
+
+    return commands.check(predicate)

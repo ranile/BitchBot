@@ -4,7 +4,7 @@ from discord.ext import commands
 from resources.guild_config import GuildConfig
 from services import StarboardService
 from services import ConfigService
-from util import funs
+from util import funs, checks
 
 STAR = '\N{WHITE MEDIUM STAR}'
 
@@ -83,17 +83,18 @@ class Starboard(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @star.group(invoke_without_command=True)
+    @star.group(invoke_without_command=True, hidden=True)
     async def stats(self, ctx):
         # Author's star stats
         await ctx.send('Stub!')
 
-    @stats.command(name='top')
+    @stats.command(name='top', hidden=True)
     async def top_stared(self, ctx):
         # Guild's star stats
         await ctx.send('Stub!')
 
     @commands.command()
+    @checks.can_config()
     async def setup(self, ctx, channel: discord.TextChannel):
         config = GuildConfig(
             guild_id=ctx.guild.id,
