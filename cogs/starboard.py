@@ -33,7 +33,7 @@ class Starboard(commands.Cog):
         if str(reaction) != STAR:
             return
 
-        if reaction.count >= 3 and reaction.message.id not in self.already_starred and not reaction.message.author.bot:
+        if reaction.count >= 2 and reaction.message.id not in self.already_starred and not reaction.message.author.bot:
             config = await ConfigService.get(reaction.message.guild.id)
             if config.starboard_channel is None:
                 return
