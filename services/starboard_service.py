@@ -32,12 +32,31 @@ class StarboardService:
         except asyncpg.exceptions.UniqueViolationError:
             starred = await database.connection.fetchrow('''
                 update starboard
-                set stars_count = 4
+                set stars_count = $4
+                where message_id = $1 and channel_id = $2 and guild_id = $3
+                returning *;
+            ''', message.id, message.channel.id, message.guild.id, reaction.count)
+
+        return should_send, Starboard.convert(starred)
+
+    @classmethod
+    async def unstar(cls, reaction):
+        message = reaction.message
+        unstarred = await database.connection.fetchrow('''
+                update starboard
+                set stars_count = starboard.stars_count - 1
                 where message_id = $1 and channel_id = $2 and guild_id = $3
                 returning *;
             ''', message.id, message.channel.id, message.guild.id)
 
-        return should_send, Starboard.convert(starred)
+        if unstarred['stars_count'] == 0:
+            unstarred = await database.connection.fetchrow('''
+                delete from starboard
+                where message_id = $1 and channel_id = $2 and guild_id = $3
+                returning *;
+            ''', message.id, message.channel.id, message.guild.id)
+
+        return Starboard.convert(unstarred)
 
     @classmethod
     def sql(cls):

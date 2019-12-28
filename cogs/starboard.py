@@ -35,6 +35,9 @@ class Starboard(commands.Cog):
 
         if reaction.count >= 1 and reaction.message.id not in self.already_starred and not reaction.message.author.bot:
             config = await ConfigService.get(reaction.message.guild.id)
+            if config.starboard_channel is None:
+                return
+
             should_send, starred = await StarboardService.star(reaction)
 
             if should_send:
@@ -49,6 +52,17 @@ class Starboard(commands.Cog):
                 embed.timestamp = starred.started_at
 
                 await reaction.message.guild.get_channel(config.starboard_channel).send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        if str(reaction) != STAR:
+            return
+
+        config = await ConfigService.get(reaction.message.guild.id)
+        if config.starboard_channel is None:
+            return
+
+        await StarboardService.unstar(reaction)
 
     @commands.group(invoke_without_command=True)
     async def star(self, ctx, message):
