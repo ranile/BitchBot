@@ -66,8 +66,22 @@ class Starboard(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     async def star(self, ctx, message):
-        # TODO: Get star
-        await ctx.send('Stub!')
+        star = await StarboardService.get(message, ctx.guild.id)
+
+        if star is None:
+            return await ctx.send('Not found')
+
+        message = await ctx.guild.get_channel(star.channel).fetch_message(star.message_id)
+        embed = discord.Embed(color=funs.random_discord_color())
+        embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+        embed.description = star.message_content
+        embed.add_field(name='Original', value=f'[Link]({message.jump_url})')
+        if star.attachment:
+            embed.set_image(url=star.attachment)
+        embed.set_footer(text='Starred at')
+        embed.timestamp = star.started_at
+
+        await ctx.send(embed=embed)
 
     @star.group(invoke_without_command=True)
     async def stats(self, ctx):

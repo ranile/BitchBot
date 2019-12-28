@@ -8,8 +8,14 @@ from resources.starboard import Starboard
 class StarboardService:
 
     @classmethod
-    async def get(cls, star_id):
-        pass
+    async def get(cls, message_or_star_id, guild_id):
+        fetched = await database.connection.fetchrow('''
+            select *
+            from starboard
+            where (message_id = $1 or id = $1) and guild_id = $2;
+        ''', int(message_or_star_id), guild_id)
+
+        return Starboard.convert(fetched) if fetched is not None else None
 
     @classmethod
     async def star(cls, reaction):
