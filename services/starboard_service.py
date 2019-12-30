@@ -30,11 +30,11 @@ class StarboardService:
                 attachment = None
 
             starred = await database.connection.fetchrow('''
-                insert into Starboard (message_id, channel_id, guild_id, message_content, attachment, stars_count)
-                values ($1, $2, $3, $4, $5, $6)
+                insert into Starboard (message_id, channel_id, guild_id, message_content, attachment, stars_count, author_id)
+                values ($1, $2, $3, $4, $5, $6, $7)
                 returning *;
             ''', message.id, message.channel.id, message.guild.id, message.content if message.content != '' else None,
-                                                         attachment, reaction.count)
+                                                         attachment, reaction.count, message.author.id)
         except asyncpg.exceptions.UniqueViolationError:
             starred = await database.connection.fetchrow('''
                 update starboard
@@ -55,13 +55,6 @@ class StarboardService:
                 returning *;
             ''', message.id, message.channel.id, message.guild.id)
 
-        if unstarred['stars_count'] == 0:
-            unstarred = await database.connection.fetchrow('''
-                delete from starboard
-                where message_id = $1 and channel_id = $2 and guild_id = $3
-                returning *;
-            ''', message.id, message.channel.id, message.guild.id)
-
         return Starboard.convert(unstarred)
 
     @classmethod
@@ -73,6 +66,7 @@ class StarboardService:
                 message_id      bigint    not null,
                 guild_id        bigint    not null,
                 channel_id      bigint    not null,
+                author_id       bigint    not null,
                 started_at      timestamp not null default now(),
                 message_content text,
                 attachment      text,

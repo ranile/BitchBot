@@ -11,6 +11,7 @@ class Starboard(Resource):
         self.stars_count = kwargs.pop('stars_count')
         self.guild = kwargs.pop('guild')
         self.channel = kwargs.pop('channel')
+        self.author = kwargs.pop('author')
 
     @classmethod
     def convert(cls, record):
@@ -23,4 +24,5 @@ class Starboard(Resource):
             stars_count=record['stars_count'],
             guild=record['guild_id'],
             channel=record['channel_id'],
+            author=record['author_id']
         )

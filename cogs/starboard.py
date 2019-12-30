@@ -40,7 +40,7 @@ class Starboard(commands.Cog):
 
             should_send, starred = await StarboardService.star(reaction)
 
-            if should_send:
+            if should_send and reaction.message.id not in self.already_starred:
                 author = reaction.message.author
                 embed = discord.Embed(color=funs.random_discord_color())
                 embed.set_author(name=author.display_name, icon_url=author.avatar_url)
@@ -50,7 +50,7 @@ class Starboard(commands.Cog):
                     embed.set_image(url=starred.attachment)
                 embed.set_footer(text='Starred at')
                 embed.timestamp = starred.started_at
-
+                self.already_starred.append(reaction.message.id)
                 await reaction.message.guild.get_channel(config.starboard_channel).send(embed=embed)
 
     @commands.Cog.listener()
