@@ -90,8 +90,24 @@ class Starboard(commands.Cog):
 
     @stats.command(name='top', hidden=True)
     async def top_stared(self, ctx):
-        # Guild's star stats
-        await ctx.send('Stub!')
+        top = await StarboardService.guild_top_stats(ctx.guild)
+        paginator = commands.Paginator(prefix='```md')
+        length = 0
+        for starred in top:
+            member = starred["author"]
+            line = f'{member.display_name} ({member.name}#{member.discriminator}): {starred["count"]}'
+            paginator.add_line(line)
+
+            if length < len(line):
+                length = len(line)
+
+        paginator.add_line()
+        paginator.add_line('-' * length)
+        me = await StarboardService.my_stats(ctx)
+        paginator.add_line(f'You: {me["count"]}')
+
+        for page in paginator.pages:
+            await ctx.send(page)
 
     @commands.command()
     @checks.can_config()

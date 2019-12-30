@@ -58,6 +58,31 @@ class StarboardService:
         return Starboard.convert(unstarred)
 
     @classmethod
+    async def guild_top_stats(cls, guild):
+        query = '''
+        select author_id, count(author_id) from Starboard
+        where guild_id = $1
+        group by author_id
+        order by count desc
+        limit 10;
+        '''
+
+        fetched = await database.connection.fetch(query, guild.id)
+        result = []
+        for stared in fetched:
+            member = guild.get_member(stared['author_id'])
+            if member is None:
+                continue
+            res = {
+                'author': member,
+                'count': stared['count']
+            }
+
+            result.append(res)
+
+        return result
+
+    @classmethod
     def sql(cls):
         return SQL(createTable='''
             create table if not exists Starboard
@@ -75,3 +100,14 @@ class StarboardService:
             
             create unique index if not exists unique_message on Starboard (message_id);
             ''')
+
+    @classmethod
+    async def my_stats(cls, ctx):
+        query = '''
+        select author_id, count(author_id) from Starboard
+        where guild_id = $1 and author_id = $2
+        group by author_id
+        order by count desc;
+        '''
+
+        return await database.connection.fetchrow(query, ctx.guild.id, ctx.author.id)
