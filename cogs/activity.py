@@ -51,7 +51,6 @@ class Activity(commands.Cog, name='Activity Tracking'):
             pass
 
     @commands.group(invoke_without_command=True)
-    @checks.private_command()
     async def activity(self, ctx):
         fetched = await ActivityService.get(ctx.author.id, ctx.guild.id)
         embed = discord.Embed(color=funs.random_discord_color())
@@ -63,7 +62,6 @@ class Activity(commands.Cog, name='Activity Tracking'):
         await ctx.send(embed=embed)
 
     @activity.command(name='top')
-    @checks.private_command()
     async def top_users(self, ctx):
         top = await ActivityService.get_top(guild=ctx.guild)
 
