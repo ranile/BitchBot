@@ -69,7 +69,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         length = 0
         for user in top:
-            if user is None:
+            if user.user is None:
                 continue
 
             line = f'{user.position}. {user.user.display_name} - {user.points} points'
