@@ -42,8 +42,10 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         if self.should_increment(message):
             await ActivityService.increment(message.author.id, message.guild.id, 2)
-
-            last_updated = (await ActivityService.get(message.author.id, message.guild.id)).last_updated_time
+            try:
+                last_updated = (await ActivityService.get(message.author.id, message.guild.id)).last_updated_time
+            except errors.NotFound:
+                last_updated = datetime.datetime.utcnow()
             self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
 
             # await message.channel.send(f'yes {incremented["points"]}')
@@ -57,8 +59,9 @@ class Activity(commands.Cog, name='Activity Tracking'):
             of = ctx.author
         try:
             fetched = await ActivityService.get(of.id, ctx.guild.id)
+            member = ctx.guild.get_member(fetched.user)
             embed = discord.Embed(color=funs.random_discord_color())
-            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            embed.set_author(name=member.display_name, icon_url=member.avatar_url)
             embed.add_field(name='Activity Points', value=fetched.points)
             embed.add_field(name='Position', value=fetched.position)
             embed.set_footer(text='Last updated at')
