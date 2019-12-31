@@ -23,12 +23,9 @@ bot = commands.Bot(
 
 dpy_logger = logging.getLogger('discord')
 dpy_logger.setLevel(logging.INFO)
-bb_logger = logging.getLogger(BITCH_BOT)
-bb_logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 dpy_logger.addHandler(handler)
-bb_logger.addHandler(handler)
 
 cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity', 'misc']
 
@@ -59,7 +56,6 @@ async def on_ready():
     bot.clientSession = aiohttp.ClientSession()
 
     for i in cogs:
-        bb_logger.info(f'Loaded extension {i}')
         bot.load_extension(f"cogs.{i}")
 
     # await bot.get_cog('AutoResponder').setup()

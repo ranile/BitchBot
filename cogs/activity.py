@@ -2,11 +2,17 @@ import datetime
 import re
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from services import ActivityService
 from util import funs
 from database import errors
+import logging
+
+log = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
+log.addHandler(handler)
 
 
 class Activity(commands.Cog, name='Activity Tracking'):
@@ -20,6 +26,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.cache = {}
         self.bot_channel_pattern = re.compile(r'(bot-?commands|spam)')
         self.command_pattern = re.compile(rf'>[a-z]+')
+        log.critical('activity')
 
     def should_increment(self, message):
         try:
@@ -88,6 +95,18 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         for page in paginator.pages:
             await ctx.send(page)
+
+    @tasks.loop(minutes=30)
+    async def refresh_activity_material_view(self):
+        await ActivityService.update_material_view()
+
+    @refresh_activity_material_view.before_loop
+    async def before_refresh_material_view(self):
+        await self.bot.wait_until_ready()
+
+    @refresh_activity_material_view.after_loop
+    async def after_refresh_material_view(self):
+        log.info('Refreshed ActivityView Material view')
 
 
 def setup(bot):

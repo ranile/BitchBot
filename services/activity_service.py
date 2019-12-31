@@ -1,12 +1,11 @@
 from database import database
 from database.sql import SQL
 from resources.activity import Activity
-from services import Service
 import discord
 from database import errors
 
 
-class ActivityService(Service):
+class ActivityService:
 
     @classmethod
     async def increment(cls, user_id, guild_id, by):
@@ -74,3 +73,9 @@ class ActivityService(Service):
             converted.append(user_activity)
 
         return converted
+
+    @classmethod
+    async def update_material_view(cls):
+        return await database.connection.execute('''
+            REFRESH MATERIALIZED VIEW ActivityView;
+        ''')
