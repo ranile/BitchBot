@@ -58,8 +58,8 @@ class ActivityService(Service):
     @classmethod
     async def get_top(cls, guild, limit=10):
         query = '''
-        select *, pg_xact_commit_timestamp(xmin) as last_time_updated, row_number() over ( order by points desc ) as position
-        from activity
+        select *, row_number() over ( order by points desc ) as position
+        from ActivityView
         where guild_id = $1
         order by points desc
         limit $2;
