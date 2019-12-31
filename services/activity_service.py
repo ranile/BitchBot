@@ -2,6 +2,8 @@ from database import database
 from database.sql import SQL
 from resources.activity import Activity
 from services import Service
+import discord
+from database import errors
 
 
 class ActivityService(Service):
@@ -40,11 +42,18 @@ class ActivityService(Service):
 
     @classmethod
     async def get(cls, user_id, guild_id):
-        fetched = await database.connection.fetchrow('''
-            select pg_xact_commit_timestamp(xmin) as last_time_updated, *, row_number() over ( order by points desc ) as position
-            from activity where user_id = $1 and guild_id = $2;
-        ''', user_id, guild_id)
-        return Activity.convert(fetched)
+        fetched = await database.connection.fetch('''
+            select *, row_number() over ( order by points desc ) as position
+            from ActivityView
+            where guild_id = $1
+            order by points desc;
+        ''', guild_id)
+        print(fetched)
+        for_user = discord.utils.find(lambda x: x['user_id'] == user_id, fetched)
+        if fetched is None or for_user is None:
+            raise errors.NotFound(f'Activity for user with user id: {user_id} in guild {guild_id} not found')
+
+        return Activity.convert(for_user)
 
     @classmethod
     async def get_top(cls, guild, limit=10):

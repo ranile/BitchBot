@@ -5,7 +5,8 @@ import discord
 from discord.ext import commands
 
 from services import ActivityService
-from util import funs, checks
+from util import funs
+from database import errors
 
 
 class Activity(commands.Cog, name='Activity Tracking'):
@@ -51,15 +52,20 @@ class Activity(commands.Cog, name='Activity Tracking'):
             pass
 
     @commands.group(invoke_without_command=True)
-    async def activity(self, ctx):
-        fetched = await ActivityService.get(ctx.author.id, ctx.guild.id)
-        embed = discord.Embed(color=funs.random_discord_color())
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-        embed.add_field(name='Activity Points', value=fetched.points)
-        embed.add_field(name='Position', value=fetched.position)
-        embed.set_footer(text='Last updated at')
-        embed.timestamp = fetched.last_updated_time
-        await ctx.send(embed=embed)
+    async def activity(self, ctx, of: discord.Member = None):
+        if of is None:
+            of = ctx.author
+        try:
+            fetched = await ActivityService.get(of.id, ctx.guild.id)
+            embed = discord.Embed(color=funs.random_discord_color())
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            embed.add_field(name='Activity Points', value=fetched.points)
+            embed.add_field(name='Position', value=fetched.position)
+            embed.set_footer(text='Last updated at')
+            embed.timestamp = fetched.last_updated_time
+            await ctx.send(embed=embed)
+        except errors.NotFound:
+            await ctx.send(f'Activity for user `{funs.format_human_readable_user(of)}` not found')
 
     @activity.command(name='top')
     async def top_users(self, ctx):

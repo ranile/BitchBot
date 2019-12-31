@@ -1,3 +1,5 @@
+from typing import Union
+
 import discord
 from discord.ext import commands
 from random import randint
@@ -9,6 +11,10 @@ import re
 
 def random_discord_color():
     return discord.Color(value=randint(0, 16777215))
+
+
+def format_human_readable_user(user: Union[discord.Member, discord.Member]):
+    return f'{user.display_name} ({user.name}#{user.discriminator}, id: {user.id})'
 
 
 def cause_check():
