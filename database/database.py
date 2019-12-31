@@ -38,7 +38,11 @@ async def createTables():
     await connection.execute(services.ActivityService.sql().createTable)
     await connection.execute(services.StarboardService.sql().createTable)
     await connection.execute(services.ConfigService.sql().createTable)
-
+    await connection.execute('''
+    create materialized view ActivityView as
+    select *, pg_xact_commit_timestamp(xmin) as last_time_updated
+    from Activity;
+    ''')
 
 async def init():
     await connect()
