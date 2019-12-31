@@ -48,11 +48,6 @@ class Activity(commands.Cog, name='Activity Tracking'):
                 last_updated = datetime.datetime.utcnow()
             self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
 
-            # await message.channel.send(f'yes {incremented["points"]}')
-        else:
-            # await message.channel.send('no')
-            pass
-
     @commands.group(invoke_without_command=True)
     async def activity(self, ctx, of: discord.Member = None):
         if of is None:
