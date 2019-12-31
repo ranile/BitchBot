@@ -48,7 +48,7 @@ class ActivityService(Service):
             where guild_id = $1
             order by points desc;
         ''', guild_id)
-        print(fetched)
+
         for_user = discord.utils.find(lambda x: x['user_id'] == user_id, fetched)
         if fetched is None or for_user is None:
             raise errors.NotFound(f'Activity for user with user id: {user_id} in guild {guild_id} not found')
