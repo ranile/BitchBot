@@ -7,11 +7,12 @@ import tornado.web
 from discord.ext import commands
 
 from database import database
-from keys import bot as BOT_TOKEN
+from keys import bot as BOT_TOKEN, BITCH_BOT
 from routes.routes import routesList as routes
 from util import HelpCommand
 # noinspection PyPackageRequirements
 import aiohttp
+import logging
 
 bot = commands.Bot(
     command_prefix=">",
@@ -20,8 +21,16 @@ bot = commands.Bot(
     help_command=HelpCommand.BloodyHelpCommand()
 )
 
-# cogs = ["admin", "autorespond", "emojis", "internet", "misc", "blogify"]
-cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity']
+dpy_logger = logging.getLogger('discord')
+dpy_logger.setLevel(logging.INFO)
+bb_logger = logging.getLogger(BITCH_BOT)
+bb_logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
+dpy_logger.addHandler(handler)
+bb_logger.addHandler(handler)
+
+cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity', 'misc']
 
 
 @bot.command()
@@ -50,6 +59,7 @@ async def on_ready():
     bot.clientSession = aiohttp.ClientSession()
 
     for i in cogs:
+        bb_logger.info(f'Loaded extension {i}')
         bot.load_extension(f"cogs.{i}")
 
     # await bot.get_cog('AutoResponder').setup()
