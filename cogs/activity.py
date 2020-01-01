@@ -10,6 +10,7 @@ from database import errors
 import logging
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 log.addHandler(handler)
@@ -103,11 +104,11 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @refresh_activity_material_view.before_loop
     async def before_refresh_material_view(self):
-        await self.bot.wait_until_ready()
+        log.info('Starting ActivityView Materialized view refresh')
 
     @refresh_activity_material_view.after_loop
     async def after_refresh_material_view(self):
-        log.info('Refreshed ActivityView Material view')
+        log.info('Refreshed ActivityView Materialized view')
 
 
 def setup(bot):
