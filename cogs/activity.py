@@ -27,6 +27,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.bot_channel_pattern = re.compile(r'(bot-?commands|spam)')
         self.command_pattern = re.compile(rf'>[a-z]+')
         log.critical('activity')
+        self.refresh_activity_material_view.start()
 
     def should_increment(self, message):
         try:
