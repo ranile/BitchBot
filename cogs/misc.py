@@ -1,3 +1,6 @@
+import subprocess
+from datetime import datetime
+
 import aiohttp
 import asyncio
 import discord
@@ -5,7 +8,7 @@ import re
 import string
 from discord.ext import commands
 import dialogflow_v2 as dialogflow
-
+import git
 from keys import logWebhook, project_id
 from util import funs  # pylint: disable=no-name-in-module
 
@@ -269,6 +272,32 @@ class Miscellaneous(commands.Cog):
         response = self.session_client.detect_intent(session=session, query_input=query_input)
 
         await ctx.send(response.query_result.fulfillment_text)
+
+    @commands.command()
+    async def info(self, ctx):
+        repo = git.Repo()
+        commits = list(repo.iter_commits())[:3]
+        out = []
+        for commit in commits:
+            message = commit.message.split('\n')[0]
+            time = str(datetime.now(tz=commit.authored_datetime.tzinfo) - commit.authored_datetime).split('.')[0][:-3]\
+                       .replace(':', ' hours, ') + ' minutes'
+            out.append(f"[`{commit.hexsha[0:7]}`](https://github.com/hamza1311/BitchBot/commit/{commit.hexsha}) "
+                       f"{message} - {commit.author}; {time} ago")
+
+        joined = '\n'.join(out)
+        embed = discord.Embed(color=funs.random_discord_color(), description=f"Latest commits:\n{joined}")
+        owner = self.bot.get_user(self.bot.owner_id)
+        embed.set_author(name=f"{owner.name}#{owner.discriminator}", icon_url=owner.avatar_url)
+        embed.set_thumbnail(url=self.bot.user.avatar_url)
+        embed.add_field(name="Source", value=f"[GitHub Respositiory]({list(repo.remote('origin').urls)[0]})")
+        embed.add_field(name="Deployed branch", value=repo.active_branch)
+        embed.add_field(name='Comamnds', value=f"{len(self.bot.cogs)} Cogs loaded\n{len(self.bot.commands)} commands")
+        members = list(self.bot.get_all_members())
+        embed.add_field(name='Members', value=f'Total: {len(members)}\nUnique: {len(set(m.id for m in members))}')
+        embed.set_footer(text=f'Written in discord.py v{discord.__version__}', icon_url='https://i.imgur.com/RPrw70n.png')
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

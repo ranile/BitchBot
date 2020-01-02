@@ -7,7 +7,7 @@ import tornado.web
 from discord.ext import commands
 
 from database import database
-from keys import bot as BOT_TOKEN, BITCH_BOT
+from keys import bot as BOT_TOKEN
 from routes.routes import routesList as routes
 from util import HelpCommand
 # noinspection PyPackageRequirements
@@ -17,7 +17,7 @@ import logging
 bot = commands.Bot(
     command_prefix=">",
     case_insensitive=True,
-    owner_ids=[529535587728752644],
+    owner_id=529535587728752644,
     help_command=HelpCommand.BloodyHelpCommand()
 )
 
@@ -27,7 +27,7 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 dpy_logger.addHandler(handler)
 
-cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity']
+cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity', 'misc']
 
 
 @bot.command()
