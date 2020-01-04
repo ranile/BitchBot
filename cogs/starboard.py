@@ -24,9 +24,6 @@ class Starboard(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.already_starred = []
-        # star_config = self.bot.get_cog('Config').get_command('config').get_command('starboard')
-        star_config = self.bot.get_command('config starboard')
-        star_config.add_command(self.setup)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -65,7 +62,7 @@ class Starboard(commands.Cog):
         await StarboardService.unstar(reaction)
 
     @commands.group(invoke_without_command=True)
-    async def star(self, ctx, message):
+    async def starboard(self, ctx, message):
         star = await StarboardService.get(message, ctx.guild.id)
 
         if star is None:
@@ -83,23 +80,20 @@ class Starboard(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @star.group(invoke_without_command=True, hidden=True)
+    @starboard.group(invoke_without_command=True)
     async def stats(self, ctx):
-        # Author's star stats
-        await ctx.send('Stub!')
-
-    @stats.command(name='top', hidden=True)
-    async def top_stared(self, ctx):
         top = await StarboardService.guild_top_stats(ctx.guild)
         paginator = commands.Paginator(prefix='```md')
         length = 0
         for starred in top:
             member = starred["author"]
-            line = f'{member.display_name} ({member.name}#{member.discriminator}): {starred["count"]}'
-            paginator.add_line(line)
-
-            if length < len(line):
-                length = len(line)
+            try:
+                line = f'{member.display_name} ({member.name}#{member.discriminator}): {starred["count"]}'
+                paginator.add_line(line)
+                if length < len(line):
+                    length = len(line)
+            except AttributeError:
+                pass
 
         paginator.add_line()
         paginator.add_line('-' * length)
@@ -109,7 +103,7 @@ class Starboard(commands.Cog):
         for page in paginator.pages:
             await ctx.send(page)
 
-    @commands.command()
+    @starboard.command()
     @checks.can_config()
     async def setup(self, ctx, channel: discord.TextChannel):
         config = GuildConfig(

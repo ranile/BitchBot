@@ -27,7 +27,7 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 dpy_logger.addHandler(handler)
 
-cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity', 'jsk', 'misc']
+cogs = ["admin", "cause", "emojis", "internet", "starboard", 'activity', 'jsk', 'misc']
 
 
 @bot.command()
