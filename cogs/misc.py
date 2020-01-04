@@ -1,6 +1,3 @@
-import subprocess
-from datetime import datetime
-
 import aiohttp
 import asyncio
 import discord
@@ -9,8 +6,11 @@ import string
 from discord.ext import commands
 import dialogflow_v2 as dialogflow
 import git
+from TextToOwO.owo import text_to_owo
+from datetime import datetime
 from keys import logWebhook, project_id
 from util import funs  # pylint: disable=no-name-in-module
+from util.emoji_chars import emoji_chars
 
 
 def c_to_f(c: float) -> float:
@@ -26,44 +26,6 @@ class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session_client = dialogflow.SessionsClient()
-        self.emoji_chars = {
-            'a': '🇦',
-            'b': '🇧',
-            'c': '🇨',
-            'd': '🇩',
-            'e': '🇪',
-            'f': '🇫',
-            'g': '🇬',
-            'h': '🇭',
-            'i': '🇮',
-            'j': '🇯',
-            'k': '🇰',
-            'l': '🇱',
-            'm': '🇲',
-            'n': '🇳',
-            'o': '🇴',
-            'p': '🇵',
-            'q': '🇶',
-            'r': '🇷',
-            's': '🇸',
-            't': '🇹',
-            'u': '🇺',
-            'v': '🇻',
-            'w': '🇼',
-            'x': '🇽',
-            'y': '🇾',
-            'z': '🇿'
-        }
-
-        self.emoji_chars_alts = {
-            'k': "🎋",
-            'l': "👢",
-            'o': "⭕",
-            'q': "🎯",
-            's': "💲",
-            'u': "⛎",
-            'x': "❌"
-        }
 
     @commands.command(aliases=["send"])
     async def say(self, ctx, *, message):
@@ -119,11 +81,7 @@ class Miscellaneous(commands.Cog):
         sent = []
         for i in text:
             if re.fullmatch(r'[a-z]', i, re.IGNORECASE):
-                emoji = str(i).lower()
-                if (i in sent) and (emoji in self.emoji_chars_alts.keys()):
-                    await msg.add_reaction(self.emoji_chars_alts[emoji])
-                else:
-                    await msg.add_reaction(self.emoji_chars[emoji])
+                await msg.add_reaction(self.emoji_chars[str(i).lower()])
                 sent.append(i)
 
         await funs.log(ctx, text, ctx.message, ''.join(sent))
@@ -250,7 +208,7 @@ class Miscellaneous(commands.Cog):
             await msg.add_reaction("👎")
 
         elif len(answers) < 10:
-            letter_emote = list(self.emoji_chars.values())
+            letter_emote = list(emoji_chars.values())
             inner = ""
             for i in range(len(answers)):
                 inner += f"{letter_emote[i]} {answers[i]}\n"
@@ -280,7 +238,7 @@ class Miscellaneous(commands.Cog):
         out = []
         for commit in commits:
             message = commit.message.split('\n')[0]
-            time = str(datetime.now(tz=commit.authored_datetime.tzinfo) - commit.authored_datetime).split('.')[0][:-3]\
+            time = str(datetime.now(tz=commit.authored_datetime.tzinfo) - commit.authored_datetime).split('.')[0][:-3] \
                        .replace(':', ' hours, ') + ' minutes'
             out.append(f"[`{commit.hexsha[0:7]}`](https://github.com/hamza1311/BitchBot/commit/{commit.hexsha}) "
                        f"{message} - {commit.author}; {time} ago")
@@ -295,9 +253,16 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name='Comamnds', value=f"{len(self.bot.cogs)} Cogs loaded\n{len(self.bot.commands)} commands")
         members = list(self.bot.get_all_members())
         embed.add_field(name='Members', value=f'Total: {len(members)}\nUnique: {len(set(m.id for m in members))}')
-        embed.set_footer(text=f'Written in discord.py v{discord.__version__}', icon_url='https://i.imgur.com/RPrw70n.png')
+        embed.set_footer(text=f'Written in discord.py v{discord.__version__}',
+                         icon_url='https://i.imgur.com/RPrw70n.png')
 
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def owoize(self, ctx, *, message):
+        owoized = text_to_owo(message)
+        sent = await ctx.send(owoized)
+        await funs.log(ctx, message, sent, owoized)
 
 
 def setup(bot):

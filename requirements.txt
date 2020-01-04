@@ -5,3 +5,4 @@ git+https://github.com/Rapptz/discord.py
 dialogflow
 gitpython
 git+https://github.com/Gorialis/jishaku@master#egg=jishaku
+git+https://github.com/Zenrac/TextToOwO
