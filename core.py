@@ -27,7 +27,7 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 dpy_logger.addHandler(handler)
 
-cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity', 'misc']
+cogs = ["admin", "cause", "emojis", "internet", 'config', "starboard", 'activity', 'jsk', 'misc']
 
 
 @bot.command()
@@ -54,7 +54,7 @@ async def on_ready():
     )
 
     bot.clientSession = aiohttp.ClientSession()
-
+    # bot.load_extension('jishaku')
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
 
