@@ -40,6 +40,7 @@ class GuildConfigService:
         create table if not exists GuildConfig
         (
             guild_id          bigint primary key,
-            starboard_channel bigint
+            starboard_channel bigint,
+            event_log_webhook text
         )
         ''')
