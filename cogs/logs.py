@@ -106,7 +106,7 @@ class Logging(commands.Cog):
             text = 'Role removed'
 
         embed.description = repr(diff)
-        emhierarchybed.add_field(name='Operation', value=text)
+        embed.add_field(name='Operation', value=text)
         print(diff)
         await self.send_log(after, 'on_member_update', embed=embed)
 
