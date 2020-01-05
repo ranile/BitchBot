@@ -21,3 +21,10 @@ def can_config():
             return False
 
     return commands.check(predicate)
+
+
+def is_mod():
+    async def predicate():
+        return True
+
+    return commands.check(predicate)
