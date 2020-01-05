@@ -8,31 +8,7 @@ from discord.ext import commands
 
 from services.config_service import GuildConfigService
 from util import funs, checks
-
-
-class Ban:
-    def __init__(self, **kwargs):
-        self.reason = kwargs.pop('reason')
-        self.banned_at = kwargs.pop('banned_a')
-        self.banned_by_id = kwargs.pop('banned_by_id')
-        self.banned_user_id = kwargs.pop('banned_user_id')
-        self.unban_time = kwargs.pop('unban_time')
-
-
-class Mute:
-    def __init__(self, **kwargs):
-        self.reason = kwargs.pop('reason')
-        self.muted_at = kwargs.pop('muted_at')
-        self.muted_by_id = kwargs.pop('muted_by_id')
-        self.muted_user_id = kwargs.pop('muted_user_id')
-
-
-class Warn:
-    def __init__(self, **kwargs):
-        self.reason = kwargs.pop('reason')
-        self.warned_at = kwargs.pop('warned_at')
-        self.warned_by_id = kwargs.pop('warned_by_id')
-        self.warned_user_id = kwargs.pop('warned_user_id')
+from resources import Ban, Warn, Mute
 
 
 class Moderation(commands.Cog):
