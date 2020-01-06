@@ -6,7 +6,7 @@ from resources import Mute
 class MuteService:
     @classmethod
     async def insert(cls, mute):
-        query = database.connection.fetchrow('''
+        query = await database.connection.fetchrow('''
             insert into Mutes (reason, muted_by_id, muted_user_id, guild_id)
             values ($1, $2, $3, $4)
             returning *;
