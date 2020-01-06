@@ -43,6 +43,9 @@ async def createTables():
     select *, pg_xact_commit_timestamp(xmin) as last_time_updated
     from Activity;
     ''')
+    await connection.execute(services.BanService.sql().createTable)
+    await connection.execute(services.MuteService.sql().createTable)
+
 
 async def init():
     await connect()

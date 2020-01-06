@@ -22,7 +22,7 @@ class BanService:
                 (
                     id             serial primary key,
                     reason         text,
-                    banned_at      timestamp default now(),
+                    banned_at      timestamp not null default now(),
                     banned_by_id   bigint not null,
                     banned_user_id bigint not null,
                     unban_time     timestamp,
