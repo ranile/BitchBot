@@ -3,6 +3,7 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 
+from database import database
 from services.config_service import GuildConfigService
 from util import funs
 
@@ -103,7 +104,7 @@ class Logging(commands.Cog):
         embed.description = repr(diff)
         embed.add_field(name='Operation', value=text)
         print(diff)
-        await self.send_log(after, 'on_member_update', embed=embed, guild=after.guild)
+        await self.send_log(member=after, name='on_member_update', embed=embed)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
