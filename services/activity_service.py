@@ -9,22 +9,23 @@ class ActivityService:
 
     @classmethod
     async def increment(cls, user_id, guild_id, by):
-        # Attempt at incrementing the activity
-        increment = await database.connection.fetchrow(''' 
-        update activity
-        set points = activity.points + $1
-        where user_id = $2 and guild_id = $3
-        returning points, user_id, guild_id, pg_xact_commit_timestamp(xmin) as last_time_updated;
-        ''', by, user_id, guild_id)
+        async with database.pool.acquire() as connection:
+            # Attempt at incrementing the activity
+            increment = await connection.fetchrow(''' 
+            update activity
+            set points = activity.points + $1
+            where user_id = $2 and guild_id = $3
+            returning points, user_id, guild_id, pg_xact_commit_timestamp(xmin) as last_time_updated;
+            ''', by, user_id, guild_id)
 
-        if increment is None:  # If no row is returned, it means that user was not in the table
-            # Insert the default amount of activity points for that user
+            if increment is None:  # If no row is returned, it means that user was not in the table
+                # Insert the default amount of activity points for that user
 
-            increment = await database.connection.fetchrow('''insert into Activity (user_id, guild_id)
-                values ($1, $2) returning points, user_id, guild_id, pg_xact_commit_timestamp(xmin) as last_time_updated;;''',
-                                                           user_id, guild_id)
+                increment = await connection.fetchrow('''insert into Activity (user_id, guild_id)
+                    values ($1, $2) returning points, user_id, guild_id, pg_xact_commit_timestamp(xmin) as last_time_updated;;''',
+                                                               user_id, guild_id)
 
-        return increment
+            return increment
 
     @classmethod
     def sql(cls):
