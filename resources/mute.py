@@ -1,4 +1,7 @@
-class Mute:
+from resources import Resource
+
+
+class Mute(Resource):
     def __init__(self, **kwargs):
         self.reason = kwargs.pop('reason')
         self.muted_at = kwargs.pop('muted_at')

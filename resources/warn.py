@@ -1,4 +1,7 @@
-class Warn:
+from resources import Resource
+
+
+class Warn(Resource):
     def __init__(self, **kwargs):
         self.reason = kwargs.pop('reason')
         self.warned_at = kwargs.pop('warned_at')
