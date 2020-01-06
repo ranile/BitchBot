@@ -25,7 +25,8 @@ class MuteService:
                 muted_at      timestamp not null default now(),
                 muted_by_id   bigint    not null,
                 muted_user_id bigint    not null,
-                guild_id      bigint    not null
+                guild_id      bigint    not null,
+                unmute_time   timestamp
             )
             '''
         )
