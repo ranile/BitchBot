@@ -45,10 +45,9 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get("https://icanhazdadjoke.com", headers={"Accept": "text/plain"}) as res:
-            content = await res.json(content_type=None)
-
-            await ctx.send(content)
+        async with self.bot.clientSession.get("https://icanhazdadjoke.com", headers={"Accept": "application/json"}) as res:
+            content = await res.json()
+            await ctx.send(content['joke'])
 
     @commands.command()
     async def norris(self, ctx):
