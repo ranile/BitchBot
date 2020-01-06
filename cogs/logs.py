@@ -103,7 +103,7 @@ class Logging(commands.Cog):
         embed.description = repr(diff)
         embed.add_field(name='Operation', value=text)
         print(diff)
-        await self.send_log(after, 'on_member_update', embed=embed)
+        await self.send_log(after, 'on_member_update', embed=embed, guild=after.guild)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
