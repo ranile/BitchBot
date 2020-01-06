@@ -24,7 +24,7 @@ def can_config():
 
 
 def is_mod():
-    async def predicate():
+    async def predicate(ctx):
         return True
 
     return commands.check(predicate)

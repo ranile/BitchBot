@@ -35,6 +35,17 @@ class GuildConfigService:
         return GuildConfig.convert(inserted)
 
     @classmethod
+    async def update(cls, guild_id, name, value):
+        fetched = await database.connection.fetchrow(f'''
+            update GuildConfig 
+            set {name} = $1
+            where guild_id = $2
+            returning *;
+        ''', value, guild_id)
+
+        return GuildConfig.convert(fetched)
+
+    @classmethod
     def sql(cls):
         return SQL(createTable='''
         create table if not exists GuildConfig

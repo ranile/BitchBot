@@ -1,8 +1,6 @@
-import asyncio
 from datetime import datetime, timedelta
 
 import discord
-import re
 import time
 from discord.ext import commands
 
@@ -26,21 +24,22 @@ class Moderation(commands.Cog):
                               timestamp=datetime.utcnow())
         embed.add_field(name='Kicked By', value=ctx.author.mention, inline=True)
         embed.add_field(name='Kicked user', value=victim.mention, inline=True)
-        if reason: embed.add_field(name='Reason', value=reason, inline=False)
+        if reason:
+            embed.add_field(name='Reason', value=reason, inline=False)
         embed.set_thumbnail(url=victim.avatar_url)
 
         await ctx.send(embed=embed)
-        await victim.kick(reason=reason)
+        # await victim.kick(reason=reason)
 
         try:
             embed.title = f"You have been Kicked from {ctx.guild.name}"
-            await victim.send(embed=embed)
+            await ctx.send(embed=embed)
         except discord.Forbidden:
             await ctx.send("I can't dm that user. Kicked without notice")
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx: commands.Context, victim: discord.Member, *, reasonAndDuration: str = ""):
+    async def ban(self, ctx: commands.Context, victim: discord.Member, *, reason=None):
         """Ban a user
         """
 
@@ -48,17 +47,14 @@ class Moderation(commands.Cog):
             await ctx.send("Why do want to ban yourself?\nI'm not gonna let you do it")
             return
 
-        duration = re.search(f'([0-9]+)? ?', reasonAndDuration).group(0).strip()
-        reason = reasonAndDuration[len(duration):].strip()
-
-        await victim.ban(reason=reason)
+        # await victim.ban(reason=reason)
 
         ban = Ban(
             reason=reason if reason else None,
             banned_at=datetime.utcnow(),
             banned_by_id=ctx.author.id,
             banned_user_id=victim.id,
-            unban_time=(datetime.utcnow() + timedelta(hours=2)),
+            unban_time=None,
         )
 
         embed = discord.Embed(title=f"User was banned from {ctx.guild.name}", color=funs.random_discord_color(),
@@ -74,26 +70,16 @@ class Moderation(commands.Cog):
 
         try:
             embed.title = f"You have been banned from {ctx.guild.name}"
-            await victim.send(embed=embed)
+            await ctx.send(embed=embed)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Banned without notice")
 
-        if duration:
-            await asyncio.sleep(int(duration))
-            await victim.unban()
-
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_roles=True, manage_channels=True)
-    async def mute(self, ctx: commands.Context, victim: discord.Member, *, reasonAndDuration: str = ""):
-        """
-        Mute a user
-        Duration must be given in seconds. Use a calculator, not me.
-        Mute will become permanent if bot script is restarted
+    async def mute(self, ctx: commands.Context, victim: discord.Member, *, reason=None):
+        """Mute a user
         """
         await ctx.trigger_typing()
-
-        duration = re.search(f'([0-9]+)? ?', reasonAndDuration).group(0).strip()
-        reason = reasonAndDuration[len(duration):].strip()
 
         if victim.id == ctx.author.id:
             await ctx.send("Why do want to mute yourself?\nI'm not gonna let you do it")
@@ -116,7 +102,7 @@ class Moderation(commands.Cog):
             if reason:
                 msg += f" for `{reason}`"
 
-            await victim.send(msg)
+            await ctx.send(msg)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Muted without notice")
 
@@ -126,10 +112,6 @@ class Moderation(commands.Cog):
             muted_by_id=ctx.author.id,
             muted_user_id=victim.id,
         )
-
-        if duration:
-            await asyncio.sleep(int(duration))
-            await victim.remove_roles(muted)
 
     @commands.command()
     @commands.has_permissions(manage_roles=True, manage_channels=True)
@@ -156,7 +138,7 @@ class Moderation(commands.Cog):
             warned_user_id=victim.id,
         )
 
-        embed = discord.Embed(title=f"User was Warned from {ctx.guild.name}", color=funs.random_discord_color(),
+        embed = discord.Embed(title=f"User was warned from {ctx.guild.name}", color=funs.random_discord_color(),
                               timestamp=warning.warned_at)
         embed.add_field(name='Warned By', value=ctx.author.mention, inline=True)
         embed.add_field(name='Warned user', value=victim.mention, inline=True)
@@ -167,8 +149,8 @@ class Moderation(commands.Cog):
         await ctx.send(embed=embed)
 
         try:
-            embed.title = f"You have been Warned in {ctx.guild.name}"
-            await victim.send(embed=embed)
+            embed.title = f"You have been warned in {ctx.guild.name}"
+            await ctx.send(embed=embed)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Warned without notice")
 
@@ -189,6 +171,11 @@ class Moderation(commands.Cog):
             )
 
         await ctx.send(embed=embed)
+
+    @mute.command(name='config')
+    async def mute_config(self, ctx, role: discord.Role):
+        await GuildConfigService.update(ctx.guild.id, 'mute_role_id', role.id)
+        await ctx.send(f'Inserted {role.mention} as mute role')
 
 
 def setup(bot: commands.Bot):
