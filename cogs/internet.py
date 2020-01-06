@@ -1,7 +1,7 @@
 import discord
 import re
 import urllib
-import wikipedia
+from aiowiki import Wiki
 from discord.ext import commands
 
 from util.funs import random_discord_color  # pylint: disable=no-name-in-module
@@ -20,23 +20,20 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        search = wikipedia.search(search)
+        async with Wiki.wikipedia('en') as wiki:
+            page = await wiki.opensearch(search)
+            if len(page) == 0:
+                return
+            page = page[0]
 
-        if not search:
-            await ctx.send("No page was found for that search term")
-            return
+            embed = discord.Embed(title=page.title, description=(await page.text())[:1000], url=page.wiki.url,
+                                  color=random_discord_color())
+            embed.set_footer(text="From Wikipedia")
+            media = await page.media()
+            if len(media) != 0:
+                embed.set_thumbnail(url=media[0])
 
-        page = wikipedia.page(search[0])
-        title = page.title
-        body = page.summary[:1000]
-        image = page.images[0]
-        url = page.url
-
-        embed = discord.Embed(title=title, description=body, url=url, color=random_discord_color())
-        embed.set_footer(text="From Wikipedia")
-        embed.set_thumbnail(url=image)
-
-        await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def joke(self, ctx):
