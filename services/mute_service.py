@@ -20,7 +20,7 @@ class MuteService:
             createTable='''
             create table if not exists Mutes
             (
-                id            serial,
+                id            serial primary key,
                 reason        text,
                 muted_at      timestamp not null default now(),
                 muted_by_id   bigint    not null,
