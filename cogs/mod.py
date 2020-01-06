@@ -4,6 +4,7 @@ import discord
 import time
 from discord.ext import commands
 
+from services.ban_service import BanService
 from services.config_service import GuildConfigService
 from util import funs, checks
 from resources import Ban, Warn, Mute
@@ -51,22 +52,22 @@ class Moderation(commands.Cog):
 
         ban = Ban(
             reason=reason if reason else None,
-            banned_at=datetime.utcnow(),
             banned_by_id=ctx.author.id,
             banned_user_id=victim.id,
-            unban_time=None,
+            guild_id=ctx.guild.id,
         )
 
+        saved = await BanService.insert(ban)
+
         embed = discord.Embed(title=f"User was banned from {ctx.guild.name}", color=funs.random_discord_color(),
-                              timestamp=datetime.utcnow())
+                              timestamp=saved.banned_at)
         embed.add_field(name='Banned By', value=ctx.author.mention, inline=True)
         embed.add_field(name='Banned user', value=victim.mention, inline=True)
-        embed.add_field(name='Banned till', value='formatTime(ban.unbanTime)', inline=True)
         if reason:
             embed.add_field(name='Reason', value=reason, inline=False)
         embed.set_thumbnail(url=victim.avatar_url)
 
-        await ctx.send(embed=embed)
+        await ctx.send(f'ID: {saved.id}', embed=embed)
 
         try:
             embed.title = f"You have been banned from {ctx.guild.name}"
