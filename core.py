@@ -27,7 +27,7 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 dpy_logger.addHandler(handler)
 
-cogs = ["admin", "cause", "emojis", "internet", "starboard", 'activity', 'jsk', 'misc']
+cogs = ["admin", "cause", "emojis", "internet", "starboard", 'activity', 'jsk', 'logs', 'mod', 'misc']
 
 
 @bot.command()
@@ -68,7 +68,7 @@ async def close():
 
 async def start():
     try:
-        await database.init()
+        await database.init(loop)
         bot.db = database.connection
         await bot.start(BOT_TOKEN)
     finally:
@@ -76,6 +76,7 @@ async def start():
 
 
 def stop_loop_on_completion(f):
+    print(type(f))
     loop.stop()
 
 

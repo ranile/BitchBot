@@ -9,10 +9,11 @@ class GuildConfigService:
 
     @classmethod
     async def get(cls, guild_id):
-        fetched = await database.connection.fetchrow('''
-        select * from GuildConfig
-        where guild_id = $1
-        ''', guild_id)
+        async with database.pool.acquire() as con:
+            fetched = await con.fetchrow('''
+            select * from GuildConfig
+            where guild_id = $1
+            ''', guild_id)
         return GuildConfig.convert(fetched)
 
     @classmethod

@@ -3,7 +3,6 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 
-from database import database
 from services.config_service import GuildConfigService
 from util import funs
 

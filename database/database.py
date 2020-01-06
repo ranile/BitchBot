@@ -6,12 +6,16 @@ from keys import db
 import datetime
 
 connection = None
+pool = None
 
 
-async def connect():
+async def connect(loop):
     global connection
+    global pool
+    pool = await asyncpg.create_pool(user=db['user'], password=db['password'], host=db['host'], port=db['port'],
+                               database='bitch_bot', loop=loop)
     connection = await asyncpg.connect(
-        user=db['user'], password=db['password'], host=db['host'], port=db['port'], database='bitch_bot'
+        user=db['user'], password=db['password'], host=db['host'], port=db['port'], database='bitch_bot', loop=loop
     )
 
 
@@ -48,8 +52,8 @@ async def createTables():
     await connection.execute(services.WarningsService.sql().createTable)
 
 
-async def init():
-    await connect()
+async def init(loop):
+    await connect(loop)
     await createTables()
 
 
