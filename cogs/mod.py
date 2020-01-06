@@ -1,14 +1,12 @@
-from datetime import datetime, timedelta
-
 import discord
-import time
 from discord.ext import commands
+from datetime import datetime
 
+from resources import Ban, Warn, Mute
 from services import MuteService, WarningsService
 from services.ban_service import BanService
 from services.config_service import GuildConfigService
-from util import funs, checks
-from resources import Ban, Warn, Mute
+from util import funs, checks, paginator
 
 
 class Moderation(commands.Cog):
@@ -160,21 +158,26 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @checks.is_mod()
-    async def warnings(self, ctx: commands.Context, warnings_for: discord.Member):
+    async def warnings(self, ctx: commands.Context, warnings_for: discord.Member = None):
         """Get warnings for a user
         """
-
-        warnings = []
-        embed = discord.Embed(title=f"Warnings for {warnings_for.name}", color=funs.random_discord_color())
+        warnings = await WarningsService.get_all(ctx.guild.id, warnings_for.id)
+        pages = commands.Paginator(prefix='```md', max_size=1980)
         index = 1
         for warning in warnings:
-            embed.add_field(
-                name=f"{index}. {warning.reason}",
-                value=f"Warned by: {warning.warnedByUsername}\nWarned at",
-                inline=False
-            )
+            member = ctx.guild.get_member(warning.warned_user_id)
+            if member is None:
+                continue
 
-        await ctx.send(embed=embed)
+            line = f"{index}.  {funs.format_human_readable_user(member)}\n" \
+                   f"\tReason: {warning.reason}\n" \
+                   f"\tWarned at: {warning.warned_at}\n" \
+                   f"\tWarned by {funs.format_human_readable_user(ctx.guild.get_member(warning.warned_by_id))}\n"
+            pages.add_line(line)
+            index += 1
+
+        react_paginator = paginator.Paginator(data=pages.pages, is_embed=False, ctx=ctx)
+        await react_paginator.paginate()
 
     @mute.command(name='config')
     async def mute_config(self, ctx, role: discord.Role):

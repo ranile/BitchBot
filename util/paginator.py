@@ -67,6 +67,14 @@ class Paginator:
             self.original_footer = self.data[0].footer.text
             embed = self.set_page_number_footer(self.data[0])
             self.msg = await self.ctx.send(embed=embed)
+        else:
+            data = self.data[0]
+            data += f'\n*Page {self.current} of {self.max_pages}*'
+            self.msg = await self.ctx.send(data)
+
+        if self.max_pages == 0:
+            self.paginating = False
+            return
 
         for (r, _) in self.reactions:
             await self.msg.add_reaction(r)

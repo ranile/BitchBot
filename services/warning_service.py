@@ -28,3 +28,21 @@ class WarningsService:
                 )
             '''
         )
+
+    @classmethod
+    async def get_all(cls, guild_id, user_id=None):
+        query = '''
+        select * from Warnings
+        where guild_id = $1
+        '''
+        if user_id is not None:
+            query += '''
+            and warned_user_id = $2
+            order by warned_user_id;
+            '''
+            fetched = await database.connection.fetch(query, guild_id, user_id)
+            return Warn.convertMany(fetched)
+        else:
+            query += '\norder by warned_user_id;'
+            fetched = await database.connection.fetch(query, guild_id)
+            return Warn.convertMany(fetched)
