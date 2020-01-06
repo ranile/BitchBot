@@ -41,15 +41,14 @@ class Logging(commands.Cog):
         config = await GuildConfigService.get(guild.id)
         await self.trigger_webhook(config.event_log_webhook, embed, name)
 
-    @commands.command(name='join')
+    @commands.Cog.listener()
     async def on_member_join(self, ctx):
         member = ctx.author
         embed = self.base_member_embed(member)
         embed.title = 'A new member joined'
         await self.send_log(member=member, name='on_member_join', embed=embed)
 
-    # @commands.Cog.listener()
-    @commands.command(name='leave')
+    @commands.Cog.listener()
     async def on_member_remove(self, ctx):
         member = ctx.author
         embed = self.base_member_embed(member)
@@ -63,30 +62,26 @@ class Logging(commands.Cog):
         embed.add_field(name='Role id', value=role.id)
         return embed
 
-    # @commands.Cog.listener()
-    @commands.command(name='cr')
+    @commands.Cog.listener()
     async def on_guild_role_create(self, ctx, role: discord.Role):
         embed = self.base_role_embed(role)
         embed.title = 'Role created'
         await self.send_log(name='role_create', embed=embed, guild=role.guild)
 
-    # @commands.Cog.listener()
-    @commands.command(name='rr')
+    @commands.Cog.listener()
     async def on_guild_role_delete(self, ctx, role: discord.Role):
         embed = self.base_role_embed(role)
         embed.title = 'Role deleted'
         await self.send_log(name='role_delete', embed=embed, guild=role.guild)
 
-    # @commands.Cog.listener()
-    @commands.command(name='ban')
+    @commands.Cog.listener()
     async def on_member_ban(self, ctx):
         guild, user = ctx.guild, ctx.author
         embed = self.base_member_embed(user)
         embed.title = "Member banned"
         await self.send_log(name='on_member_ban', guild=guild, embed=embed)
 
-    # @commands.Cog.listener()
-    @commands.command(name='unban')
+    @commands.Cog.listener()
     async def on_member_unban(self, ctx):
         guild, user = ctx.guild, ctx.author
         embed = self.base_member_embed(user)
