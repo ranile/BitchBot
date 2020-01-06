@@ -94,10 +94,16 @@ class Moderation(commands.Cog):
             await ctx.send('User is already muted')
             return
 
-        out = f"**User {victim.mention} has been muted by {ctx.author.mention}**"
+        mute = Mute(
+            reason=reason,
+            muted_by_id=ctx.author.id,
+            muted_user_id=victim.id,
+            guild_id=ctx.guild.id
+        )
+        inserted = await MuteService.insert(mute)
 
         await victim.add_roles(muted)
-        await ctx.send(out)
+        await ctx.send(f"**User {victim.mention} has been muted by {ctx.author.mention}**\nID: {inserted.id}")
 
         try:
             msg = f"You have been muted in {ctx.guild.name}"
@@ -107,14 +113,6 @@ class Moderation(commands.Cog):
             await ctx.send(msg)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Muted without notice")
-
-        mute = Mute(
-            reason=reason,
-            muted_by_id=ctx.author.id,
-            muted_user_id=victim.id,
-            guild_id=ctx.guild.id
-        )
-        await MuteService.insert(mute)
 
     @commands.command()
     @commands.has_permissions(manage_roles=True, manage_channels=True)
@@ -126,6 +124,7 @@ class Moderation(commands.Cog):
         config = await GuildConfigService.get(ctx.guild.id)
         muted = ctx.guild.get_role(config.muted_role_id)
         await victim.remove_roles(muted)
+        await MuteService.delete(ctx.guild.id, victim.id)
         await ctx.send(f"**User {victim.mention} has been unmuted by {ctx.author.mention}**")
 
     @commands.command()

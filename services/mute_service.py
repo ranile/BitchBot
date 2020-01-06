@@ -15,6 +15,13 @@ class MuteService:
         return Mute.convert(query)
 
     @classmethod
+    async def delete(cls, guild_id, muted_user_id):
+        return await database.connection.execute('''
+            delete from Mutes
+            where guild_id = $1 and muted_user_id = $2;
+        ''', guild_id, muted_user_id)
+
+    @classmethod
     def sql(cls):
         return SQL(
             createTable='''
