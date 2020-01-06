@@ -18,5 +18,15 @@ class BanService:
     def sql(cls):
         return SQL(
             createTable='''
+                create table if not exists Bans
+                (
+                    id             serial primary key,
+                    reason         text,
+                    banned_at      timestamp default now(),
+                    banned_by_id   bigint not null,
+                    banned_user_id bigint not null,
+                    unban_time     timestamp,
+                    guild_id       bigint not null
+                );
             '''
         )
