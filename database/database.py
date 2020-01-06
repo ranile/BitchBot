@@ -45,6 +45,7 @@ async def createTables():
     ''')
     await connection.execute(services.BanService.sql().createTable)
     await connection.execute(services.MuteService.sql().createTable)
+    await connection.execute(services.WarningsService.sql().createTable)
 
 
 async def init():

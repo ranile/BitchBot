@@ -4,6 +4,7 @@ import discord
 import time
 from discord.ext import commands
 
+from services import MuteService, WarningsService
 from services.ban_service import BanService
 from services.config_service import GuildConfigService
 from util import funs, checks
@@ -109,10 +110,11 @@ class Moderation(commands.Cog):
 
         mute = Mute(
             reason=reason,
-            muted_at=int(time.time()),
             muted_by_id=ctx.author.id,
             muted_user_id=victim.id,
+            guild_id=ctx.guild.id
         )
+        await MuteService.insert(mute)
 
     @commands.command()
     @commands.has_permissions(manage_roles=True, manage_channels=True)
@@ -134,20 +136,22 @@ class Moderation(commands.Cog):
 
         warning = Warn(
             reason=reason,
-            warned_at=datetime.utcnow(),
             warned_by_id=ctx.author.id,
             warned_user_id=victim.id,
+            guild_id=ctx.guild.id
         )
 
+        inserted = await WarningsService.insert(warning)
+
         embed = discord.Embed(title=f"User was warned from {ctx.guild.name}", color=funs.random_discord_color(),
-                              timestamp=warning.warned_at)
+                              timestamp=inserted.warned_at)
         embed.add_field(name='Warned By', value=ctx.author.mention, inline=True)
         embed.add_field(name='Warned user', value=victim.mention, inline=True)
         if reason:
-            embed.add_field(name='Reason', value=warning.reason, inline=False)
+            embed.add_field(name='Reason', value=inserted.reason, inline=False)
         embed.set_thumbnail(url=victim.avatar_url)
 
-        await ctx.send(embed=embed)
+        await ctx.send(f'ID: {inserted.id}', embed=embed)
 
         try:
             embed.title = f"You have been warned in {ctx.guild.name}"

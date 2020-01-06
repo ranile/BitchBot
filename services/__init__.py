@@ -6,3 +6,4 @@ from services.starboard_service import StarboardService
 from services.config_service import GuildConfigService as ConfigService
 from services.ban_service import BanService
 from services.mute_service import MuteService
+from services.warning_service import WarningsService
