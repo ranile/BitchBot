@@ -45,7 +45,8 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get("https://icanhazdadjoke.com", headers={"Accept": "application/json"}) as res:
+        async with self.bot.clientSession.get("https://icanhazdadjoke.com",
+                                              headers={"Accept": "application/json"}) as res:
             content = await res.json()
             await ctx.send(content['joke'])
 
@@ -67,7 +68,8 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get(f'http://reddit.com/r/{search}/new/.json', headers={'User-agent': 'Chrome'}) as res:
+        async with self.bot.clientSession.get(f'http://reddit.com/r/{search}/new/.json',
+                                              headers={'User-agent': 'Chrome'}) as res:
             json = await res.json()
 
             if "error" in json or json["data"]["after"] is None:
@@ -143,21 +145,22 @@ class Internet(commands.Cog):
 
             await Paginator(ctx, embeds).paginate()
 
-    @commands.command(aliases=["insult"])
-    async def roastme(self, ctx):
+    @commands.command(aliases=["insult", "roastme"])
+    async def roast(self, ctx):
         """
         Get roasted
         """
 
         await ctx.channel.trigger_typing()
 
-        async with self.bot.clientSession.get("https://insult.mattbas.org/api/insult.json") as res:
+        async with self.bot.clientSession.get("https://insult.mattbas.org/api/insult.json",
+                                              headers={"Accept": "application/json"}) as res:
             if res.status != 200:
                 await ctx.send("You lucky bastard... An error occurred."
                                "Mission failed bois, we'll get 'em next time")
                 return
 
-            await ctx.send((await res.json())['insult'])
+            await ctx.send((await res.json(content_type="text/json"))['insult'])
 
 
 def setup(bot):
