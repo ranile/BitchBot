@@ -29,11 +29,11 @@ class Moderation(commands.Cog):
         embed.set_thumbnail(url=victim.avatar_url)
 
         await ctx.send(embed=embed)
-        # await victim.kick(reason=reason)
+        await victim.kick(reason=reason)
 
         try:
             embed.title = f"You have been Kicked from {ctx.guild.name}"
-            await ctx.send(embed=embed)
+            await victim.send(embed=embed)
         except discord.Forbidden:
             await ctx.send("I can't dm that user. Kicked without notice")
 
@@ -47,7 +47,7 @@ class Moderation(commands.Cog):
             await ctx.send("Why do want to ban yourself?\nI'm not gonna let you do it")
             return
 
-        # await victim.ban(reason=reason)
+        await victim.ban(reason=reason)
 
         ban = Ban(
             reason=reason if reason else None,
@@ -70,7 +70,7 @@ class Moderation(commands.Cog):
 
         try:
             embed.title = f"You have been banned from {ctx.guild.name}"
-            await ctx.send(embed=embed)
+            await victim.send(embed=embed)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Banned without notice")
 
@@ -108,7 +108,7 @@ class Moderation(commands.Cog):
             if reason:
                 msg += f" for `{reason}`"
 
-            await ctx.send(msg)
+            await victim.send(msg)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Muted without notice")
 
@@ -152,7 +152,7 @@ class Moderation(commands.Cog):
 
         try:
             embed.title = f"You have been warned in {ctx.guild.name}"
-            await ctx.send(embed=embed)
+            await victim.send(embed=embed)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Warned without notice")
 
