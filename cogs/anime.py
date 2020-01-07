@@ -15,7 +15,7 @@ class Anime(commands.Cog):
     @private_command()
     async def hug(self, ctx):
         url = 'https://tenor.com/search/anime-hugs-gifs'
-        async with self.bot.client_session as cs:
+        async with self.bot.clientSession as cs:
             async with cs.get(url, headers={'content-type': 'text/html'}) as res:
                 html = await res.json(content_type='text/html')
                 soup = BeautifulSoup(html, 'html.parser')
