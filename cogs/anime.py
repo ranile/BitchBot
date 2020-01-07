@@ -16,10 +16,15 @@ class Anime(commands.Cog):
     async def hug(self, ctx):
         url = 'https://tenor.com/search/anime-hugs-gifs'
         async with self.bot.clientSession.get(url, headers={'content-type': 'text/html'}) as res:
-            html = await res.json(content_type='text/html')
-            soup = BeautifulSoup(html, 'html.parser')
+            text = await res.content.read()
+            soup = BeautifulSoup(text, 'html.parser')
             imgs = soup.find_all(name='img')
-            links = [img.get('src') for img in imgs]
+            links = []
+            for img in imgs:
+                src = str(img.get('src'))
+                if src.startswith('http') and src.endswith('gif'):
+                    links.append(src)
+
             await ctx.send(random.choice(links))
 
 
