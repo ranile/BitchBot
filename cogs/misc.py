@@ -37,7 +37,7 @@ class Miscellaneous(commands.Cog):
 
         await ctx.channel.trigger_typing()
         sentMessage = await ctx.send(message)
-        await funs.log(ctx, 'Say', message, sentMessage)
+        await funs.log(ctx, message, sentMessage)
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["sendembed", "embed"])
