@@ -193,6 +193,7 @@ class Moderation(commands.Cog):
         pass
 
     @mod_roles.command(name='add')
+    @checks.can_config()
     async def mod_role_add(self, ctx, role: discord.Role):
         inserted = await GuildConfigService.add_mod_role(role.id, ctx.guild.id)
         await ctx.send(f'Current mod roles are: {inserted.mod_roles}')
