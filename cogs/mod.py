@@ -161,7 +161,9 @@ class Moderation(commands.Cog):
     async def warnings(self, ctx: commands.Context, warnings_for: discord.Member = None):
         """Get warnings for a user
         """
-        warnings = await WarningsService.get_all(ctx.guild.id, warnings_for.id)
+        if warnings_for is not None:
+            warnings_for = warnings_for.id
+        warnings = await WarningsService.get_all(ctx.guild.id, warnings_for)
         pages = commands.Paginator(prefix='```md', max_size=1980)
         index = 1
         for warning in warnings:
