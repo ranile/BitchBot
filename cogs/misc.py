@@ -1,3 +1,5 @@
+from typing import Union
+
 import aiohttp
 import asyncio
 import discord
@@ -9,7 +11,7 @@ import git
 from TextToOwO.owo import text_to_owo
 from datetime import datetime
 from keys import logWebhook, project_id
-from util import funs  # pylint: disable=no-name-in-module
+from util import funs, converters  # pylint: disable=no-name-in-module
 from util.emoji_chars import emoji_chars
 
 
@@ -232,7 +234,7 @@ class Miscellaneous(commands.Cog):
         await ctx.send(response.query_result.fulfillment_text)
 
     @commands.command()
-    async def info(self, ctx):
+    async def about(self, ctx):
         repo = git.Repo()
         commits = list(repo.iter_commits())[:3]
         out = []
@@ -263,6 +265,48 @@ class Miscellaneous(commands.Cog):
         owoized = text_to_owo(message)
         sent = await ctx.send(owoized)
         await funs.log(ctx, message, sent, owoized)
+
+    def user_presentable_perms(self, permissmions):
+        allowed = []
+        denied = []
+        for perm in permissmions:
+            if perm[1]:
+                allowed.append(perm)
+            else:
+                denied.append(perm)
+
+        def make_user_presentable(perms):
+            return ', '.join([x[0] for x in sorted(perms, key=str)]).replace('_', ' ').replace('guild',
+                                                                                               'server').title()
+
+        def allowed_or_denied(is_allowed):
+            return f"**{'Allowed' if is_allowed else 'Denied'}**\n"
+
+        return f"{allowed_or_denied(True)}{make_user_presentable(allowed)}" \
+               f"{'' if len(denied) == 0 else f'{allowed_or_denied(False)}{self.user_presentable_perms(denied)}'}"
+
+    @commands.command(aliases=['whois'])
+    async def info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
+        user = member or ctx.author
+
+        embed = discord.Embed(color=user.color)
+        embed.set_author(name=user, icon_url=user.avatar_url)
+        embed.set_thumbnail(url=user.avatar_url)
+        embed.add_field(name='ID', value=user.id)
+        embed.add_field(name='Created At', value=user.created_at)
+
+        # access of member specific props ahead so send the message and return if `user` is not a `Member`
+        if not isinstance(user, discord.Member):
+            return await ctx.send(embed=embed)
+
+        embed.add_field(name='Joined At', value=user.joined_at)
+        if user.premium_since is not None:
+            embed.add_field(name='Last boosted on', value=user.premium_since)
+        embed.add_field(name='Is on mobile', value=user.is_on_mobile())
+        embed.add_field(name='Permissions', value=self.user_presentable_perms(user.guild_permissions), inline=False)
+        sorted_roles = sorted(user.roles[1:], key=lambda x: x.position, reverse=True)
+        embed.add_field(name='Roles', value=', '.join([r.mention for r in sorted_roles]), inline=False)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
