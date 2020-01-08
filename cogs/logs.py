@@ -43,7 +43,6 @@ class Logging(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        member = ctx.author
         embed = self.base_member_embed(member)
         embed.title = 'A new member joined'
         await self.send_log(member=member, name='on_member_join', embed=embed)
