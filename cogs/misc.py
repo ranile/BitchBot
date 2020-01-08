@@ -83,7 +83,7 @@ class Miscellaneous(commands.Cog):
         sent = []
         for i in text:
             if re.fullmatch(r'[a-z]', i, re.IGNORECASE):
-                await msg.add_reaction(self.emoji_chars[str(i).lower()])
+                await msg.add_reaction(emoji_chars[str(i).lower()])
                 sent.append(i)
 
         await funs.log(ctx, text, ctx.message, ''.join(sent))
@@ -266,6 +266,7 @@ class Miscellaneous(commands.Cog):
         sent = await ctx.send(owoized)
         await funs.log(ctx, message, sent, owoized)
 
+    # noinspection PyMethodMayBeStatic
     def user_presentable_perms(self, permissmions):
         allowed = []
         denied = []
