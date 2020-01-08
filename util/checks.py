@@ -1,5 +1,6 @@
 from discord.ext import commands
 from keys import can_use_private_commands
+from services.config_service import GuildConfigService
 
 
 def private_command():
@@ -25,6 +26,10 @@ def can_config():
 
 def is_mod():
     async def predicate(ctx):
-        return True
+        config = await GuildConfigService.get(ctx.guild.id)
+        if set(x.id for x in ctx.author.roles) & set(config.mod_roles):
+            return True
+        else:
+            return False
 
     return commands.check(predicate)

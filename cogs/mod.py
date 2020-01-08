@@ -184,6 +184,19 @@ class Moderation(commands.Cog):
         await GuildConfigService.update(ctx.guild.id, 'mute_role_id', role.id)
         await ctx.send(f'Inserted {role.mention} as mute role')
 
+    @commands.group()
+    async def mod(self, ctx):
+        pass
+
+    @mod.group(invoke_without_command=True, name='roles')
+    async def mod_roles(self, ctx):
+        pass
+
+    @mod_roles.command(name='add')
+    async def mod_role_add(self, ctx, role: discord.Role):
+        inserted = await GuildConfigService.add_mod_role(role.id, ctx.guild.id)
+        await ctx.send(f'Current mod roles are: {inserted.mod_roles}')
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(Moderation(bot))

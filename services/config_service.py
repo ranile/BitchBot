@@ -36,6 +36,16 @@ class GuildConfigService:
         return GuildConfig.convert(inserted)
 
     @classmethod
+    async def add_mod_role(cls, role_id, guild_id):
+        query = '''
+        update guildconfig
+        set mod_roles = guildconfig.mod_roles || $2
+        where guild_id = $1
+        returning *;
+        '''
+        return GuildConfig.convert(await database.connection.fetchrow(query, guild_id, [role_id]))
+
+    @classmethod
     async def update(cls, guild_id, name, value):
         fetched = await database.connection.fetchrow(f'''
             update GuildConfig 
