@@ -271,16 +271,17 @@ class Miscellaneous(commands.Cog):
         denied = []
         for perm in permissmions:
             if perm[1]:
-                allowed.append(perm)
+                allowed.append(perm[0])
             else:
-                denied.append(perm)
+                denied.append(perm[0])
 
         def make_user_presentable(perms):
-            return ', '.join([x[0] for x in sorted(perms, key=str)]).replace('_', ' ')\
+            return ', '.join(perms).replace('_', ' ')\
                 .replace('guild', 'server').title()
 
-        return f"**Allowed**{make_user_presentable(allowed)}\n" \
-               f"{'' if len(denied) == 0 else f'**Denied**{self.user_presentable_perms(denied)}'}"
+        new_line = '\n'
+        return f"**Allowed**\n{make_user_presentable(allowed)}\n" \
+               f"{'' if len(denied) == 0 else f'**Denied**{new_line}{make_user_presentable(denied)}'}"
 
     @commands.command(aliases=['whois'])
     async def info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
