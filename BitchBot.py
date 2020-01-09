@@ -13,7 +13,7 @@ from util.HelpCommand import BloodyHelpCommand
 
 
 class BitchBot(commands.Bot):
-    def __init__(self, **kwargs):
+    def __init__(self):
         super().__init__(
             command_prefix='>',
             help_command=BloodyHelpCommand(),
@@ -24,7 +24,6 @@ class BitchBot(commands.Bot):
         self.tornado_app = tornado.web.Application([(route, handler, dict(bot=self)) for route, handler in routes], **{
             'debug': True
         })
-        self.clientSession = None
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     def setup_discordpy_logger(self):
@@ -39,6 +38,7 @@ class BitchBot(commands.Bot):
         self.setup_discordpy_logger()
         self.tornado_app.listen(6969)
         self.db = await database.init(self.loop)
+        self.clientSession = aiohttp.ClientSession()
         cogs = kwargs.pop('cogs')
         for cog_name in cogs:
             self.load_extension(f"cogs.{cog_name}")
@@ -58,11 +58,8 @@ class BitchBot(commands.Bot):
 
     async def on_ready(self):
         print(f"{self.user.name} is running")
-        self.db = await database.init(self.loop)
         print("-" * len(self.user.name + " is running"))
         await self.change_presence(
             status=discord.Status.online,
             activity=discord.Game(f"use {self.command_prefix}help")
         )
-        if self.clientSession is None:
-            self.clientSession = aiohttp.ClientSession()

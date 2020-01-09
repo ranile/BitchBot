@@ -2,9 +2,9 @@ from discord.ext import commands
 import keys
 from BitchBot import BitchBot
 
-cogs = ["admin", "cause", "emojis", "internet", "starboard", 'activity', 'jsk', 'logs', 'mod', 'misc', 'anime']
+cogs = ["admin", "cause", "emojis", "internet", "starboard", 'activity', 'jsk', 'logs', 'mod', 'misc']
 
-bot = BitchBot(cogs=cogs)
+bot = BitchBot()
 
 
 @bot.command()
