@@ -17,10 +17,10 @@ class Emojis(commands.Cog):
 
     @commands.group(aliases=["e"], invoke_without_command=True)
     async def emoji(self, ctx, *emojis):
-        """Send any one of the emoji given by 'emojis' command
+        """Send any number of the emoji given by 'emojis' command
 
-        Args: emojis: The emoji to send. This can take variable number of value. If the last value is a number,
-        it repeats the every emoji that amount of times
+        Args:
+            emojis: The emoji to send. If the last value is a number, it repeats the every emoji that amount of times.
         """
 
         emojis = list(emojis)

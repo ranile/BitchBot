@@ -19,7 +19,7 @@ class Internet(commands.Cog):
         Find a Wikipedia page on a given topic
 
         Args:
-            wikipedia: A topic you want an article on
+            search: A topic you want an article on
         """
 
         await ctx.channel.trigger_typing()
@@ -67,7 +67,7 @@ class Internet(commands.Cog):
         Get a random reddit post
 
         Args:
-            reddit: The subreddit from which you will get the post
+            search: The subreddit from which you will get the post
         """
 
         await ctx.channel.trigger_typing()
@@ -127,7 +127,7 @@ class Internet(commands.Cog):
         Gets top definition from urban dictionary
         
         Args:
-            urban: A word you want to get defined
+            query: A word you want to get defined
         """
 
         await ctx.channel.trigger_typing()

@@ -6,6 +6,7 @@ from services import MuteService, WarningsService, BanService, ConfigService
 from util import funs, checks, paginator
 
 
+# noinspection PyIncorrectDocstring
 class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -22,7 +23,8 @@ class Moderation(commands.Cog):
         Yeet a user
 
         Args:
-            kick: Discord member and optional reason for kick
+            victim: Member you want to kick
+            reason: Reason for kick
         """
 
         embed = discord.Embed(title=f"User was Kicked from {ctx.guild.name}",
@@ -50,7 +52,8 @@ class Moderation(commands.Cog):
         Ban a user
 
         Args:
-            ban: Discord member and optional reason for ban
+            victim: Member you want to ban
+            reason: Reason for ban
         """
 
         if victim.id == ctx.author.id:
@@ -91,7 +94,8 @@ class Moderation(commands.Cog):
         Mute a user
 
         Args:
-            mute: Discord member and optional reason for mute
+            victim: Member you want to mute
+            reason: Reason for mute
         """
         await ctx.trigger_typing()
 
@@ -133,7 +137,7 @@ class Moderation(commands.Cog):
         Unmute a user
 
         Args:
-            unmute: Discord member you want to unmute
+            victim: Member you want to unmute
         """
 
         await ctx.trigger_typing()
@@ -144,13 +148,39 @@ class Moderation(commands.Cog):
         await ctx.send(f"**User {victim.mention} has been unmuted by {ctx.author.mention}**")
 
     @commands.command()
+    @commands.has_permissions(manage_messages=True)
+    async def purge(self, ctx, limit, messages_of: discord.Member = None):
+        """
+        Purges given amount of messages from a given member if named
+
+        Args:
+            limit: The number of messages you want to delete
+            messages_of: The user whose messages you want to kick
+        """
+        if messages_of is None:
+            deleted = await ctx.channel.purge(limit=int(limit))
+        else:
+            def check(m):
+                return m.author == messages_of
+
+            deleted = await ctx.channel.purge(limit=int(limit), check=check)
+
+        deleted_of = set()
+        for message in deleted:
+            deleted_of.add(message.author.name)
+
+        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}', delete_after=5)
+        await ctx.message.delete(delay=2)
+
+    @commands.command()
     @checks.is_mod()
     async def warn(self, ctx: commands.Context, victim: discord.Member, reason: str):
         """
         Warn a user
 
         Args:
-            warn: Discord member and a reason for warn
+            victim: Member you want to warn
+            reason: Reason for warn
         """
 
         warning = Warn(
@@ -185,7 +215,7 @@ class Moderation(commands.Cog):
         Get warnings for a user
 
         Args:
-            warnings: Discord member you want warnings for
+            warnings_for: Member whose warnings you want to get. All the warnings are returned if omitted.
         """
         if warnings_for is not None:
             warnings_for = warnings_for.id
@@ -209,6 +239,12 @@ class Moderation(commands.Cog):
 
     @mute.command(name='config')
     async def mute_config(self, ctx, role: discord.Role):
+        """
+        Configure mute role
+
+        Args:
+             role: the role you want to be used as the muted role
+        """
         await self.config_service.update(ctx.guild.id, 'mute_role_id', role.id)
         await ctx.send(f'Inserted {role.mention} as mute role')
 
@@ -223,6 +259,12 @@ class Moderation(commands.Cog):
     @mod_roles.command(name='add')
     @checks.can_config()
     async def mod_role_add(self, ctx, role: discord.Role):
+        """
+        Add mod role
+
+        Args:
+            role: The role you want to add
+        """
         inserted = await self.config_service.add_mod_role(role.id, ctx.guild.id)
         await ctx.send(f'Current mod roles are: {inserted.mod_roles}')
 

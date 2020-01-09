@@ -19,7 +19,6 @@ log.addHandler(handler)
 class Activity(commands.Cog, name='Activity Tracking'):
     """Tracks your activity in the guild and give them activity points for being active.
     With the end goal being the ability to spend these points on a virtual store
-    Currently a WIP
     """
 
     def __init__(self, bot):
@@ -60,6 +59,12 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @commands.group(invoke_without_command=True)
     async def activity(self, ctx, of: discord.Member = None):
+        """
+        Shows activity on the server's leaderboard
+
+         Args:
+            of: The member whose activity you want to see. Author's activity is shown if omitted
+        """
         if of is None:
             of = ctx.author
         try:
@@ -77,6 +82,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @activity.command(name='top')
     async def top_users(self, ctx):
+        """Shows top users in server's activity leaderboard"""
         top = await self.activity_service.get_top(guild=ctx.guild)
 
         paginator = commands.Paginator(prefix='```md')

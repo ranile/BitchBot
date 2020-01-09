@@ -52,7 +52,7 @@ class Miscellaneous(commands.Cog):
         Have the bot say something in embeds. Have fun!
 
         Args:
-            embed: The message you wamt to say in embed
+            message: The message you wamt to say in embed
         """
         await ctx.channel.trigger_typing()
 
@@ -87,7 +87,8 @@ class Miscellaneous(commands.Cog):
         Add the given reactions to a message
 
         Args:
-            react: Message ID and letter reactions you want to add
+            msg: The message you want to react to
+            text: The letter reactions you want to add
         """
 
         sent = []
@@ -104,7 +105,7 @@ class Miscellaneous(commands.Cog):
         Convert string to toggle case
 
         Args:
-            toggle: Message you want to be in toggled case
+            msg: Message you want to be in toggled case
         """
         out = ""
         message = str(msg)
@@ -121,7 +122,7 @@ class Miscellaneous(commands.Cog):
         Convert string to upper case
 
         Args:
-            upper: Message you want in upper case
+            msg: Message you want in upper case
         """
         out = str(msg).upper()
         sentMessage = await ctx.send(out)
@@ -131,10 +132,11 @@ class Miscellaneous(commands.Cog):
     @commands.command(aliases=["wide"])
     async def addspaces(self, ctx, msg: str, spaces: int = 3):
         """
-        Adds 3 spaces in between every character.
-        If the first arg is a number, it will use that for the number of spaces instead.
+        Adds spaces in between every character.
+
         Args:
-            spaces: Message you want to make wide and optional number of spaces between characters
+            msg: Message you want to make wide
+            spaces: optional number of spaces between characters
         """
 
         between = spaces * ' '
@@ -165,7 +167,7 @@ class Miscellaneous(commands.Cog):
         Converts given text to flipped unicode characters
 
         Args:
-            flip: Message you want to flip
+            msg: Message you want to flip
         """
         FLIP_RANGES = [
             (string.ascii_lowercase, "ɐqɔpǝɟƃɥᴉɾʞꞁɯuodbɹsʇnʌʍxʎz"),
@@ -206,8 +208,10 @@ class Miscellaneous(commands.Cog):
     async def toc(self, ctx, message):
         """
         Convert fahrenheit to celsius.
-        Format: '>toc <temp in f>'. 
         Example: '>toc 69'.
+
+        Args:
+            message: temperature in celsius
         """
 
         try:
@@ -219,8 +223,10 @@ class Miscellaneous(commands.Cog):
     async def tof(self, ctx, message):
         """
         Convert celsius to fahrenheit.
-        Format: '>tof <temp in c'.
         Example: '>tof 20.5'.
+
+        Args:
+            message: temperature in fahrenheit
         """
 
         try:
@@ -259,7 +265,11 @@ class Miscellaneous(commands.Cog):
     # noinspection PyUnresolvedReferences
     @commands.command(aliases=['talk', 't'])
     async def chat(self, ctx, *, text):
-        """Talk to me"""
+        """Talk to me
+
+        Args:
+            text: What you wanna say
+        """
         session = self.session_client.session_path(project_id, ctx.author.id)
 
         text_input = dialogflow.types.TextInput(text=text, language_code='en-US')
@@ -306,7 +316,7 @@ class Miscellaneous(commands.Cog):
         Owoizes the given text
 
         Args:
-            owoize: A message you want to owoize
+            message: A message you want to owoize
         """
         owoized = text_to_owo(message)
         sent = await ctx.send(owoized)
@@ -336,7 +346,7 @@ class Miscellaneous(commands.Cog):
         Shows info about author or a user if provided
 
         Args:
-            info: Discord user name
+            member: The user who's info you wanna see
         """
         user = member or ctx.author
 

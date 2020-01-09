@@ -59,6 +59,12 @@ class Starboard(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     async def starboard(self, ctx, message):
+        """
+        Shows a message from starboard
+
+        Args:
+             message: The message ID of the message you wanna pull from starboard
+        """
         star = await self.starboard_service.get(message, ctx.guild.id)
 
         if star is None:
@@ -78,6 +84,8 @@ class Starboard(commands.Cog):
 
     @starboard.group(invoke_without_command=True)
     async def stats(self, ctx):
+        """Top 10 people whose messages are starred in a server"""
+
         top = await self.starboard_service.guild_top_stats(ctx.guild)
         paginator = commands.Paginator(prefix='```md')
         length = 0
@@ -102,6 +110,12 @@ class Starboard(commands.Cog):
     @starboard.command()
     @checks.can_config()
     async def setup(self, ctx, channel: discord.TextChannel):
+        """
+        Setup starboard
+
+        Args:
+            channel: The channel you want to use for starboard
+        """
         config = GuildConfig(
             guild_id=ctx.guild.id,
             starboard_channel=channel.id
