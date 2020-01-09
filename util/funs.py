@@ -29,8 +29,7 @@ def cause_check():
     return commands.check(predicate)
 
 
-# noinspection PyPep8Naming
-def getInfoFromDocstring(docstring):
+def parse_docstring(docstring):
     """Gets information from docstring formatted using Google's python style guide.
 
     Args:
@@ -38,7 +37,6 @@ def getInfoFromDocstring(docstring):
 
     Returns:
         Tuple of dict of the arguments and their docs and everything in the docstring before the word `Args: `.
-
     """
 
     split = docstring.split("Args:\n")
@@ -51,23 +49,12 @@ def getInfoFromDocstring(docstring):
         if not matched:
             continue
 
-        argName = matched.group(0)[:-2]
-        argDoc = arg[len(argName):][1:].strip()
+        name = matched.group(0)[:-2]
+        doc = arg[len(name):][1:].strip()
 
-        docs[argName] = argDoc
+        docs[name] = doc
 
     return docs, split[0][:-2]
-
-
-# noinspection PyPep8Naming
-def generateArgStringForEmbed(args):
-    out = ''
-    keys = list(args.keys())
-    values = list(args.values())
-    for i in range(len(args)):
-        out += f'**{keys[i]}**: {values[i]}\n'
-
-    return out
 
 
 # noinspection PyPep8Naming

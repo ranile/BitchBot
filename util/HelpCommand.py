@@ -3,8 +3,10 @@ from discord.ext import commands
 import itertools
 from util import funs, paginator
 
+NEW_LINE = '\n'  # working around python's limitation of not allowing `\n` in f-strings
 
-# noinspection PyPep8Naming,PyMethodMayBeStatic,PyShadowingNames,PyBroadException
+
+# noinspection PyMethodMayBeStatic,PyShadowingNames,PyBroadException
 class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
@@ -22,8 +24,8 @@ class BloodyHelpCommand(commands.HelpCommand):
 
         aliases = ''
         if len(command.aliases) > 0:
-            aliases = ', '.join(command.aliases)
-            out = f'[{command.name}, {aliases}]'
+            aliases = '|'.join(command.aliases)
+            out = f'[{command.qualified_name}, {aliases}]'
 
         if parent:
             aliases = f" , {aliases}" if (aliases != '') else ""
@@ -31,28 +33,26 @@ class BloodyHelpCommand(commands.HelpCommand):
 
         return f'{out} {command.signature}'
 
-    def addCommandsToEmbed(self, commands, cogName, embed, description=None):
-
+    def add_commands_to_embed(self, commands, cog_name, embed, description=None):
         out = ''
         embed.description = description
         for cmd in commands:
-
             try:
-                helpStr = str(cmd.help).split('\n')[0]
-                out += f"**{cmd.name}**:\t{helpStr}\n"
+                out += f"**{cmd.name}**:\t{str(cmd.help).split(NEW_LINE)[0]}\n"
             except:
                 continue
 
         if out:
-            embed.add_field(name=f'**{cogName}**', value=out, inline=False)
+            embed.add_field(name=f'**{cog_name}**', value=out, inline=False)
 
         return embed
 
-    def generateBaseHelpEmbed(self):
+    def generate_base_help_embed(self):
         embed = discord.Embed(title='**You wanted help? Help is provided**', color=funs.random_discord_color())
         embed.set_footer(text='Do >help command/group name for information about it')
         return embed
 
+    # noinspection SpellCheckingInspection
     async def send_bot_help(self, mapping):
         def key(c):
             return c.cog_name or '\u200bNo Category'
@@ -67,21 +67,24 @@ class BloodyHelpCommand(commands.HelpCommand):
             if len(cmds) == 0:
                 continue
 
-            actualCog = bot.get_cog(cog)
+            actual_cog = bot.get_cog(cog)
 
-            if actualCog is None:
+            if actual_cog is None:
                 continue
 
-            embed = self.generateBaseHelpEmbed()
-            embed.title += f'\n{actualCog.qualified_name} Commands'
-            embed.description = actualCog.description
-            for cmd in actualCog.walk_commands():
-                if isinstance(cmd, commands.Group) and not cmd.invoke_without_command:
-                    continue
+            embed = self.generate_base_help_embed()
+            embed.title += f'\n{actual_cog.qualified_name} Commands'
+            embed.description = actual_cog.description
+            for cmd in actual_cog.walk_commands():
+                try:
+                    if isinstance(cmd, commands.Group) and not cmd.invoke_without_command:
+                        continue
+                except AttributeError:
+                    pass
 
-                helpString = str(cmd.help).strip().split('\n')[0]
-                if helpString is not None and len(helpString) > 0:
-                    embed.add_field(name=f'**{cmd.qualified_name}**', value=helpString, inline=False)
+                help_string = str(cmd.help).strip().split('\n')[0]
+                if help_string is not None and len(help_string) > 0:
+                    embed.add_field(name=f'**{cmd.qualified_name}**', value=help_string, inline=False)
                 else:
                     continue
 
@@ -91,42 +94,36 @@ class BloodyHelpCommand(commands.HelpCommand):
         await pages.paginate()
 
     async def send_cog_help(self, cog):
-        data = []
-        for cmd in cog.walk_commands():
-            embed = self.generateBaseHelpEmbed()
-            embed.title += f'\n {cog.qualified_name} Commands'
-            try:
-                embed.add_field(name=f'**{cmd.name}**', value=cmd.help)
-            except:
-                continue
-            finally:
-                data.append(embed)
+        embed = self.generate_base_help_embed()
+        embed.title += f'\n {cog.qualified_name} Commands'
+        embed = self.add_commands_to_embed(cog.walk_commands(), cog.qualified_name, embed)
 
-        await paginator.Paginator(self.context, data).paginate()
+        await self.context.send(embed=embed)
 
-    def formatCommandEmbed(self, embed, command):
+    def generate_arg_string_for_embed(self, args):
+        out = ''
+        keys = list(args.keys())
+        values = list(args.values())
+        for i in range(len(args)):
+            out += f'**{keys[i]}**: {values[i]}\n'
+
+        return out
+
+    def format_command_embed(self, embed, command):
         embed.add_field(name='Format', value=self.get_command_signature(command), inline=False)
 
         try:
-            commandHelp = funs.getInfoFromDocstring(command.help)
+            command_help = funs.parse_docstring(command.help)
+            embed.description = command_help[1]
+            embed.add_field(name=f'Parameters', value=self.generate_arg_string_for_embed(command_help[0]), inline=False)
         except:
-            commandHelp = ("", command.help)
-
-        embed.description = commandHelp[1]
-        try:
-            argsString = funs.generateArgStringForEmbed(commandHelp[0])
-        except:
-            argsString = ''
-
-        if argsString != "":
-            embed.add_field(name=f'Parameters', value=argsString, inline=False)
-        elif argsString == "" and list(command.clean_params):
+            embed.description = command.help
             embed.add_field(name=f'Parameters', value='The docs are incomplete', inline=False)
 
         return embed
 
     async def send_command_help(self, command):
-        embed = self.formatCommandEmbed(self.generateBaseHelpEmbed(), command)
+        embed = self.format_command_embed(self.generate_base_help_embed(), command)
         await self.context.send(embed=embed)
 
     async def send_group_help(self, group):
@@ -137,10 +134,10 @@ class BloodyHelpCommand(commands.HelpCommand):
 
         subcommands = await self.filter_commands(subcommands, sort=True)
 
-        embed = self.addCommandsToEmbed(
+        embed = self.add_commands_to_embed(
             subcommands,
             group.qualified_name,
-            self.generateBaseHelpEmbed(),
+            self.generate_base_help_embed(),
             group.help
         )
 
