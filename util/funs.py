@@ -89,12 +89,3 @@ async def sendRabbitCounterUpdate(bot, msg):
     webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(bot.clientSession))
     await webhook.send(msg, username='Rabbit', avatar_url=pfp)
 
-
-# noinspection PyPep8Naming
-def generateDollarSigns(collection):
-    dollarSigns = ''
-    for i in range(len(collection)):
-        dollarSigns += f'${i + 1},'
-    dollarSigns = dollarSigns[:-1]
-
-    return dollarSigns
