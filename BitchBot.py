@@ -36,7 +36,7 @@ class BitchBot(commands.Bot):
     # noinspection PyAttributeOutsideInit
     async def setup(self, **kwargs):
         self.setup_discordpy_logger()
-        self.tornado_app.listen(6969)
+        # self.tornado_app.listen(6969)
         self.db = await database.init(self.loop)
         self.clientSession = aiohttp.ClientSession()
         cogs = kwargs.pop('cogs')
