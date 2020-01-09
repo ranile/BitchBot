@@ -16,6 +16,12 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_messages=True)
     async def purge(self, ctx, limit, messages_of: discord.Member = None):
+        """
+        Purges given amount of messages from a given member if named
+
+        Args:
+            purge: Amount of messages and optionally a member name
+        """
         if messages_of is None:
             deleted = await ctx.channel.purge(limit=int(limit))
         else:
