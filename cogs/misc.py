@@ -1,3 +1,4 @@
+import random
 from typing import Union
 
 import aiohttp
@@ -5,6 +6,8 @@ import asyncio
 import discord
 import re
 import string
+
+from bs4 import BeautifulSoup
 from discord.ext import commands
 import dialogflow_v2 as dialogflow
 import git
@@ -12,6 +15,7 @@ from TextToOwO.owo import text_to_owo
 from datetime import datetime
 from keys import logWebhook, project_id
 from util import funs, converters  # pylint: disable=no-name-in-module
+from util.checks import private_command
 from util.emoji_chars import emoji_chars
 
 
@@ -124,6 +128,22 @@ class Miscellaneous(commands.Cog):
         sentMessage = await ctx.send(out)
         await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
+
+    @commands.command()
+    @private_command()
+    async def hug(self, ctx):
+        url = 'https://tenor.com/search/anime-hugs-gifs'
+        async with self.bot.clientSession.get(url, headers={'content-type': 'text/html'}) as res:
+            text = await res.content.read()
+            soup = BeautifulSoup(text, 'html.parser')
+            imgs = soup.find_all(name='img')
+            links = []
+            for img in imgs:
+                src = str(img.get('src'))
+                if src.startswith('http') and src.endswith('gif'):
+                    links.append(src)
+
+            await ctx.send(random.choice(links))
 
     @commands.command()
     async def flip(self, ctx, *, msg):
@@ -240,8 +260,8 @@ class Miscellaneous(commands.Cog):
         out = []
         for commit in commits:
             message = commit.message.split('\n')[0]
-            time = str(datetime.now(tz=commit.authored_datetime.tzinfo) - commit.authored_datetime).split('.')[0][:-3] \
-                       .replace(':', ' hours, ') + ' minutes'
+            time = '{0} minutes'.format(str(datetime.now(tz=commit.authored_datetime.tzinfo) - commit.authored_datetime)
+                                        .split('.')[0][:-3].replace(':', ' hours, '))
             out.append(f"[`{commit.hexsha[0:7]}`](https://github.com/hamza1311/BitchBot/commit/{commit.hexsha}) "
                        f"{message} - {commit.author}; {time} ago")
 
@@ -277,7 +297,7 @@ class Miscellaneous(commands.Cog):
                 denied.append(perm[0])
 
         def make_user_presentable(perms):
-            return ', '.join(perms).replace('_', ' ')\
+            return ', '.join(perms).replace('_', ' ') \
                 .replace('guild', 'server').title()
 
         new_line = '\n'
