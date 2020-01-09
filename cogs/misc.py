@@ -50,6 +50,9 @@ class Miscellaneous(commands.Cog):
     async def sayembed(self, ctx, *, message):
         """
         Have the bot say something in embeds. Have fun!
+
+        Args:
+            embed: The message you wamt to say in embed
         """
         await ctx.channel.trigger_typing()
 
@@ -82,6 +85,9 @@ class Miscellaneous(commands.Cog):
     async def react(self, ctx, msg: discord.Message, text):
         """
         Add the given reactions to a message
+
+        Args:
+            react: Message ID and letter reactions you want to add
         """
 
         sent = []
@@ -96,6 +102,9 @@ class Miscellaneous(commands.Cog):
     async def totogglecase(self, ctx, *, msg):
         """
         Convert string to toggle case
+
+        Args:
+            toggle: Message you want to be in toggled case
         """
         out = ""
         message = str(msg)
@@ -109,7 +118,10 @@ class Miscellaneous(commands.Cog):
     @commands.command(aliases=["yell"])
     async def touppercase(self, ctx, *, msg):
         """
-        Convert string to toggle case
+        Convert string to upper case
+
+        Args:
+            upper: Message you want in upper case
         """
         out = str(msg).upper()
         sentMessage = await ctx.send(out)
@@ -121,6 +133,8 @@ class Miscellaneous(commands.Cog):
         """
         Adds 3 spaces in between every character.
         If the first arg is a number, it will use that for the number of spaces instead.
+        Args:
+            spaces: Message you want to make wide and optional number of spaces between characters
         """
 
         between = spaces * ' '
@@ -149,6 +163,9 @@ class Miscellaneous(commands.Cog):
     async def flip(self, ctx, *, msg):
         """
         Converts given text to flipped unicode characters
+
+        Args:
+            flip: Message you want to flip
         """
         FLIP_RANGES = [
             (string.ascii_lowercase, "ɐqɔpǝɟƃɥᴉɾʞꞁɯuodbɹsʇnʌʍxʎz"),
@@ -255,6 +272,9 @@ class Miscellaneous(commands.Cog):
 
     @commands.command()
     async def about(self, ctx):
+        """
+        Gives link to GitHub repository, shows latest commits, owner name and amount of members in all servers
+        """
         repo = git.Repo()
         commits = list(repo.iter_commits())[:3]
         out = []
@@ -282,6 +302,12 @@ class Miscellaneous(commands.Cog):
 
     @commands.command()
     async def owoize(self, ctx, *, message):
+        """
+        Owoizes the given text
+
+        Args:
+            owoize: A message you want to owoize
+        """
         owoized = text_to_owo(message)
         sent = await ctx.send(owoized)
         await funs.log(ctx, message, sent, owoized)
@@ -306,6 +332,12 @@ class Miscellaneous(commands.Cog):
 
     @commands.command(aliases=['whois'])
     async def info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
+        """
+        Shows info about author or a user if provided
+
+        Args:
+            info: Discord user name
+        """
         user = member or ctx.author
 
         embed = discord.Embed(color=user.color)
