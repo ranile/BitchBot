@@ -18,7 +18,11 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx: commands.Context, victim: discord.Member, *, reason: str = None):
-        """Yeet a user
+        """
+        Yeet a user
+
+        Args:
+            kick: Discord member and optional reason for kick
         """
 
         embed = discord.Embed(title=f"User was Kicked from {ctx.guild.name}",
@@ -42,7 +46,11 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.has_permissions(ban_members=True)
     async def ban(self, ctx: commands.Context, victim: discord.Member, *, reason=None):
-        """Ban a user
+        """
+        Ban a user
+
+        Args:
+            ban: Discord member and optional reason for ban
         """
 
         if victim.id == ctx.author.id:
@@ -79,7 +87,11 @@ class Moderation(commands.Cog):
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_roles=True, manage_channels=True)
     async def mute(self, ctx: commands.Context, victim: discord.Member, *, reason=None):
-        """Mute a user
+        """
+        Mute a user
+
+        Args:
+            mute: Discord member and optional reason for mute
         """
         await ctx.trigger_typing()
 
@@ -117,7 +129,11 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.has_permissions(manage_roles=True, manage_channels=True)
     async def unmute(self, ctx: commands.Context, victim: discord.Member):
-        """Unmute a user
+        """
+        Unmute a user
+
+        Args:
+            unmute: Discord member you want to unmute
         """
 
         await ctx.trigger_typing()
@@ -130,7 +146,11 @@ class Moderation(commands.Cog):
     @commands.command()
     @checks.is_mod()
     async def warn(self, ctx: commands.Context, victim: discord.Member, reason: str):
-        """Warn a user
+        """
+        Warn a user
+
+        Args:
+            warn: Discord member and a reason for warn
         """
 
         warning = Warn(
@@ -161,7 +181,11 @@ class Moderation(commands.Cog):
     @commands.command()
     @checks.is_mod()
     async def warnings(self, ctx: commands.Context, warnings_for: discord.Member = None):
-        """Get warnings for a user
+        """
+        Get warnings for a user
+
+        Args:
+            warnings: Discord member you want warnings for
         """
         if warnings_for is not None:
             warnings_for = warnings_for.id
