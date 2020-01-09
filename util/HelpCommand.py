@@ -1,3 +1,5 @@
+import inspect
+import re
 import discord
 from discord.ext import commands
 import itertools
@@ -6,7 +8,7 @@ from util import funs, paginator
 NEW_LINE = '\n'  # working around python's limitation of not allowing `\n` in f-strings
 
 
-# noinspection PyMethodMayBeStatic,PyShadowingNames,PyBroadException
+# noinspection PyMethodMayBeStatic,PyShadowingNames
 class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
@@ -33,6 +35,11 @@ class BloodyHelpCommand(commands.HelpCommand):
 
         return f'{out} {command.signature}'
 
+    def generate_base_help_embed(self):
+        embed = discord.Embed(title='**You wanted help? Help is provided**', color=funs.random_discord_color())
+        embed.set_footer(text='Do >help command/group name for information about it')
+        return embed
+
     def add_commands_to_embed(self, commands, cog_name, embed, description=None):
         out = ''
         embed.description = description
@@ -47,10 +54,54 @@ class BloodyHelpCommand(commands.HelpCommand):
 
         return embed
 
-    def generate_base_help_embed(self):
-        embed = discord.Embed(title='**You wanted help? Help is provided**', color=funs.random_discord_color())
-        embed.set_footer(text='Do >help command/group name for information about it')
+    def parse_docstring(self, docstring):
+        """Gets information from docstring formatted using Google's python style guide.
+
+        Args:
+            docstring: The docstring to extract information from.
+
+        Returns:
+            Tuple of dict of the arguments and their docs and everything in the docstring before the word `Args: `.
+        """
+
+        split = docstring.split("Args:\n")
+        args = inspect.cleandoc(split[1]).split('\n')
+
+        docs = {}
+        for arg in args:
+            matched = re.search(r'\w+: ', arg)
+
+            if not matched:
+                continue
+
+            name = matched.group(0)[:-2]
+            doc = arg[len(name):][1:].strip()
+
+            docs[name] = doc
+
+        return docs, split[0][:-2]
+
+    def format_command_embed(self, embed, command):
+        embed.add_field(name='Format', value=self.get_command_signature(command), inline=False)
+
+        try:
+            command_help = self.parse_docstring(command.help)
+            embed.description = command_help[1]
+            embed.add_field(name=f'Parameters', value=self.generate_arg_string_for_embed(command_help[0]), inline=False)
+        except:
+            embed.description = command.help
+            embed.add_field(name=f'Parameters', value='The docs are incomplete', inline=False)
+
         return embed
+
+    def generate_arg_string_for_embed(self, args):
+        out = ''
+        keys = list(args.keys())
+        values = list(args.values())
+        for i in range(len(args)):
+            out += f'**{keys[i]}**: {values[i]}\n'
+
+        return out
 
     # noinspection SpellCheckingInspection
     async def send_bot_help(self, mapping):
@@ -99,28 +150,6 @@ class BloodyHelpCommand(commands.HelpCommand):
         embed = self.add_commands_to_embed(cog.walk_commands(), cog.qualified_name, embed)
 
         await self.context.send(embed=embed)
-
-    def generate_arg_string_for_embed(self, args):
-        out = ''
-        keys = list(args.keys())
-        values = list(args.values())
-        for i in range(len(args)):
-            out += f'**{keys[i]}**: {values[i]}\n'
-
-        return out
-
-    def format_command_embed(self, embed, command):
-        embed.add_field(name='Format', value=self.get_command_signature(command), inline=False)
-
-        try:
-            command_help = funs.parse_docstring(command.help)
-            embed.description = command_help[1]
-            embed.add_field(name=f'Parameters', value=self.generate_arg_string_for_embed(command_help[0]), inline=False)
-        except:
-            embed.description = command.help
-            embed.add_field(name=f'Parameters', value='The docs are incomplete', inline=False)
-
-        return embed
 
     async def send_command_help(self, command):
         embed = self.format_command_embed(self.generate_base_help_embed(), command)

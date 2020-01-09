@@ -1,13 +1,12 @@
 import asyncio
+import random
 import re
 import unicodedata
-import random
 import discord
 from discord.ext import commands
-
+from keys import rabbitWebhook
 from resources import RabbitCounter
 from services import RabbitService
-from util import funs
 
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
@@ -38,13 +37,19 @@ class Cause(commands.Cog, name="The Cause"):
         await asyncio.sleep(self.rabbitCooldownTime)
         self.isRabbitOnCooldown = False
 
+    async def send_rabbit_counter_update(self, msg):
+        pfp = 'https://raw.githubusercontent.com/hamza1311/BitchBot/master/res/rabbitman2.jpg'
+
+        webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
+        await webhook.send(msg, username='Rabbit', avatar_url=pfp)
+
     async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
         inserted_rabbit = await self.rabbit_service.insert(RabbitCounter(summonedBy=message.author.id))
 
         if not self.isRabbitOnCooldown:
-            await funs.sendRabbitCounterUpdate(self.bot,
-                                               f"{message.author.display_name} called the rabbit {rabbit}, "
-                                               f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
+            await self.send_rabbit_counter_update(
+                f"{message.author.display_name} called the rabbit {rabbit}, "
+                f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}")
             await message.add_reaction(rabbit)
 
         self.rabbitAlreadySummoned.append(message.id)
