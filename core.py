@@ -22,7 +22,7 @@ bot = commands.Bot(
 )
 
 dpy_logger = logging.getLogger('discord')
-dpy_logger.setLevel(logging.INFO)
+dpy_logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 dpy_logger.addHandler(handler)
@@ -54,29 +54,24 @@ async def on_ready():
     )
 
     bot.clientSession = aiohttp.ClientSession()
-    # bot.load_extension('jishaku')
     for i in cogs:
         bot.load_extension(f"cogs.{i}")
-
-    # await bot.get_cog('AutoResponder').setup()
 
 
 async def close():
     await bot.logout()
-    await database.close()
 
 
 async def start():
     try:
-        await database.init(loop)
-        bot.db = database.connection
+        pool = await database.init(loop)
+        bot.db = pool
         await bot.start(BOT_TOKEN)
     finally:
         await bot.close()
 
 
-def stop_loop_on_completion(f):
-    print(type(f))
+def stop_loop_on_completion(_):
     loop.stop()
 
 

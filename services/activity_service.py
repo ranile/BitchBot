@@ -1,4 +1,3 @@
-from database import database
 from database.sql import SQL
 from resources.activity import Activity
 import discord
@@ -6,10 +5,11 @@ from database import errors
 
 
 class ActivityService:
+    def __init__(self, pool):
+        self.pool = pool
 
-    @classmethod
-    async def increment(cls, user_id, guild_id, by):
-        async with database.pool.acquire() as connection:
+    async def increment(self, user_id, guild_id, by):
+        async with self.pool.acquire() as connection:
             # Attempt at incrementing the activity
             increment = await connection.fetchrow(''' 
             update activity
@@ -23,40 +23,26 @@ class ActivityService:
 
                 increment = await connection.fetchrow('''insert into Activity (user_id, guild_id)
                     values ($1, $2) returning points, user_id, guild_id, pg_xact_commit_timestamp(xmin) as last_time_updated;;''',
-                                                               user_id, guild_id)
+                                                      user_id, guild_id)
 
             return increment
 
-    @classmethod
-    def sql(cls):
-        return SQL(
-            createTable='''
-        create table if not exists Activity
-        (
-            user_id  bigint,
-            guild_id bigint,
-            points   int not null default 0,
-            primary key (user_id, guild_id)
-        );
-        ''')
+    async def get(self, user_id, guild_id):
+        async with self.pool.acquire() as conn:
+            fetched = await conn.fetch('''
+                select *, row_number() over ( order by points desc ) as position
+                from ActivityView
+                where guild_id = $1
+                order by points desc;
+            ''', guild_id)
 
-    @classmethod
-    async def get(cls, user_id, guild_id):
-        fetched = await database.connection.fetch('''
-            select *, row_number() over ( order by points desc ) as position
-            from ActivityView
-            where guild_id = $1
-            order by points desc;
-        ''', guild_id)
+            for_user = discord.utils.find(lambda x: x['user_id'] == user_id, fetched)
+            if fetched is None or for_user is None:
+                raise errors.NotFound(f'Activity for user with user id: {user_id} in guild {guild_id} not found')
 
-        for_user = discord.utils.find(lambda x: x['user_id'] == user_id, fetched)
-        if fetched is None or for_user is None:
-            raise errors.NotFound(f'Activity for user with user id: {user_id} in guild {guild_id} not found')
+            return Activity.convert(for_user)
 
-        return Activity.convert(for_user)
-
-    @classmethod
-    async def get_top(cls, guild, limit=10):
+    async def get_top(self, guild, limit=10):
         query = '''
         select *, row_number() over ( order by points desc ) as position
         from ActivityView
@@ -64,8 +50,8 @@ class ActivityService:
         order by points desc
         limit $2;
         '''
-
-        fetched = await database.connection.fetch(query, guild.id, limit)
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetch(query, guild.id, limit)
         converted = []
         for fetch in fetched:
             user_activity = Activity.convert(fetch)
@@ -75,8 +61,20 @@ class ActivityService:
 
         return converted
 
+    async def update_material_view(self):
+        async with self.pool.acquire() as connection:
+            return await connection.execute('''
+                REFRESH MATERIALIZED VIEW ActivityView;
+            ''')
+
     @classmethod
-    async def update_material_view(cls):
-        return await database.connection.execute('''
-            REFRESH MATERIALIZED VIEW ActivityView;
+    def sql(cls):
+        return SQL(createTable='''
+        create table if not exists Activity
+        (
+            user_id  bigint,
+            guild_id bigint,
+            points   int not null default 0,
+            primary key (user_id, guild_id)
+        );
         ''')

@@ -1,34 +1,15 @@
-import asyncio
-import time
 import asyncpg
 import services
 from keys import db
-import datetime
-
-connection = None
-pool = None
 
 
 async def connect(loop):
-    global connection
-    global pool
     pool = await asyncpg.create_pool(user=db['user'], password=db['password'], host=db['host'], port=db['port'],
-                               database='bitch_bot', loop=loop)
-    connection = await asyncpg.connect(
-        user=db['user'], password=db['password'], host=db['host'], port=db['port'], database='bitch_bot', loop=loop
-    )
+                                     database='bitch_bot', loop=loop)
+    return pool
 
 
-async def createTables():
-    # await connection.execute('''
-    # CREATE TABLE IF NOT EXISTS Emojis (
-    #     id bigint NOT NULL PRIMARY KEY,
-    #     name text NOT NULL,
-    #     command text NOT NULL,
-    #     is_epic bool NOT NULL,
-    #     is_animated bool NOT NULL
-    # );''')
-
+async def createTables(connection):
     await connection.execute('''
     create table if not exists Counters
     (
@@ -53,9 +34,8 @@ async def createTables():
 
 
 async def init(loop):
-    await connect(loop)
-    await createTables()
+    pool = await connect(loop)
+    async with pool.acquire() as conn:
+        await createTables(conn)
 
-
-async def close():
-    await connection.close()
+    return pool

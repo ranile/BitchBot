@@ -1,64 +1,64 @@
-from database import database
 import asyncpg
-
 from database.sql import SQL
 from resources.starboard import Starboard
 
 
 class StarboardService:
+    def __init__(self, pool):
+        self.pool = pool
 
-    @classmethod
-    async def get(cls, message_or_star_id, guild_id):
-        fetched = await database.connection.fetchrow('''
-            select *
-            from starboard
-            where (message_id = $1 or id = $1) and guild_id = $2;
-        ''', int(message_or_star_id), guild_id)
+    async def get(self, message_or_star_id, guild_id):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow('''
+                select *
+                from starboard
+                where (message_id = $1 or id = $1) and guild_id = $2;
+            ''', int(message_or_star_id), guild_id)
 
-        return Starboard.convert(fetched) if fetched is not None else None
+            return Starboard.convert(fetched) if fetched is not None else None
 
-    @classmethod
-    async def star(cls, reaction):
+    async def star(self, reaction):
         message = reaction.message
         should_send = False
-        try:
-            should_send = True
-
+        async with self.pool.acquire() as connection:
             try:
-                attachment = message.attachments[0].url
-            except IndexError:
-                attachment = None
+                should_send = True
 
-            starred = await database.connection.fetchrow('''
-                insert into Starboard (message_id, channel_id, guild_id, message_content, attachment, stars_count, author_id)
-                values ($1, $2, $3, $4, $5, $6, $7)
-                returning *;
-            ''', message.id, message.channel.id, message.guild.id, message.content if message.content != '' else None,
-                                                         attachment, reaction.count, message.author.id)
-        except asyncpg.exceptions.UniqueViolationError:
-            starred = await database.connection.fetchrow('''
-                update starboard
-                set stars_count = $4
-                where message_id = $1 and channel_id = $2 and guild_id = $3
-                returning *;
-            ''', message.id, message.channel.id, message.guild.id, reaction.count)
+                try:
+                    attachment = message.attachments[0].url
+                except IndexError:
+                    attachment = None
 
-        return should_send, Starboard.convert(starred)
+                starred = await connection.fetchrow('''
+                    insert into Starboard (message_id, channel_id, guild_id, message_content, attachment, stars_count, author_id)
+                    values ($1, $2, $3, $4, $5, $6, $7)
+                    returning *;
+                ''', message.id, message.channel.id, message.guild.id,
+                                                    message.content if message.content != '' else None,
+                                                    attachment, reaction.count, message.author.id)
+            except asyncpg.exceptions.UniqueViolationError:
+                starred = await connection.fetchrow('''
+                    update starboard
+                    set stars_count = $4
+                    where message_id = $1 and channel_id = $2 and guild_id = $3
+                    returning *;
+                ''', message.id, message.channel.id, message.guild.id, reaction.count)
 
-    @classmethod
-    async def unstar(cls, reaction):
+            return should_send, Starboard.convert(starred)
+
+    async def unstar(self, reaction):
         message = reaction.message
-        unstarred = await database.connection.fetchrow('''
-                update starboard
-                set stars_count = starboard.stars_count - 1
-                where message_id = $1 and channel_id = $2 and guild_id = $3
-                returning *;
-            ''', message.id, message.channel.id, message.guild.id)
+        async with self.pool.acquire() as connection:
+            unstarred = await connection.fetchrow('''
+                    update starboard
+                    set stars_count = starboard.stars_count - 1
+                    where message_id = $1 and channel_id = $2 and guild_id = $3
+                    returning *;
+                ''', message.id, message.channel.id, message.guild.id)
 
-        return Starboard.convert(unstarred)
+            return Starboard.convert(unstarred)
 
-    @classmethod
-    async def guild_top_stats(cls, guild):
+    async def guild_top_stats(self, guild):
         query = '''
         select author_id, count(author_id) from Starboard
         where guild_id = $1
@@ -66,8 +66,8 @@ class StarboardService:
         order by count desc
         limit 10;
         '''
-
-        fetched = await database.connection.fetch(query, guild.id)
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetch(query, guild.id)
         result = []
         for stared in fetched:
             member = guild.get_member(stared['author_id'])
@@ -81,6 +81,16 @@ class StarboardService:
             result.append(res)
 
         return result
+
+    async def my_stats(self, ctx):
+        query = '''
+        select author_id, count(author_id) from Starboard
+        where guild_id = $1 and author_id = $2
+        group by author_id
+        order by count desc;
+        '''
+        async with self.pool.acquire() as connection:
+            return await connection.fetchrow(query, ctx.guild.id, ctx.author.id)
 
     @classmethod
     def sql(cls):
@@ -100,14 +110,3 @@ class StarboardService:
             
             create unique index if not exists unique_message on Starboard (message_id);
             ''')
-
-    @classmethod
-    async def my_stats(cls, ctx):
-        query = '''
-        select author_id, count(author_id) from Starboard
-        where guild_id = $1 and author_id = $2
-        group by author_id
-        order by count desc;
-        '''
-
-        return await database.connection.fetchrow(query, ctx.guild.id, ctx.author.id)

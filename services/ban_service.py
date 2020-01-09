@@ -1,18 +1,20 @@
-from database import database
 from database.sql import SQL
 from resources import Ban
 
 
 class BanService:
-    @classmethod
-    async def insert(cls, ban):
-        fetched = await database.connection.fetchrow('''
-        insert into Bans (reason, banned_by_id, banned_user_id, guild_id)
-        values ($1, $2, $3, $4)
-        returning *;
-        ''', ban.reason, ban.banned_by_id, ban.banned_user_id, ban.guild_id)
+    def __init__(self, pool):
+        self.pool = pool
 
-        return Ban.convert(fetched)
+    async def insert(self, ban):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow('''
+            insert into Bans (reason, banned_by_id, banned_user_id, guild_id)
+            values ($1, $2, $3, $4)
+            returning *;
+            ''', ban.reason, ban.banned_by_id, ban.banned_user_id, ban.guild_id)
+
+            return Ban.convert(fetched)
 
     @classmethod
     def sql(cls):

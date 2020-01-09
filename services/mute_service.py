@@ -1,12 +1,14 @@
-from database import database
 from database.sql import SQL
 from resources import Mute
 
 
 class MuteService:
-    @classmethod
-    async def insert(cls, mute):
-        query = await database.connection.fetchrow('''
+    def __init__(self, pool):
+        self.pool = pool
+
+    async def insert(self, mute):
+        async with self.pool.acquire() as connection:
+            query = await connection.fetchrow('''
             insert into Mutes (reason, muted_by_id, muted_user_id, guild_id)
             values ($1, $2, $3, $4)
             returning *;
@@ -14,12 +16,12 @@ class MuteService:
 
         return Mute.convert(query)
 
-    @classmethod
-    async def delete(cls, guild_id, muted_user_id):
-        return await database.connection.execute('''
-            delete from Mutes
-            where guild_id = $1 and muted_user_id = $2;
-        ''', guild_id, muted_user_id)
+    async def delete(self, guild_id, muted_user_id):
+        async with self.pool.acquire() as connection:
+            return await connection.execute('''
+                delete from Mutes
+                where guild_id = $1 and muted_user_id = $2;
+            ''', guild_id, muted_user_id)
 
     @classmethod
     def sql(cls):

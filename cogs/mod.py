@@ -1,17 +1,19 @@
 import discord
 from discord.ext import commands
 from datetime import datetime
-
 from resources import Ban, Warn, Mute
-from services import MuteService, WarningsService
-from services.ban_service import BanService
-from services.config_service import GuildConfigService
+from services import MuteService, WarningsService, BanService, ConfigService
 from util import funs, checks, paginator
 
 
 class Moderation(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot):
         self.bot = bot
+        pool = bot.db
+        self.warnings_service = WarningsService(pool)
+        self.mute_service = MuteService(pool)
+        self.ban_service = BanService(pool)
+        self.config_service = ConfigService(pool)
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -56,7 +58,7 @@ class Moderation(commands.Cog):
             guild_id=ctx.guild.id,
         )
 
-        saved = await BanService.insert(ban)
+        saved = await self.ban_service.insert(ban)
 
         embed = discord.Embed(title=f"User was banned from {ctx.guild.name}", color=funs.random_discord_color(),
                               timestamp=saved.banned_at)
@@ -85,7 +87,7 @@ class Moderation(commands.Cog):
             await ctx.send("Why do want to mute yourself?\nI'm not gonna let you do it")
             return
 
-        config = await GuildConfigService.get(ctx.guild.id)
+        config = await self.config_service.get(ctx.guild.id)
         muted = ctx.guild.get_role(config.muted_role_id)
 
         if muted in victim.roles:
@@ -98,7 +100,7 @@ class Moderation(commands.Cog):
             muted_user_id=victim.id,
             guild_id=ctx.guild.id
         )
-        inserted = await MuteService.insert(mute)
+        inserted = await self.mute_service.insert(mute)
 
         await victim.add_roles(muted)
         await ctx.send(f"**User {victim.mention} has been muted by {ctx.author.mention}**\nID: {inserted.id}")
@@ -119,10 +121,10 @@ class Moderation(commands.Cog):
         """
 
         await ctx.trigger_typing()
-        config = await GuildConfigService.get(ctx.guild.id)
+        config = await self.config_service.get(ctx.guild.id)
         muted = ctx.guild.get_role(config.muted_role_id)
         await victim.remove_roles(muted)
-        await MuteService.delete(ctx.guild.id, victim.id)
+        await self.mute_service.delete(ctx.guild.id, victim.id)
         await ctx.send(f"**User {victim.mention} has been unmuted by {ctx.author.mention}**")
 
     @commands.command()
@@ -138,7 +140,7 @@ class Moderation(commands.Cog):
             guild_id=ctx.guild.id
         )
 
-        inserted = await WarningsService.insert(warning)
+        inserted = await self.warnings_service.insert(warning)
 
         embed = discord.Embed(title=f"User was warned from {ctx.guild.name}", color=funs.random_discord_color(),
                               timestamp=inserted.warned_at)
@@ -163,7 +165,7 @@ class Moderation(commands.Cog):
         """
         if warnings_for is not None:
             warnings_for = warnings_for.id
-        warnings = await WarningsService.get_all(ctx.guild.id, warnings_for)
+        warnings = await self.warnings_service.get_all(ctx.guild.id, warnings_for)
         pages = commands.Paginator(prefix='```md', max_size=1980)
         index = 1
         for warning in warnings:
@@ -183,7 +185,7 @@ class Moderation(commands.Cog):
 
     @mute.command(name='config')
     async def mute_config(self, ctx, role: discord.Role):
-        await GuildConfigService.update(ctx.guild.id, 'mute_role_id', role.id)
+        await self.config_service.update(ctx.guild.id, 'mute_role_id', role.id)
         await ctx.send(f'Inserted {role.mention} as mute role')
 
     @commands.group()
@@ -197,9 +199,9 @@ class Moderation(commands.Cog):
     @mod_roles.command(name='add')
     @checks.can_config()
     async def mod_role_add(self, ctx, role: discord.Role):
-        inserted = await GuildConfigService.add_mod_role(role.id, ctx.guild.id)
+        inserted = await self.config_service.add_mod_role(role.id, ctx.guild.id)
         await ctx.send(f'Current mod roles are: {inserted.mod_roles}')
 
 
-def setup(bot: commands.Bot):
+def setup(bot):
     bot.add_cog(Moderation(bot))

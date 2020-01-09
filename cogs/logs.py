@@ -3,13 +3,14 @@ from datetime import datetime
 import discord
 from discord.ext import commands
 
-from services.config_service import GuildConfigService
+from services import ConfigService
 from util import funs
 
 
 class Logging(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.config_service = ConfigService(bot.db)
 
     async def trigger_webhook(self, webhook_url, content, username, avatar_url=None):
         webhook = discord.Webhook.from_url(webhook_url, adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
@@ -38,7 +39,7 @@ class Logging(commands.Cog):
             if guild is None:
                 guild = member.guild
 
-        config = await GuildConfigService.get(guild.id)
+        config = await self.config_service.get(guild.id)
         await self.trigger_webhook(config.event_log_webhook, embed, name)
 
     @commands.Cog.listener()
@@ -79,7 +80,7 @@ class Logging(commands.Cog):
         await self.send_log(name='on_member_ban', guild=guild, embed=embed)
 
     @commands.Cog.listener()
-    async def on_member_unban(self, guild, user ):
+    async def on_member_unban(self, guild, user):
         embed = self.base_member_embed(user)
         embed.title = "Member unbanned"
         await self.send_log(name='on_member_unban', guild=guild, embed=embed)

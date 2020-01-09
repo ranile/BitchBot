@@ -29,6 +29,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.command_pattern = re.compile(rf'>[a-z]+')
         log.critical('activity')
         self.refresh_activity_material_view.start()
+        self.activity_service = ActivityService(self.bot.db)
 
     def should_increment(self, message):
         try:
@@ -50,9 +51,9 @@ class Activity(commands.Cog, name='Activity Tracking'):
             return
 
         if self.should_increment(message):
-            await ActivityService.increment(message.author.id, message.guild.id, 2)
+            await self.activity_service.increment(message.author.id, message.guild.id, 2)
             try:
-                last_updated = (await ActivityService.get(message.author.id, message.guild.id)).last_updated_time
+                last_updated = (await self.activity_service.get(message.author.id, message.guild.id)).last_updated_time
             except errors.NotFound:
                 last_updated = datetime.datetime.utcnow()
             self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
@@ -62,7 +63,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         if of is None:
             of = ctx.author
         try:
-            fetched = await ActivityService.get(of.id, ctx.guild.id)
+            fetched = await self.activity_service.get(of.id, ctx.guild.id)
             member = ctx.guild.get_member(fetched.user)
             embed = discord.Embed(color=funs.random_discord_color())
             embed.set_author(name=member.display_name, icon_url=member.avatar_url)
@@ -76,7 +77,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @activity.command(name='top')
     async def top_users(self, ctx):
-        top = await ActivityService.get_top(guild=ctx.guild)
+        top = await self.activity_service.get_top(guild=ctx.guild)
 
         paginator = commands.Paginator(prefix='```md')
 
@@ -92,7 +93,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         paginator.add_line()
         paginator.add_line('-' * length)
-        me = await ActivityService.get(ctx.author.id, ctx.guild.id)
+        me = await self.activity_service.get(ctx.author.id, ctx.guild.id)
         paginator.add_line(f'{me.position}. You - {me.points}')
 
         for page in paginator.pages:
@@ -100,7 +101,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @tasks.loop(minutes=30)
     async def refresh_activity_material_view(self):
-        await ActivityService.update_material_view()
+        await self.activity_service.update_material_view()
 
     @refresh_activity_material_view.before_loop
     async def before_refresh_material_view(self):

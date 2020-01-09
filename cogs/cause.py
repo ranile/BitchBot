@@ -28,6 +28,8 @@ class Cause(commands.Cog, name="The Cause"):
         self.rabbitCooldownTime = 10
         self.rabbitAlreadySummoned = []
 
+        self.rabbit_service = RabbitService(bot.db)
+
     def cog_check(self, ctx):
         return ctx.guild.id == THE_CAUSE
 
@@ -37,7 +39,7 @@ class Cause(commands.Cog, name="The Cause"):
         self.isRabbitOnCooldown = False
 
     async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
-        inserted_rabbit = await RabbitService.insert(RabbitCounter(summonedBy=message.author.id))
+        inserted_rabbit = await self.rabbit_service.insert(RabbitCounter(summonedBy=message.author.id))
 
         if not self.isRabbitOnCooldown:
             await funs.sendRabbitCounterUpdate(self.bot,
@@ -86,19 +88,22 @@ class Cause(commands.Cog, name="The Cause"):
             of = ctx.author.id
 
         query = """select count(count) from counters where summoned_by = $1 and name = 'rabbit';"""
-        count = await self.bot.db.fetchval(query, of)
+        async with self.bot.db.acquire() as conn:
+            count = conn.fetchval(query, of)
 
         await ctx.send(f'{"You" if of == ctx.author.id else member.display_name} have called rabbit {count} times')
 
     @stats.command()
     async def top(self, ctx, limit=10):
-        fetched = await self.bot.db.fetch('''
-        select summoned_by, count(count) from counters
-        where name = 'rabbit'
-        group by summoned_by
-        order by count(count) desc
-        limit $1;
-        ''', limit)
+        async with self.bot.db.acquire() as conn:
+            fetched = await conn.fetch('''
+            select summoned_by, count(count) from counters
+            where name = 'rabbit'
+            group by summoned_by
+            order by count(count) desc
+            limit $1;
+            ''', limit)
+
         length = 0
         paginator = commands.Paginator(prefix='```md')
         for item in fetched:
@@ -108,12 +113,13 @@ class Cause(commands.Cog, name="The Cause"):
             if length < len(line):
                 length = len(line)
 
-        fetched_me = await self.bot.db.fetchrow('''
-        select summoned_by, count(count) from counters
-        where name = 'rabbit' and summoned_by = $1
-        group by summoned_by
-        order by count(count) desc;
-        ''', ctx.author.id)
+        async with self.bot.db.acquire() as conn:
+            fetched_me = await conn.fetchrow('''
+            select summoned_by, count(count) from counters
+            where name = 'rabbit' and summoned_by = $1
+            group by summoned_by
+            order by count(count) desc;
+            ''', ctx.author.id)
 
         paginator.add_line()
         paginator.add_line('-' * length)
