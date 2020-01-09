@@ -90,7 +90,8 @@ class BloodyHelpCommand(commands.HelpCommand):
             embed.add_field(name=f'Parameters', value=self.generate_arg_string_for_embed(command_help[0]), inline=False)
         except:
             embed.description = command.help
-            embed.add_field(name=f'Parameters', value='The docs are incomplete', inline=False)
+            if len(command.clean_params) != 0:
+                embed.add_field(name=f'Parameters', value='The docs are incomplete', inline=False)
 
         return embed
 
