@@ -82,8 +82,9 @@ class Cause(commands.Cog, name="The Cause"):
 
     @commands.group(invoke_without_command=True, aliases=["kayliesman"])
     async def rabbit(self, ctx):
-
-        await ctx.channel.send(file=discord.File(f'{RES_PATH}rabbitman{random.randint(1, 9)}.jpg'))
+        url = f'https://firebasestorage.googleapis.com/v0/b/bitchbot-discordbot.appspot.com/o/' \
+                   f'images%2Frabbit%2Frabbitman{random.randint(1, 9)}.jpg?alt=media'
+        await ctx.channel.send(embed=discord.Embed().set_image(url=url))
 
     @rabbit.group(invoke_without_command=True)
     async def stats(self, ctx, member: discord.Member = None):
@@ -136,8 +137,9 @@ class Cause(commands.Cog, name="The Cause"):
     @commands.command()
     async def baby(self, ctx):
         """Sends a Baby picture"""
-
-        await ctx.channel.send(file=discord.File(f'{RES_PATH}baby{random.randint(1, 9)}.jpg'))
+        url = 'https://firebasestorage.googleapis.com/v0/b/bitchbot-discordbot.appspot.com/o/' \
+              f'images%2Fbaby%2Fbaby{random.randint(1, 9)}.jpg?alt=media'
+        await ctx.channel.send(embed=discord.Embed().set_image(url=url))
 
 
 def setup(bot):
