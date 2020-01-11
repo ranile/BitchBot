@@ -28,7 +28,7 @@ class BitchBot(commands.Bot):
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     def setup_discordpy_logger(self):
         dpy_logger = logging.getLogger('discord')
-        dpy_logger.setLevel(logging.DEBUG)
+        dpy_logger.setLevel(logging.INFO)
         handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
         handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
         dpy_logger.addHandler(handler)
