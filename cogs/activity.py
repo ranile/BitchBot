@@ -10,10 +10,6 @@ from database import errors
 import logging
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
-log.addHandler(handler)
 
 
 class Activity(commands.Cog, name='Activity Tracking'):
@@ -26,7 +22,6 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.cache = {}
         self.bot_channel_pattern = re.compile(r'(bot-?commands|spam)')
         self.command_pattern = re.compile(rf'>[a-z]+')
-        log.critical('activity')
         self.refresh_activity_material_view.start()
         self.activity_service = ActivityService(self.bot.db)
 
