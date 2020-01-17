@@ -1,6 +1,4 @@
-import asyncio
 import logging
-import signal
 
 import aiohttp
 import discord
@@ -20,7 +18,7 @@ logger.addHandler(handler)
 
 
 class BitchBot(commands.Bot):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(
             command_prefix='>',
             help_command=BloodyHelpCommand(),
@@ -32,6 +30,8 @@ class BitchBot(commands.Bot):
             'debug': True
         })
 
+        self.initial_cogs = kwargs.pop('cogs')
+
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     def setup_logger(self):
         dpy_logger = logging.getLogger('discord')
@@ -42,36 +42,23 @@ class BitchBot(commands.Bot):
         cogs_logger.addHandler(handler)
 
     # noinspection PyAttributeOutsideInit
-    async def setup(self, **kwargs):
+    async def start(self, *args, **kwargs):
         self.setup_logger()
         # self.tornado_app.listen(6969)
         self.db = await database.init(self.loop)
         self.clientSession = aiohttp.ClientSession()
-        cogs = kwargs.pop('cogs')
-        for cog_name in cogs:
+        for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
                 logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
-        await self.start(kwargs.pop('token'))
+        await super().start(*args, **kwargs)
 
-    def run(self, token, cogs):
-        try:
-            self.loop.add_signal_handler(signal.SIGINT, lambda: self.loop.stop())
-            self.loop.add_signal_handler(signal.SIGTERM, lambda: self.loop.stop())
-        except NotImplementedError:
-            pass
-
-        async def on_loop_complete(_):
-            self.loop.stop()
-
-        future = asyncio.ensure_future(self.setup(token=token, cogs=cogs), loop=self.loop)
-        future.add_done_callback(on_loop_complete)
-        try:
-            self.loop.run_forever()
-        finally:
-            future.remove_done_callback(on_loop_complete)
+    async def close(self):
+        await self.clientSession.close()
+        await self.db.close()
+        await super().close()
 
     async def on_ready(self):
         print(f"{self.user.name} is running")

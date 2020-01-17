@@ -4,7 +4,7 @@ from BitchBot import BitchBot
 
 cogs = ["admin", "cause", "emojis", "internet", "starboard", 'activity', 'jsk', 'logs', 'mod', 'misc']
 
-bot = BitchBot()
+bot = BitchBot(cogs=cogs)
 
 
 @bot.command()
@@ -20,4 +20,5 @@ async def reload(ctx, module):
     bot.reload_extension(f'cogs.{module}')
     await ctx.send("🔄")
 
-bot.run(keys.bot, cogs=cogs)
+
+bot.run(keys.bot)

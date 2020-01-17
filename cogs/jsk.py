@@ -17,9 +17,7 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=jsk):
     @commands.command(name="shutdown", aliases=["logout", "exit"])
     async def jsk_shutdown(self, ctx: commands.Context):
         await ctx.send("Exiting...")
-        await self.bot.clientSession.close()
         await self.bot.close()
-        await self.bot.loop.stop()
 
 
 def setup(bot):
