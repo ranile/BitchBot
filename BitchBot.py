@@ -26,9 +26,10 @@ class BitchBot(commands.Bot):
             case_insensitive=True,
         )
 
-        self.tornado_app = tornado.web.Application([(route, handler, dict(bot=self)) for route, handler in routes], **{
-            'debug': True
-        })
+        # self.tornado_app = tornado.web.Application(
+        #     [(route, handler, dict(bot=self)) for route, handler in routes], **{
+        #         'debug': True
+        #     })
 
         self.initial_cogs = kwargs.pop('cogs')
 
