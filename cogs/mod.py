@@ -174,7 +174,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @checks.is_mod()
-    async def warn(self, ctx: commands.Context, victim: discord.Member, reason: str):
+    async def warn(self, ctx: commands.Context, victim: discord.Member, *, reason: str):
         """
         Warn a user
 
