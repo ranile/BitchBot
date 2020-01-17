@@ -14,6 +14,13 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=jsk):
             raise commands.BadArgument(msg)
         await super().jsk_python.callback(self, ctx, argument=argument)
 
+    @commands.command(name="shutdown", aliases=["logout", "exit"])
+    async def jsk_shutdown(self, ctx: commands.Context):
+        await ctx.send("Exiting...")
+        await self.bot.clientSession.close()
+        await self.bot.close()
+        await self.bot.loop.stop()
+
 
 def setup(bot):
     bot.add_cog(MyJishaku(bot))
