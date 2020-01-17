@@ -111,7 +111,7 @@ class Paginator:
                 try:
                     done.pop().result()
                 except asyncio.TimeoutError:
-                    return self.stop()
+                    return await self.stop()
 
                 for future in pending:
                     future.cancel()
