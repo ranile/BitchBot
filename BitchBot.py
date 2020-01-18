@@ -2,12 +2,10 @@ import logging
 
 import aiohttp
 import discord
-import tornado.web
 from discord.ext import commands
 
 from database import database
 # noinspection PyPep8Naming
-from routes.routes import routesList as routes
 from util.HelpCommand import BloodyHelpCommand
 
 logger = logging.getLogger(__name__)
