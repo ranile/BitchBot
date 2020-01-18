@@ -7,7 +7,7 @@ cogs = ["admin", "cause", "emojis", "internet", "starboard", 'activity', 'jsk', 
 bot = BitchBot(cogs=cogs)
 
 
-@bot.command()
+
 @commands.is_owner()
 async def reload(ctx, module):
     """
