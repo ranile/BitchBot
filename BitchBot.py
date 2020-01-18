@@ -6,13 +6,15 @@ from discord.ext import commands
 
 from database import database
 # noinspection PyPep8Naming
+from util.DiscordLoggingHandler import DiscordLoggingHandler
 from util.HelpCommand import BloodyHelpCommand
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
-logger.addHandler(handler)
+file_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+fmt = '%(name)s: %(levelname)s: %(asctime)s: %(message)s'
+file_handler.setFormatter(logging.Formatter(fmt))
+logger.addHandler(file_handler)
 
 
 class BitchBot(commands.Bot):
@@ -32,20 +34,26 @@ class BitchBot(commands.Bot):
         self.initial_cogs = kwargs.pop('cogs')
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
-    def setup_logger(self):
+    async def setup_logger(self):
+        discord_handler = DiscordLoggingHandler(self.loop, self.clientSession)
+
         dpy_logger = logging.getLogger('discord')
         dpy_logger.setLevel(logging.INFO)
-        dpy_logger.addHandler(handler)
+        dpy_logger.addHandler(file_handler)
+        dpy_logger.addHandler(discord_handler)
 
         cogs_logger = logging.getLogger('cogs')
-        cogs_logger.addHandler(handler)
+        cogs_logger.addHandler(file_handler)
+        cogs_logger.addHandler(discord_handler)
+
+        logger.addHandler(discord_handler)
 
     # noinspection PyAttributeOutsideInit
     async def start(self, *args, **kwargs):
-        self.setup_logger()
+        self.clientSession = aiohttp.ClientSession()
+        await self.setup_logger()
         # self.tornado_app.listen(6969)
         self.db = await database.init(self.loop)
-        self.clientSession = aiohttp.ClientSession()
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
