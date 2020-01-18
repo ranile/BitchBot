@@ -22,14 +22,21 @@ class Admin(commands.Cog):
         msg = await ctx.channel.fetch_message(message)
         await msg.delete()
 
+    @commands.group(invoke_without_command=True)
     async def reload(self, ctx, *, cog):
+        """
+        Reloads a cog
+
+        Args:
+            module: The cog to reload
+        """
         actual_cog = self.bot.get_cog(cog)
         name = actual_cog.__class__.__module__
         self.bot.reload_extension(name)
         log.info(f'Reloaded cog: {actual_cog.qualified_name} ({name})')
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded cog {actual_cog.qualified_name}')
 
-    @commands.command(name='ra')
+    @reload.command(name='all')
     async def reload_all(self, ctx):
         stdout, stderr = await funs.run_shell_command('git pull')
         files = _GIT_PULL_REGEX.findall(stdout)
