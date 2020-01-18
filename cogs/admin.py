@@ -31,7 +31,7 @@ class Admin(commands.Cog):
 
     @commands.command(name='ra')
     async def reload_all(self, ctx):
-        stdout, stderr = funs.run_shell_command('git pull')
+        stdout, stderr = await funs.run_shell_command('git pull')
         files = _GIT_PULL_REGEX.findall(stdout)
 
         all_modules = 0
