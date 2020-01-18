@@ -43,6 +43,7 @@ class BitchBot(commands.Bot):
         dpy_logger.addHandler(discord_handler)
 
         cogs_logger = logging.getLogger('cogs')
+        cogs_logger.setLevel(logging.INFO)
         cogs_logger.addHandler(file_handler)
         cogs_logger.addHandler(discord_handler)
 
