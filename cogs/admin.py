@@ -1,6 +1,15 @@
+import importlib
+import logging
+
 from discord.ext import commands
-import discord
-import inspect
+import sys
+import re
+
+from util import funs
+
+_GIT_PULL_REGEX = re.compile(r'\s+(?P<filename>.+?)\s*\|\s*[0-9]+\s*[+-]+')
+
+log = logging.getLogger(__name__)
 
 
 class Admin(commands.Cog):
@@ -12,6 +21,51 @@ class Admin(commands.Cog):
     async def delete(self, ctx, message):
         msg = await ctx.channel.fetch_message(message)
         await msg.delete()
+
+    async def reload(self, ctx, *, cog):
+        actual_cog = self.bot.get_cog(cog)
+        name = actual_cog.__class__.__module__
+        self.bot.reload_extension(name)
+        log.info(f'Reloaded cog: {actual_cog.qualified_name} ({name})')
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded cog {actual_cog.qualified_name}')
+
+    @commands.command(name='ra')
+    async def reload_all(self, ctx):
+        stdout, stderr = funs.run_shell_command('git pull')
+        files = _GIT_PULL_REGEX.findall(stdout)
+
+        all_modules = 0
+        successfully_reloaded_modules = 0
+        for file in files:
+            if file == 'core.py':  # core.py has changed so return and prompt the user to reload the bot completely
+                return await ctx.send('`core.py` changed.\nReload the bot completely.\nExiting')
+
+            # Only reload the python files that are not in cogs directory (aren't cogs)
+            if not file.startswith('cogs/') and file.endswith('.py'):
+                all_modules += 1
+                try:
+                    module = sys.modules[file[:-3].replace('/', '.')]
+                    importlib.reload(module)
+                    successfully_reloaded_modules += 1
+                    log.info(f'Reloaded module: {module.__name__}')
+                except Exception as e:
+                    log.error(e)
+
+        # Reload all the cogs instead of figuring out which cogs used the updated modules and only reloading those
+        # Maybe that's for another day
+        all_cogs = len(self.bot.cogs)
+        successfully_reloaded_cogs = 0
+        for _, cog in self.bot.cogs.items():
+            name = cog.__class__.__module__
+            try:
+                self.bot.reload_extension(name)
+                successfully_reloaded_cogs += 1
+                log.info(f'Reloaded cog: {cog.qualified_name}')
+            except Exception as e:
+                log.error(e)
+
+        await ctx.send(f"Successfully reloaded {successfully_reloaded_modules}/{all_modules} modules "
+                       f"and {successfully_reloaded_cogs}/{all_cogs} cogs")
 
 
 def setup(bot):

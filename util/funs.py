@@ -1,5 +1,4 @@
-import inspect
-import re
+import asyncio
 from random import randint
 from typing import Union
 import discord
@@ -36,3 +35,10 @@ async def log(ctx, msg, sent_message, out=None):
 
     webhook = discord.Webhook.from_url(logWebhook, adapter=discord.AsyncWebhookAdapter(ctx.bot.clientSession))
     await webhook.send(embed=embed, username=ctx.command.name)
+
+
+async def run_shell_command(command):
+    process = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE,
+                                                    stderr=asyncio.subprocess.PIPE)
+    result = await process.communicate()
+    return [out.decode() for out in result]
