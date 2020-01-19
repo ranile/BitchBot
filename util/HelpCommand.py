@@ -41,16 +41,18 @@ class BloodyHelpCommand(commands.HelpCommand):
         return embed
 
     def add_commands_to_embed(self, commands, cog_name, embed, description=None):
-        out = ''
-        embed.description = description
+        embed_description = [description or '', '**Commands**']
+        out = []
         for cmd in commands:
             try:
-                out += f"**{cmd.name}**:\t{str(cmd.help).split(NEW_LINE)[0]}\n"
+                out.append(f"**{cmd.qualified_name}**:\t{str(cmd.help).split(NEW_LINE)[0]}")
             except:
                 continue
 
         if out:
-            embed.add_field(name=f'**{cog_name}**', value=out, inline=False)
+            embed_description.append('\n'.join(out))
+
+        embed.description = '\n'.join(embed_description)
 
         return embed
 
@@ -157,22 +159,28 @@ class BloodyHelpCommand(commands.HelpCommand):
         await self.context.send(embed=embed)
 
     async def send_group_help(self, group):
-        subcommands = group.commands
+        subcommands = list(group.walk_commands())
 
         if len(subcommands) == 0:
             return await self.send_command_help(group)
 
         subcommands = await self.filter_commands(subcommands, sort=True)
 
-        embed = self.add_commands_to_embed(
-            subcommands,
-            group.qualified_name,
-            self.generate_base_help_embed(),
-            group.help
-        )
+        if group.invoke_without_command:
+            embed = self.format_command_embed(self.generate_base_help_embed(), group)
+        else:
+            embed = self.generate_base_help_embed()
+            embed.title += f'\n{group.qualified_name}'
+            embed.description = group.help
 
-        for subcommand in subcommands:
-            if subcommand.invoke_without_command:
-                pass
+        out = []
+        for cmd in subcommands:
+            try:
+                out.append(f"**{cmd.qualified_name}**:\t{str(cmd.help).split(NEW_LINE)[0]}")
+            except:
+                continue
+
+        if out:
+            embed.add_field(name='Sub Commands', value='\n'.join(out), inline=False)
 
         await self.context.send(embed=embed)
