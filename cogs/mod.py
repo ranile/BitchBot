@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from datetime import datetime
-from resources import Ban, Warn, Mute
+from resources import Ban, Warn, Mute, Timer
 from services import MuteService, WarningsService, BanService, ConfigService
-from util import funs, checks, paginator
+from util import funs, checks, paginator, converters
 
 
 # noinspection PyIncorrectDocstring
@@ -89,7 +89,7 @@ class Moderation(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_roles=True, manage_channels=True)
-    async def mute(self, ctx: commands.Context, victim: discord.Member, *, reason=None):
+    async def mute(self, ctx: commands.Context, victim: discord.Member, time: converters.HumanTime, *, reason=None):
         """
         Mute a user
 
@@ -114,7 +114,8 @@ class Moderation(commands.Cog):
             reason=reason,
             muted_by_id=ctx.author.id,
             muted_user_id=victim.id,
-            guild_id=ctx.guild.id
+            guild_id=ctx.guild.id,
+            unmute_time=time
         )
         inserted = await self.mute_service.insert(mute)
 
@@ -122,13 +123,35 @@ class Moderation(commands.Cog):
         await ctx.send(f"**User {victim.mention} has been muted by {ctx.author.mention}**\nID: {inserted.id}")
 
         try:
-            msg = f"You have been muted in {ctx.guild.name}"
+            msg = f"You have been muted in {ctx.guild.name} {f'for {time}' if time else ''}" \
+                  f"\n{'Reason `{reason}`' if reason else ''}"
             if reason:
-                msg += f" for `{reason}`"
+                msg += f""
 
             await victim.send(msg)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Muted without notice")
+
+        if time:
+            extras = {
+                'mute_id': inserted.id,
+                'guild_id': inserted.guild_id,
+                'muted_user_id': inserted.muted_user_id,
+            }
+            timer = Timer(
+                id=0,
+                event='tempmute',
+                created_at=ctx.message.created_at,
+                expires_at=time,
+                kwargs=extras
+            )
+            await self.bot.timers.create_timer(timer)
+
+    async def do_unmute(self, guild, victim):
+        config = await self.config_service.get(guild.id)
+        muted = guild.get_role(config.muted_role_id)
+        await victim.remove_roles(muted)
+        await self.mute_service.delete(guild.id, victim.id)
 
     @commands.command()
     @commands.has_permissions(manage_roles=True, manage_channels=True)
@@ -141,11 +164,14 @@ class Moderation(commands.Cog):
         """
 
         await ctx.trigger_typing()
-        config = await self.config_service.get(ctx.guild.id)
-        muted = ctx.guild.get_role(config.muted_role_id)
-        await victim.remove_roles(muted)
-        await self.mute_service.delete(ctx.guild.id, victim.id)
+        await self.do_unmute(ctx.guild, victim)
         await ctx.send(f"**User {victim.mention} has been unmuted by {ctx.author.mention}**")
+
+    @commands.Cog.listener()
+    async def on_tempmute_timer_completed(self, timer):
+        print('listener', timer.id, timer.kwargs)
+        guild = self.bot.get_guild(timer.kwargs['guild_id'])
+        await self.do_unmute(guild, guild.get_member(timer.kwargs['muted_user_id']))
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
