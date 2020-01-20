@@ -18,6 +18,6 @@ class Timers:
             timers = await self.timers_service.fetch_past_timers()
             for timer in timers:
                 print('deleting ', timer)
-                self.bot.dispatch(f'{timer.event}_timer_completed', timer)
+                self.bot.dispatch(f'{timer.event}_timer_complete', timer)
                 await self.timers_service.delete(timer)
             await asyncio.sleep(10)

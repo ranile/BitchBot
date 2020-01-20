@@ -168,7 +168,7 @@ class Moderation(commands.Cog):
         await ctx.send(f"**User {victim.mention} has been unmuted by {ctx.author.mention}**")
 
     @commands.Cog.listener()
-    async def on_tempmute_timer_completed(self, timer):
+    async def on_tempmute_timer_complete(self, timer):
         print('listener', timer.id, timer.kwargs)
         guild = self.bot.get_guild(timer.kwargs['guild_id'])
         await self.do_unmute(guild, guild.get_member(timer.kwargs['muted_user_id']))
