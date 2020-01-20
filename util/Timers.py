@@ -27,6 +27,13 @@ class Timers:
             ''', timer['id'])
             print(val)
 
+    async def create_timer(self, timer):
+        async with self.pool.acquire() as conn:
+            await conn.execute('''
+            insert into Timers (event, created_at, expires_at)
+            values ($1, $2, $3);
+            ''', timer.event, timer.created_at, timer.expires_at)
+
     async def refresh_timer(self):
         while not self.bot.is_closed():
             print('hitting db now')
