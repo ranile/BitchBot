@@ -8,6 +8,7 @@ from database import database
 # noinspection PyPep8Naming
 from util.DiscordLoggingHandler import DiscordLoggingHandler
 from util.HelpCommand import BloodyHelpCommand
+from util.Timers import Timers
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -55,6 +56,7 @@ class BitchBot(commands.Bot):
         await self.setup_logger()
         # self.tornado_app.listen(6969)
         self.db = await database.init(self.loop)
+        self.timers = Timers(self)
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
