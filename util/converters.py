@@ -20,9 +20,7 @@ class HumanTime(commands.Converter):
     async def convert(self, ctx, argument):
         cal = parsedatetime.Calendar()
 
-        time = argument
-        time_struct, parse_status = cal.parse(time)
-
-        if not bool(parse_status):
-            raise commands.BadArgument
-        return datetime(*time_struct[:6])
+        now = ctx.message.created_at
+        dt, _ = cal.parseDT(datetimeString=argument, sourceTime=now)
+        # TODO: Check if `dt` is valid
+        return dt
