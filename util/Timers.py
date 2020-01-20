@@ -1,11 +1,12 @@
-from discord.ext import tasks
+import asyncio
 from datetime import datetime
 
 
 class Timers:
-    def __init__(self, pool):
-        self.pool = pool
-        self.refresh_timer.start()
+    def __init__(self, bot):
+        self.bot = bot
+        self.pool = bot.db
+        self.bot.loop.create_task(self.refresh_timer())
 
     async def fetch_from_db(self):
         async with self.pool.acquire() as conn:
@@ -26,11 +27,12 @@ class Timers:
             ''', timer['id'])
             print(val)
 
-    @tasks.loop(seconds=10)
     async def refresh_timer(self):
-        print('hitting db now')
-        timers = await self.fetch_from_db()
-        for timer in timers:
-            print('deleting ', timer)
-            # TODO dispatch events
-            await self.delete_timer(timer)
+        while not self.bot.is_closed():
+            print('hitting db now')
+            timers = await self.fetch_from_db()
+            for timer in timers:
+                print('deleting ', timer)
+                self.bot.dispatch(timer['event'], timer)
+                await self.delete_timer(timer)
+            await asyncio.sleep(10)
