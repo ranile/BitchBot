@@ -4,7 +4,7 @@ import json
 
 class Timer(Resource):
     def __init__(self, **kwargs):
-        self.id = kwargs.pop('id', 0)
+        self.id = kwargs.pop('id', None)
         extra = kwargs.pop('extra', {'args': (), 'kwargs': {}})
         self.args = extra.get('args', [])
         self.kwargs = kwargs.pop('kwargs', {})

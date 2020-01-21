@@ -139,7 +139,6 @@ class Moderation(commands.Cog):
                 'muted_user_id': inserted.muted_user_id,
             }
             timer = Timer(
-                id=0,
                 event='tempmute',
                 created_at=ctx.message.created_at,
                 expires_at=time,
