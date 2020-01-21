@@ -1,5 +1,4 @@
 from resources import Resource
-import json
 
 
 class Timer(Resource):
@@ -14,10 +13,9 @@ class Timer(Resource):
 
     @classmethod
     def convert(cls, record):
-        extra = json.loads(record['extras'])
         return cls(
             id=record['id'],
-            kwargs=json.loads(record['extras']),
+            kwargs=record['extras'],
             event=record['event'],
             created_at=record['created_at'],
             expires_at=record['expires_at'],

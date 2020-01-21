@@ -13,7 +13,7 @@ class TimersService:
             insert into Timers (event, created_at, expires_at, extras)
             values ($1, $2, $3, $4::jsonb)
             returning *;
-            ''', timer.event, timer.created_at, timer.expires_at, json.dumps(timer.kwargs))
+            ''', timer.event, timer.created_at, timer.expires_at, timer.kwargs)
 
             return Timer.convert(inserted)
 
