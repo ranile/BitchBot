@@ -40,7 +40,7 @@ class TimersService:
     def sql(cls):
         return SQL(
             createTable='''
-            create table Timers
+            create table if not exists Timers
             (
                 id         serial primary key,
                 event      text      not null,
