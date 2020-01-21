@@ -1,5 +1,6 @@
 import json
 
+from database.sql import SQL
 from resources import Timer
 
 
@@ -34,3 +35,18 @@ class TimersService:
             where now() > expires_at;
             ''')
         return Timer.convertMany(fetched)
+
+    @classmethod
+    def sql(cls):
+        return SQL(
+            createTable='''
+            create table Timers
+            (
+                id         serial primary key,
+                event      text      not null,
+                created_at timestamp not null,
+                expires_at timestamp not null,
+                extras     jsonb default '{}'::jsonb
+            );
+            '''
+        )
