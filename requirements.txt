@@ -8,3 +8,4 @@ git+https://github.com/Zenrac/TextToOwO
 git+https://github.com/Gelbpunkt/aiowiki
 beautifulsoup4
 psutil
+parsedatetime
