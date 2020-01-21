@@ -30,4 +30,4 @@ class Timers:
                 self.bot.dispatch(f'{timer.event}_timer_complete', timer)
                 await self.timers_service.delete(timer)
                 self.current_timers.remove(timer)
-            await asyncio.sleep(10)
+            await asyncio.sleep(60)
