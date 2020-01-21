@@ -17,6 +17,7 @@ class Timers:
         self.current_timers.append(inserted)
 
     async def refresh_timer(self):
+        await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             if self.current_timers is None:
                 print('hitting db now')
