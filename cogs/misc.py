@@ -369,6 +369,30 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name='Roles', value=', '.join([r.mention for r in sorted_roles]), inline=False)
         await ctx.send(embed=embed)
 
+    @commands.command()
+    async def swear(self, ctx, *, sentence):
+        new = ''
+        newsplitted = []
+        splitted = sentence.split(' ')
+        words = ['bitch', 'motherfucker', 'gay', 'fucker', 'boi', 'goddamn']
+        end_words = [', okay bitch?!', ', now shut up', ', sit down boi']
+        for x in splitted:
+            newsplitted.append(x)
+            if random.randint(0, 1):
+                newsplitted.append(random.choice(words))
+        for x in ' '.join(newsplitted):
+            if random.randint(0, 1):
+                new += x.upper()
+            else:
+                new += x.lower()
+        if random.randint(0, 8) > 5:
+            for x in random.choice(end_words):
+                if random.randint(0, 1):
+                    new += x.upper()
+                else:
+                    new += x.lower()
+        await ctx.send(new)
+
 
 def setup(bot):
     bot.add_cog(Miscellaneous(bot))
