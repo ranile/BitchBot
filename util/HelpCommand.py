@@ -30,7 +30,7 @@ class BloodyHelpCommand(commands.HelpCommand):
             out = f'[{command.qualified_name}, {aliases}]'
 
         if parent:
-            aliases = f" , {aliases}" if (aliases != '') else ""
+            aliases = f"|{aliases}" if (aliases != '') else ""
             out = f'[{parent} {command.name}{aliases}]'
 
         return f'{out} {command.signature}'
