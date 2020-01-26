@@ -89,7 +89,7 @@ class Moderation(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_roles=True, manage_channels=True)
-    async def mute(self, ctx: commands.Context, victim: discord.Member, time: converters.HumanTime, *, reason=None):
+    async def mute(self, ctx: commands.Context, victim: discord.Member, *, time_and_reason: converters.HumanTime):
         """
         Mute a user
 
@@ -97,6 +97,9 @@ class Moderation(commands.Cog):
             victim: Member you want to mute
             reason: Reason for mute
         """
+        time = time_and_reason.time
+        reason = time_and_reason.other
+
         await ctx.trigger_typing()
 
         if victim.id == ctx.author.id:
