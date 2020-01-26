@@ -30,11 +30,14 @@ class Admin(commands.Cog):
         Args:
             module: The cog to reload
         """
-        actual_cog = self.bot.get_cog(cog)
-        name = actual_cog.__class__.__module__
-        self.bot.reload_extension(name)
-        log.info(f'Reloaded cog: {actual_cog.qualified_name} ({name})')
-        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded cog {actual_cog.qualified_name}')
+        try:
+            actual_cog = self.bot.get_cog(cog)
+            name = actual_cog.__class__.__module__
+            self.bot.reload_extension(name)
+            log.info(f'Reloaded cog: {actual_cog.qualified_name} ({name})')
+        except:
+            self.bot.reload_extension(f'cogs.{cog}')
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded cog {cog}')
 
     @reload.command(name='all')
     async def reload_all(self, ctx):
