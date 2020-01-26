@@ -371,6 +371,13 @@ class Miscellaneous(commands.Cog):
 
     @commands.command()
     async def swear(self, ctx, *, sentence):
+        """
+        Swear too much
+        Or more like fuck a sentence
+
+        Args:
+            sentence: The sentence you wanna fuck up (add swear words to)
+        """
         new = ''
         newsplitted = []
         splitted = sentence.split(' ')
