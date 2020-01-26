@@ -47,7 +47,8 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx: commands.Context, victim: discord.Member, *, reason=None):
+    async def ban(self, ctx: commands.Context, victim: discord.Member, *,
+                  time_and_reason: converters.HumanTime(other=True) = None):
         """
         Ban a user
 
@@ -55,18 +56,25 @@ class Moderation(commands.Cog):
             victim: Member you want to ban
             reason: Reason for ban
         """
+        if time_and_reason is None:
+            time = None
+            reason = ''
+        else:
+            time = time_and_reason.time
+            reason = time_and_reason.other if time_and_reason.other is not None else ''
 
         if victim.id == ctx.author.id:
             await ctx.send("Why do want to ban yourself?\nI'm not gonna let you do it")
             return
 
-        await victim.ban(reason=reason)
+        await victim.ban(reason=f'{reason}\n(Operation performed by {ctx.author}; ID: {ctx.author.id})')
 
         ban = Ban(
             reason=reason if reason else None,
             banned_by_id=ctx.author.id,
             banned_user_id=victim.id,
             guild_id=ctx.guild.id,
+            unban_time=time
         )
 
         saved = await self.ban_service.insert(ban)
@@ -87,9 +95,34 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Banned without notice")
 
+        if time:
+            extras = {
+                'ban_id': saved.id,
+                'guild_id': saved.guild_id,
+                'banned_user_id': saved.banned_user_id,
+            }
+            timer = Timer(
+                event='tempban',
+                created_at=ctx.message.created_at,
+                expires_at=time,
+                kwargs=extras
+            )
+            await self.bot.timers.create_timer(timer)
+
+    async def do_unban(self, guild, user_id, reason):
+        await self.ban_service.delete(guild.id, user_id)
+        await guild.unban(discord.Object(id=user_id), reason=reason)
+
+    @commands.Cog.listener()
+    async def on_tempban_timer_complete(self, timer):
+        kwargs = timer.kwargs
+        guild = self.bot.get_guild(kwargs['guild_id'])
+        await self.do_unban(guild, kwargs['banned_user_id'], reason='')
+
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_roles=True, manage_channels=True)
-    async def mute(self, ctx: commands.Context, victim: discord.Member, *, time_and_reason: converters.HumanTime):
+    async def mute(self, ctx: commands.Context, victim: discord.Member, *,
+                   time_and_reason: converters.HumanTime(other=True)):
         """
         Mute a user
 
@@ -97,9 +130,9 @@ class Moderation(commands.Cog):
             victim: Member you want to mute
             reason: Reason for mute
         """
+
         time = time_and_reason.time
         reason = time_and_reason.other
-
         await ctx.trigger_typing()
 
         if victim.id == ctx.author.id:
