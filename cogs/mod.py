@@ -6,7 +6,7 @@ from services import MuteService, WarningsService, BanService, ConfigService
 from util import funs, checks, paginator, converters
 
 
-# noinspection PyIncorrectDocstring
+# noinspection PyIncorrectDocstring,PyUnresolvedReferences
 class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -54,7 +54,8 @@ class Moderation(commands.Cog):
 
         Args:
             victim: Member you want to ban
-            reason: Reason for ban
+            time: Un-ban time - Optional
+            reason: Reason for ban - Optional
         """
         if time_and_reason is None:
             time = None
@@ -128,7 +129,8 @@ class Moderation(commands.Cog):
 
         Args:
             victim: Member you want to mute
-            reason: Reason for mute
+            time: Un-mute time - Optional
+            reason: Reason for mute - Optional
         """
 
         time = time_and_reason.time
