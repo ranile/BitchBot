@@ -68,8 +68,6 @@ class Moderation(commands.Cog):
             await ctx.send("Why do want to ban yourself?\nI'm not gonna let you do it")
             return
 
-        await victim.ban(reason=f'{reason}\n(Operation performed by {ctx.author}; ID: {ctx.author.id})')
-
         ban = Ban(
             reason=reason if reason else None,
             banned_by_id=ctx.author.id,
@@ -96,6 +94,8 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Banned without notice")
 
+        await victim.ban(reason=f'{reason}\n(Operation performed by {ctx.author}; ID: {ctx.author.id})')
+
         if time:
             extras = {
                 'ban_id': saved.id,
@@ -111,14 +111,18 @@ class Moderation(commands.Cog):
             await self.bot.timers.create_timer(timer)
 
     async def do_unban(self, guild, user_id, reason):
+        print('Unbanning')
         await self.ban_service.delete(guild.id, user_id)
         await guild.unban(discord.Object(id=user_id), reason=reason)
 
     @commands.Cog.listener()
     async def on_tempban_timer_complete(self, timer):
+        print(timer)
+        print('reached here')
         kwargs = timer.kwargs
         guild = self.bot.get_guild(kwargs['guild_id'])
-        await self.do_unban(guild, kwargs['banned_user_id'], reason='')
+        reason = 'Unban from temp-ban timer expiring'
+        await self.do_unban(guild, kwargs['banned_user_id'], reason=reason)
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_roles=True, manage_channels=True)
