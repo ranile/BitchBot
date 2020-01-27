@@ -107,14 +107,10 @@ class Activity(commands.Cog, name='Activity Tracking'):
     @tasks.loop(minutes=30)
     async def refresh_activity_material_view(self):
         await self.activity_service.update_material_view()
-
-    @refresh_activity_material_view.before_loop
-    async def before_refresh_material_view(self):
-        log.info('Starting ActivityView Materialized view refresh')
-
-    @refresh_activity_material_view.after_loop
-    async def after_refresh_material_view(self):
         log.info('Refreshed ActivityView Materialized view')
+
+    def cog_unload(self):
+        self.refresh_activity_material_view.cancel()
 
 
 def setup(bot):
