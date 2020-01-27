@@ -44,10 +44,9 @@ class Paginator:
     async def previous_page(self):
         if self.current == 0:
             self.current = self.max_pages
-            await self.update(self.current)
         else:
             self.current -= 1
-            await self.update(self.current)
+        await self.update(self.current)
 
     async def next_page(self):
         if self.current == self.max_pages:
