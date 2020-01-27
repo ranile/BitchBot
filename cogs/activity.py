@@ -90,7 +90,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
             if user.user is None:
                 continue
 
-            line = f'{count}. {user.user.display_name} - {user.points} points'
+            line = f'{count + 1}. {user.user.display_name} - {user.points} points'
             paginator.add_line(line)
             if length < len(line):
                 length = len(line)
@@ -99,7 +99,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         paginator.add_line()
         paginator.add_line('-' * length)
         me = await self.activity_service.get(ctx.author.id, ctx.guild.id)
-        paginator.add_line(f'{me.position}. You - {me.points}')
+        paginator.add_line(f'You have {me.points} points')
 
         for page in paginator.pages:
             await ctx.send(page)
