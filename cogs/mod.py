@@ -45,25 +45,7 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.send("I can't dm that user. Kicked without notice")
 
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx: commands.Context, victim: discord.Member, *,
-                  time_and_reason: converters.HumanTime(other=True) = None):
-        """
-        Ban a user
-
-        Args:
-            victim: Member you want to ban
-            time: Un-ban time - Optional
-            reason: Reason for ban - Optional
-        """
-        if time_and_reason is None:
-            time = None
-            reason = ''
-        else:
-            time = time_and_reason.time
-            reason = time_and_reason.other if time_and_reason.other is not None else ''
-
+    async def do_ban(self, ctx, victim, reason, time=None):
         if victim.id == ctx.author.id:
             await ctx.send("Why do want to ban yourself?\nI'm not gonna let you do it")
             return
@@ -95,6 +77,40 @@ class Moderation(commands.Cog):
             await ctx.send("I can't DM that user. Banned without notice")
 
         await victim.ban(reason=f'{reason}\n(Operation performed by {ctx.author}; ID: {ctx.author.id})')
+
+    @commands.command()
+    @commands.has_permissions(ban_members=True)
+    async def ban(self, ctx: commands.Context, victim: discord.Member, *, reason: str = None):
+        """
+        Ban a user
+
+        Args:
+            victim: Member you want to ban
+            reason: Reason for ban - Optional
+        """
+
+        await self.do_ban(ctx, victim, reason)
+
+    @commands.command()
+    @commands.has_permissions(ban_members=True)
+    async def tempban(self, ctx: commands.Context, victim: discord.Member, *,
+                  time_and_reason: converters.HumanTime(other=True) = None):
+        """
+        Temporarily ban a user
+
+        Args:
+            victim: Member you want to ban
+            time: Un-ban time - Optional
+            reason: Reason for ban - Optional
+        """
+        if time_and_reason is None:
+            time = None
+            reason = ''
+        else:
+            time = time_and_reason.time
+            reason = time_and_reason.other if time_and_reason.other is not None else ''
+        print(time, reason)
+        await self.do_ban(ctx, victim, reason, time)
 
         if time:
             extras = {
@@ -338,8 +354,8 @@ class Moderation(commands.Cog):
     async def cog_command_error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send(f'{error}\nSee `>help {ctx.command.qualified_name}` for more info')
-        else:
             raise error.original
+        raise error
 
 
 def setup(bot):
