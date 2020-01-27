@@ -42,7 +42,7 @@ class ActivityService:
 
             return Activity.convert(for_user)
 
-    async def get_top(self, guild, limit=10):
+    async def get_top(self, guild, limit=20):
         query = '''
         select *, row_number() over ( order by points desc ) as position
         from ActivityView

@@ -83,7 +83,10 @@ class Activity(commands.Cog, name='Activity Tracking'):
         paginator = commands.Paginator(prefix='```md')
 
         length = 0
+        count = 0
         for user in top:
+            if count > 10:
+                break
             if user.user is None:
                 continue
 
@@ -91,6 +94,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
             paginator.add_line(line)
             if length < len(line):
                 length = len(line)
+            count += 1
 
         paginator.add_line()
         paginator.add_line('-' * length)
