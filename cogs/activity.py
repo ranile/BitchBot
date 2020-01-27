@@ -90,7 +90,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
             if user.user is None:
                 continue
 
-            line = f'{user.position}. {user.user.display_name} - {user.points} points'
+            line = f'{count}. {user.user.display_name} - {user.points} points'
             paginator.add_line(line)
             if length < len(line):
                 length = len(line)
