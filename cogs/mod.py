@@ -16,6 +16,11 @@ class Moderation(commands.Cog):
         self.ban_service = BanService(pool)
         self.config_service = ConfigService(pool)
 
+    def cog_check(self, ctx):
+        if ctx.guild is None:
+            raise commands.NoPrivateMessage("Mod commands can't be used in DMs")
+        return True
+
     @commands.command()
     @commands.has_permissions(kick_members=True)
     async def kick(self, ctx: commands.Context, victim: discord.Member, *, reason: str = None):

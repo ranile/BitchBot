@@ -30,7 +30,7 @@ class Cause(commands.Cog, name="The Cause"):
         self.rabbit_service = RabbitService(bot.db)
 
     def cog_check(self, ctx):
-        return ctx.guild.id == THE_CAUSE
+        return ctx.guild is not None and ctx.guild.id == THE_CAUSE
 
     async def put_rabbit_on_cooldown(self):
         self.isRabbitOnCooldown = True

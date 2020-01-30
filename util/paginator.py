@@ -87,7 +87,7 @@ class Paginator:
         self.paginating = False
 
     async def paginate(self):
-        perms = self.ctx.me.guild_permissions.manage_messages
+        perms = False if self.ctx.guild is None else self.ctx.me.guild_permissions.manage_messages
         await self.start()
         while self.paginating:
             if perms:

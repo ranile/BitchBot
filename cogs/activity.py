@@ -25,6 +25,11 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.refresh_activity_material_view.start()
         self.activity_service = ActivityService(self.bot.db)
 
+    def cog_check(self, ctx):
+        if ctx.guild is None:
+            raise commands.NoPrivateMessage("Activity Tracking not available in DMs")
+        return True
+
     def should_increment(self, message):
         try:
             cached = self.cache[f'{message.author.id}-{message.guild.id}']
@@ -41,7 +46,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
+        if message.author == self.bot.user or message.guild is None:
             return
 
         if self.should_increment(message):
