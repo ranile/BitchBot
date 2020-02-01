@@ -13,9 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class Activity(commands.Cog, name='Activity Tracking'):
-    """Tracks your activity in the guild and give them activity points for being active.
-    With the end goal being the ability to spend these points on a virtual store
-    """
+    """Tracks your activity in the guild and give them activity points for being active."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -112,7 +110,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
     @tasks.loop(minutes=30)
     async def refresh_activity_material_view(self):
         await self.activity_service.update_material_view()
-        log.info('Refreshed ActivityView Materialized view')
+        log.debug('Refreshed ActivityView Materialized view')
 
     def cog_unload(self):
         self.refresh_activity_material_view.cancel()
