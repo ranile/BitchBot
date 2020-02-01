@@ -13,6 +13,8 @@ class GuildConfigService:
             select * from GuildConfig
             where guild_id = $1
             ''', guild_id)
+        if fetched is None:
+            return None
         return GuildConfig.convert(fetched)
 
     async def insert(self, config):
