@@ -99,7 +99,7 @@ class Moderation(commands.Cog):
     @commands.command()
     @commands.has_permissions(ban_members=True)
     async def tempban(self, ctx: commands.Context, victim: discord.Member, *,
-                  time_and_reason: converters.HumanTime(other=True) = None):
+                      time_and_reason: converters.HumanTime(other=True) = None):
         """
         Temporarily ban a user
 
@@ -310,7 +310,8 @@ class Moderation(commands.Cog):
         warnings = await self.warnings_service.get_all(ctx.guild.id, warnings_for)
         pages = commands.Paginator(prefix='```md', max_size=1980)
         index = 1
-        for warning in warnings:
+        sorted_warnings = sorted(warnings, key=lambda x: x.id)
+        for warning in sorted_warnings:
             member = ctx.guild.get_member(warning.warned_user_id)
             if member is None:
                 continue
