@@ -5,9 +5,10 @@ from aiowiki import Wiki
 from discord.ext import commands
 
 from util.funs import random_discord_color  # pylint: disable=no-name-in-module
-from util.paginator import Paginator
+from util import BloodyMenuPages, EmbedPagesData
 
 
+# noinspection PyIncorrectDocstring
 class Internet(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -100,7 +101,7 @@ class Internet(commands.Cog):
 
                 embeds.append(embed)
 
-        await Paginator(ctx, embeds).paginate()
+        await BloodyMenuPages(EmbedPagesData(embeds)).start(ctx)
 
     @commands.command()
     async def fact(self, ctx):
@@ -149,7 +150,7 @@ class Internet(commands.Cog):
 
                 embeds.append(embed)
 
-            await Paginator(ctx, embeds).paginate()
+            await BloodyMenuPages(EmbedPagesData(embeds)).start(ctx)
 
     @commands.command(aliases=["insult", "roastme"])
     async def roast(self, ctx):

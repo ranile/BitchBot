@@ -3,7 +3,7 @@ from discord.ext import commands
 from datetime import datetime
 from resources import Ban, Warn, Mute, Timer
 from services import MuteService, WarningsService, BanService, ConfigService
-from util import funs, checks, paginator, converters
+from util import funs, checks, BloodyMenuPages, TextPagesData, converters
 
 
 # noinspection PyIncorrectDocstring,PyUnresolvedReferences
@@ -315,15 +315,15 @@ class Moderation(commands.Cog):
             if member is None:
                 continue
 
-            line = f"{index}.  {funs.format_human_readable_user(member)}\n" \
+            line = f"{warning.id}.  {funs.format_human_readable_user(member)}\n" \
                    f"\tReason: {warning.reason}\n" \
                    f"\tWarned at: {warning.warned_at}\n" \
                    f"\tWarned by {funs.format_human_readable_user(ctx.guild.get_member(warning.warned_by_id))}\n"
             pages.add_line(line)
             index += 1
 
-        react_paginator = paginator.Paginator(data=pages.pages, is_embed=False, ctx=ctx)
-        await react_paginator.paginate()
+        react_paginator = BloodyMenuPages(TextPagesData(pages))
+        await react_paginator.start(ctx)
 
     @mute.command(name='config')
     async def mute_config(self, ctx, role: discord.Role):

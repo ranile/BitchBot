@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from util import funs, paginator
+from util import funs, BloodyMenuPages, EmbedPagesData
 
 
 def chunks(lst, n):
@@ -66,8 +66,8 @@ class Emojis(commands.Cog):
             embed.description = '\n'.join(out)
             data.append(embed)
 
-        pages = paginator.Paginator(ctx, data)
-        await pages.paginate()
+        pages = BloodyMenuPages(EmbedPagesData(data))
+        await pages.start(ctx)
 
     @emoji.command(aliases=["emoji2"])
     async def embed(self, ctx, emoji):

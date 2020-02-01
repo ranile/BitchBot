@@ -3,7 +3,7 @@ import re
 import discord
 from discord.ext import commands
 import itertools
-from util import funs, paginator
+from util import funs, BloodyMenuPages, EmbedPagesData
 
 NEW_LINE = '\n'  # working around python's limitation of not allowing `\n` in f-strings
 
@@ -13,12 +13,12 @@ class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
 
-    async def on_help_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(str(error.original))
-        else:
-            # noinspection PyUnresolvedReferences
-            raise error.original
+    # async def on_help_command_error(self, ctx, error):
+    #     if isinstance(error, commands.CommandInvokeError):
+    #         await ctx.send(str(error.original))
+    #     else:
+    #         # noinspection PyUnresolvedReferences
+    #         raise error.original
 
     def get_command_signature(self, command):
         parent = command.full_parent_name
@@ -144,8 +144,8 @@ class BloodyHelpCommand(commands.HelpCommand):
 
             data.append(embed)
 
-        pages = paginator.Paginator(self.context, data)
-        await pages.paginate()
+        pages = BloodyMenuPages(EmbedPagesData(data))
+        await pages.start(self.context)
 
     async def send_cog_help(self, cog):
         embed = self.generate_base_help_embed()
