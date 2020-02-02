@@ -4,8 +4,9 @@ import aiohttp
 import discord
 from discord.ext import commands
 
+import keys
 from database import database
-from util import BloodyHelpCommand, Timers, DiscordLoggingHandler
+import util
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -19,7 +20,7 @@ class BitchBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
             command_prefix=commands.when_mentioned_or('>'),
-            help_command=BloodyHelpCommand(),
+            help_command=util.BloodyHelpCommand(),
             owner_id=529535587728752644,
             case_insensitive=True,
         )
@@ -33,7 +34,7 @@ class BitchBot(commands.Bot):
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
-        discord_handler = DiscordLoggingHandler(self.loop, self.clientSession)
+        discord_handler = util.DiscordLoggingHandler(self.loop, self.clientSession)
 
         dpy_logger = logging.getLogger('discord')
         dpy_logger.setLevel(logging.INFO)
@@ -53,7 +54,7 @@ class BitchBot(commands.Bot):
         await self.setup_logger()
         # self.tornado_app.listen(6969)
         self.db = await database.init(self.loop)
-        self.timers = Timers(self)
+        self.timers = util.Timers(self)
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
@@ -66,6 +67,28 @@ class BitchBot(commands.Bot):
         await self.clientSession.close()
         await self.db.close()
         await super().close()
+
+    async def process_commands(self, message):
+        if message.author.bot:
+            return
+
+        ctx = await self.get_context(message)
+        mentions = [x.id for x in message.mentions]
+        if not ctx.valid and self.user.id in mentions:
+            await message.channel.send("<a:ping:610784135627407370>")
+            embed = discord.Embed(title=f"{self.user.name} was mentioned in {message.guild}",
+                                  color=util.random_discord_color(),
+                                  description=f'**Message content:**\n{message.content}')
+            embed.set_author(name=message.author, icon_url=message.author.avatar_url)
+            embed.set_thumbnail(url=message.guild.icon_url)
+            embed.add_field(name='Guild', value=f'{message.guild} ({message.guild.id})')
+            embed.add_field(name='Channel',
+                            value=f'{message.channel.mention} ({message.channel}; {message.channel.id})')
+
+            webhook = discord.Webhook.from_url(keys.logWebhook, adapter=discord.AsyncWebhookAdapter(self.clientSession))
+            await webhook.send(embed=embed)
+
+        await self.invoke(ctx)
 
     async def on_ready(self):
         print(f"{self.user.name} is running")
