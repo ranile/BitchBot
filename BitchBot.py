@@ -95,5 +95,5 @@ class BitchBot(commands.Bot):
         print("-" * len(self.user.name + " is running"))
         await self.change_presence(
             status=discord.Status.online,
-            activity=discord.Game(f"use {self.command_prefix}help")
+            activity=discord.Game(f"use >help or @mention me")
         )
