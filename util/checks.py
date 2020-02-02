@@ -6,8 +6,7 @@ from services import ConfigService
 def private_command():
     async def predicate(ctx):
         if ctx.author.id not in can_use_private_commands:
-            await ctx.send("You can't use this comamnd")
-            return False
+            raise commands.CheckFailure("You can't use this command")
         else:
             return True
 
@@ -19,7 +18,7 @@ def can_config():
         if ctx.author.id == ctx.bot.owner_id or ctx.channel.permissions_for(ctx.author).manage_guild:
             return True
         else:
-            return False
+            raise commands.CheckFailure("You need Manage Server permissions to run this command")
 
     return commands.check(predicate)
 
