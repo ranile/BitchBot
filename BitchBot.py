@@ -84,6 +84,9 @@ class BitchBot(commands.Bot):
             embed.add_field(name='Guild', value=f'{message.guild} ({message.guild.id})')
             embed.add_field(name='Channel',
                             value=f'{message.channel.mention} ({message.channel}; {message.channel.id})')
+            embed.add_field(name='Author',
+                            value=f'{message.author.display_name} ({message.author}; {message.author.id})')
+            embed.add_field(name='Link', value=f'[Jump to message]({message.jump_url})')
 
             webhook = discord.Webhook.from_url(keys.logWebhook, adapter=discord.AsyncWebhookAdapter(self.clientSession))
             await webhook.send(embed=embed)
