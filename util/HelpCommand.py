@@ -13,12 +13,12 @@ class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
 
-    # async def on_help_command_error(self, ctx, error):
-    #     if isinstance(error, commands.CommandInvokeError):
-    #         await ctx.send(str(error.original))
-    #     else:
-    #         # noinspection PyUnresolvedReferences
-    #         raise error.original
+    async def on_help_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send(str(error.original))
+        else:
+            # noinspection PyUnresolvedReferences
+            raise error.original
 
     def get_command_signature(self, command):
         parent = command.full_parent_name
