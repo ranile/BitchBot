@@ -1,11 +1,11 @@
 from discord.ext import commands
-from keys import can_use_private_commands
+import keys
 from services import ConfigService
 
 
 def private_command():
     async def predicate(ctx):
-        if ctx.author.id not in can_use_private_commands:
+        if ctx.author.id not in keys.can_use_private_commands:
             raise commands.CheckFailure("You can't use this command")
         else:
             return True
@@ -32,5 +32,16 @@ def is_mod():
             return True
         else:
             return False
+
+    return commands.check(predicate)
+
+
+def owner_only_in_non_trusted_guilds():
+    async def predicate(ctx):
+        is_owner = await ctx.bot.is_owner(ctx.author)
+        if ctx.guild.id in keys.trusted_guilds or is_owner:
+            return True
+        else:
+            raise commands.CheckFailure("You can't use this command")
 
     return commands.check(predicate)

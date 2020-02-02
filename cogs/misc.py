@@ -15,7 +15,7 @@ from TextToOwO.owo import text_to_owo
 from datetime import datetime
 from keys import logWebhook, project_id
 from util import funs, converters  # pylint: disable=no-name-in-module
-from util.checks import private_command
+from util import checks
 from util.emoji_chars import emoji_chars
 
 
@@ -34,6 +34,7 @@ class Miscellaneous(commands.Cog):
         self.session_client = dialogflow.SessionsClient()
 
     @commands.command(aliases=["send"])
+    @checks.owner_only_in_non_trusted_guilds()
     async def say(self, ctx, *, message):
         """Have the bot say something. Have fun!
 
@@ -47,6 +48,7 @@ class Miscellaneous(commands.Cog):
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["sendembed", "embed"])
+    @checks.owner_only_in_non_trusted_guilds()
     async def sayembed(self, ctx, *, message):
         """
         Have the bot say something in embeds. Have fun!
@@ -82,6 +84,7 @@ class Miscellaneous(commands.Cog):
             await webhook.send(embed=embed, username='sayembed')
 
     @commands.command(aliases=["addreaction"])
+    @checks.owner_only_in_non_trusted_guilds()
     async def react(self, ctx, msg: discord.Message, text):
         """
         Add the given reactions to a message
@@ -100,6 +103,7 @@ class Miscellaneous(commands.Cog):
         await funs.log(ctx, text, ctx.message, ''.join(sent))
 
     @commands.command()
+    @checks.owner_only_in_non_trusted_guilds()
     async def totogglecase(self, ctx, *, msg):
         """
         Convert string to toggle case
@@ -117,6 +121,7 @@ class Miscellaneous(commands.Cog):
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["yell"])
+    @checks.owner_only_in_non_trusted_guilds()
     async def touppercase(self, ctx, *, msg):
         """
         Convert string to upper case
@@ -130,6 +135,7 @@ class Miscellaneous(commands.Cog):
         await ctx.message.delete()
 
     @commands.command(aliases=["wide"])
+    @checks.owner_only_in_non_trusted_guilds()
     async def addspaces(self, ctx, msg: str, spaces: int = 3):
         """
         Adds spaces in between every character.
@@ -146,7 +152,7 @@ class Miscellaneous(commands.Cog):
         await ctx.message.delete(delay=5)
 
     @commands.command()
-    @private_command()
+    @checks.private_command()
     async def hug(self, ctx):
         url = 'https://tenor.com/search/anime-hugs-gifs'
         async with self.bot.clientSession.get(url, headers={'content-type': 'text/html'}) as res:
@@ -162,6 +168,7 @@ class Miscellaneous(commands.Cog):
             await ctx.send(random.choice(links))
 
     @commands.command()
+    @checks.owner_only_in_non_trusted_guilds()
     async def flip(self, ctx, *, msg):
         """
         Converts given text to flipped unicode characters
