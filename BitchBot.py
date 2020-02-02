@@ -5,10 +5,7 @@ import discord
 from discord.ext import commands
 
 from database import database
-# noinspection PyPep8Naming
-from util.DiscordLoggingHandler import DiscordLoggingHandler
-from util.HelpCommand import BloodyHelpCommand
-from util.Timers import Timers
+from util import BloodyHelpCommand, Timers, DiscordLoggingHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -21,7 +18,7 @@ logger.addHandler(file_handler)
 class BitchBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
-            command_prefix='>',
+            command_prefix=commands.when_mentioned_or('>'),
             help_command=BloodyHelpCommand(),
             owner_id=529535587728752644,
             case_insensitive=True,
