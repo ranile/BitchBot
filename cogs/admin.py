@@ -1,5 +1,15 @@
+import importlib
+import logging
+
 from discord.ext import commands
-import discord, inspect
+import sys
+import re
+
+from util import funs
+
+_GIT_PULL_REGEX = re.compile(r'\s+(?P<filename>.+?)\s*\|\s*[0-9]+\s*[+-]+')
+
+log = logging.getLogger(__name__)
 
 
 class Admin(commands.Cog):
@@ -12,83 +22,61 @@ class Admin(commands.Cog):
         msg = await ctx.channel.fetch_message(message)
         await msg.delete()
 
-    @commands.command()
-    @commands.has_permissions(manage_messages=True)
-    async def purge(self, ctx, limit, messages_of: discord.Member = None):
-        if messages_of is None:
-            deleted = await ctx.channel.purge(limit=int(limit))
-        else:
-            def check(m):
-                return m.author == messages_of
-            
-            deleted = await ctx.channel.purge(limit=int(limit), check=check)
-        
-        deleted_of = set()
-        for message in deleted:
-            deleted_of.add(message.author.name)
-        
-        await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}', delete_after = 5)
-        await ctx.message.delete(delay=2)
-
-    @commands.command(aliases=["code", "eval"])
-    @commands.is_owner()
-    async def run(self, ctx, *, code):
+    @commands.group(invoke_without_command=True)
+    async def reload(self, ctx, *, cog):
         """
-        `eval()`s python code
+        Reloads a cog
+
+        Args:
+            module: The cog to reload
         """
-
-        env = {
-            'bot': self.bot,
-            'ctx': ctx,
-            'message': ctx.message,
-            'channel': ctx.message.channel,
-            'author': ctx.message.author,
-            'commands': commands,
-            'discord': discord,
-            'guild': ctx.message.guild,
-        }
-
-        env.update(globals())
-
-        while str(code).startswith('`'):
-            code = str(code)[1:]
-        
-        while str(code).endswith('`'):
-            code = str(code)[:-1]
-
         try:
-            result = eval(code, env)
-            if inspect.isawaitable(result):
-                result = await result
-        except Exception as e:
-            errorOut = f"""```python
-            >>> {code}
+            actual_cog = self.bot.get_cog(cog)
+            name = actual_cog.__class__.__module__
+            self.bot.reload_extension(name)
+            log.info(f'Reloaded cog: {actual_cog.qualified_name} ({name})')
+        except:
+            self.bot.reload_extension(f'cogs.{cog}')
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded cog {cog}')
 
-            {type(e).__name__}:{str(e)}
-            ```
-            """
-            await ctx.send(inspect.cleandoc(errorOut))
-            return
+    @reload.command(name='all')
+    async def reload_all(self, ctx):
+        stdout, stderr = await funs.run_shell_command('git pull')
+        files = _GIT_PULL_REGEX.findall(stdout)
 
-        output = f"""```python
-        >>> {code}
+        all_modules = 0
+        successfully_reloaded_modules = 0
+        for file in files:
+            if file == 'core.py':  # core.py has changed so return and prompt the user to reload the bot completely
+                return await ctx.send('`core.py` changed.\nReload the bot completely.\nExiting')
 
-        {result}
-        ```
-        """
-        await ctx.send(inspect.cleandoc(output))
+            # Only reload the python files that are not in cogs directory (aren't cogs)
+            if not file.startswith('cogs/') and file.endswith('.py'):
+                all_modules += 1
+                try:
+                    module = sys.modules[file[:-3].replace('/', '.')]
+                    importlib.reload(module)
+                    successfully_reloaded_modules += 1
+                    log.info(f'Reloaded module: {module.__name__}')
+                except Exception as e:
+                    log.error(e)
 
-    @run.error
-    async def run_error(self, ctx, error):
-        await ctx.send(str(error))
+        # Reload all the cogs instead of figuring out which cogs used the updated modules and only reloading those
+        # Maybe that's for another day
+        all_cogs = len(self.bot.cogs)
+        successfully_reloaded_cogs = 0
+        for _, cog in self.bot.cogs.items():
+            name = cog.__class__.__module__
+            try:
+                self.bot.reload_extension(name)
+                successfully_reloaded_cogs += 1
+                log.info(f'Reloaded cog: {cog.qualified_name}')
+            except Exception as e:
+                log.error(e)
 
-    @commands.command()
-    @commands.is_owner()
-    async def exit(self, ctx):
-        """Kill the bot
-        """
+        await ctx.send(f"Successfully reloaded {successfully_reloaded_modules}/{all_modules} modules "
+                       f"and {successfully_reloaded_cogs}/{all_cogs} cogs")
 
-        await self.bot.close()
 
 def setup(bot):
     bot.add_cog(Admin(bot))
