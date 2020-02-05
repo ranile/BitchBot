@@ -28,8 +28,8 @@ class BitchBot(commands.Bot):
             case_insensitive=True,
         )
 
-        self.app = Quart(__name__)
-        self.app.register_blueprint(blueprint)
+        # self.app = Quart(__name__)
+        # self.app.register_blueprint(blueprint)
 
         self.initial_cogs = kwargs.pop('cogs')
 
@@ -68,6 +68,8 @@ class BitchBot(commands.Bot):
         await super().start(*args, **kwargs)
 
     def run(self, *args, **kwargs):
+        super().run(*args, **kwargs)
+        """
         async def start_quart():
             config = hypercorn.Config()
             config.bind = ["0.0.0.0:6969"]
@@ -78,8 +80,7 @@ class BitchBot(commands.Bot):
 
         future = asyncio.ensure_future(start_quart(), loop=self.loop)
         future.add_done_callback(done_callback)
-
-        return super().run(*args, **kwargs)
+        """
 
     async def close(self):
         await self.clientSession.close()
