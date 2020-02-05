@@ -27,7 +27,7 @@ class DiscordLoggingHandler(logging.Handler):
                 keys.logWebhook,
                 adapter=discord.AsyncWebhookAdapter(self.client_session))
             await webhook.send(embed=embed)
-        except RuntimeError:
+        except (RuntimeError, BaseException):
             webhook = discord.Webhook.from_url(
                 keys.logWebhook,
                 adapter=discord.RequestsWebhookAdapter())

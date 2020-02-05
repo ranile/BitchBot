@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import aiohttp
 import discord
@@ -7,7 +8,7 @@ import keys
 from database import database
 import util
 from quart import Quart
-from routes.my_blueprint import blueprint
+from routes import blueprint
 import hypercorn
 
 logger = logging.getLogger(__name__)
@@ -26,11 +27,6 @@ class BitchBot(commands.Bot):
             owner_id=529535587728752644,
             case_insensitive=True,
         )
-
-        # self.tornado_app = tornado.web.Application(
-        #     [(route, handler, dict(bot=self)) for route, handler in routes], **{
-        #         'debug': True
-        #     })
 
         self.app = Quart(__name__)
         self.app.register_blueprint(blueprint)
@@ -56,10 +52,12 @@ class BitchBot(commands.Bot):
     # noinspection PyAttributeOutsideInit
     async def start(self, *args, **kwargs):
         self.clientSession = aiohttp.ClientSession()
+
         await self.setup_logger()
-        # self.tornado_app.listen(6969)
+
         self.db = await database.init(self.loop)
         self.timers = util.Timers(self)
+
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
@@ -67,19 +65,28 @@ class BitchBot(commands.Bot):
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
 
-        host = '0.0.0.0'
-        port = 6969
-        config = hypercorn.config.Config()
-        config.bind = [f"{host}:{port}"]
-        await hypercorn.asyncio.serve(self.app, config)
-        # await super().start(*args, **kwargs)
+        await super().start(*args, **kwargs)
+
+    def run(self, *args, **kwargs):
+        async def start_quart():
+            config = hypercorn.Config()
+            config.bind = ["0.0.0.0:6969"]
+            await hypercorn.asyncio.serve(self.app, config)
+
+        def done_callback(_):
+            self.loop.create_task(self.close())
+
+        future = asyncio.ensure_future(start_quart(), loop=self.loop)
+        future.add_done_callback(done_callback)
+
+        return super().run(*args, **kwargs)
 
     async def close(self):
         await self.clientSession.close()
         await self.db.close()
         await super().close()
 
-    async def process_commands(self, message):
+    async def process_commands(self, message):  # not on_message so I'm not calling `get_context` twice
         if message.author.bot:
             return
 

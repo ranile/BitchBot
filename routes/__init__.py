@@ -1,1 +1,1 @@
-from . import my_blueprint
+from .routes import blueprint
