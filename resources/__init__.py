@@ -1,6 +1,6 @@
 from resources.resource import Resource
 from resources.emoji import Emoji
-from resources.rabbit_counter import RabbitCounter
+from resources.counter import Counter
 from resources.ban import Ban
 from resources.warn import Warn
 from resources.mute import Mute

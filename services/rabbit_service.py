@@ -1,7 +1,7 @@
-from resources import RabbitCounter
+from resources import Counter
 
 
-class RabbitService:
+class CounterService:
     def __init__(self, pool):
         self.pool = pool
 
@@ -10,13 +10,13 @@ class RabbitService:
             rabbit = await connection.fetchrow(
                 f"""select count, summoned_at, summoned_by from Counters 
                 where name = 'rabbit' and {name} = $1;""", value)
-        return RabbitCounter.convert(rabbit)
+        return Counter.convert(rabbit)
 
     async def insert(self, res):
         async with self.pool.acquire() as connection:
             inserted = await connection.fetchrow(
                 """insert into Counters (name, summoned_at, summoned_by)
-                values ('rabbit', $1, $2)
-                returning count, summoned_at, summoned_by;""",
-                res.summonedAt, res.summonedBy)
-        return RabbitCounter.convert(inserted)
+                values ($1, $2, $3)
+                returning name, count, summoned_at, summoned_by;""",
+                res.name, res.summonedAt, res.summonedBy)
+        return Counter.convert(inserted)

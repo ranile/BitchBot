@@ -1,4 +1,4 @@
-from services.rabbit_service import RabbitService
+from services.rabbit_service import CounterService
 from services.activity_service import ActivityService
 from services.starboard_service import StarboardService
 from services.config_service import GuildConfigService as ConfigService
