@@ -1,5 +1,4 @@
 import logging
-
 import aiohttp
 import discord
 from discord.ext import commands
@@ -7,6 +6,9 @@ from discord.ext import commands
 import keys
 from database import database
 import util
+from quart import Quart
+from routes.my_blueprint import blueprint
+import hypercorn
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -29,6 +31,9 @@ class BitchBot(commands.Bot):
         #     [(route, handler, dict(bot=self)) for route, handler in routes], **{
         #         'debug': True
         #     })
+
+        self.app = Quart(__name__)
+        self.app.register_blueprint(blueprint)
 
         self.initial_cogs = kwargs.pop('cogs')
 
@@ -61,7 +66,13 @@ class BitchBot(commands.Bot):
                 logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
-        await super().start(*args, **kwargs)
+
+        host = '0.0.0.0'
+        port = 6969
+        config = hypercorn.config.Config()
+        config.bind = [f"{host}:{port}"]
+        await hypercorn.asyncio.serve(self.app, config)
+        # await super().start(*args, **kwargs)
 
     async def close(self):
         await self.clientSession.close()

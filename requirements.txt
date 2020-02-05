@@ -1,4 +1,3 @@
-tornado
 asyncpg
 git+https://github.com/Rapptz/discord.py
 dialogflow
@@ -10,3 +9,4 @@ beautifulsoup4
 psutil
 parsedatetime
 git+https://github.com/Rapptz/discord-ext-menus
+Quart
