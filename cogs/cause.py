@@ -42,23 +42,24 @@ class Cause(commands.Cog, name="The Cause"):
         await webhook.send(msg, username=username, avatar_url=pfp)
 
     async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
-        inserted_rabbit = await self.counter_service.insert(Counter(summonedBy=message.author.id, name=Counter.RABBIT))
-
+        await self.counter_service.insert(Counter(summonedBy=message.author.id, name=Counter.RABBIT))
+        count = await self.counter_service.count(Counter.RABBIT)
         if not self.isRabbitOnCooldown:
             await self.send_counter_update(
                 f"{message.author.display_name} called the rabbit {rabbit}, "
-                f"Kaylie's man {rabbit}.\nRabbit count: {inserted_rabbit.count}", 'Rabbit', RABBIT_PFP)
+                f"Kaylie's man {rabbit}.\nRabbit count: {count}", 'Rabbit', RABBIT_PFP)
             await message.add_reaction(rabbit)
 
         self.rabbitAlreadySummoned.append(message.id)
         await self.put_rabbit_on_cooldown()
 
     async def increment_haiku(self, author, text):
-        inserted_haiku = await self.counter_service.insert(Counter(summonedBy=author.id, name=Counter.HAIKU))
+        await self.counter_service.insert(Counter(summonedBy=author.id, name=Counter.HAIKU))
+        count = await self.counter_service.count(Counter.HAIKU)
         split = text.split('\n')
         sent_text = ' '.join(split).replace('*', '')
         await self.send_counter_update(
-            f"{author.display_name} summoned HaikuBot with message:\n> {sent_text}\nHaiku counter: {inserted_haiku.count}",
+            f"{author.display_name} summoned HaikuBot with message:\n> {sent_text}\nHaiku counter: {count}",
             'HaikuBot Counter', None)
 
     @commands.Cog.listener()

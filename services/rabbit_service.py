@@ -20,3 +20,13 @@ class CounterService:
                 returning name, count, summoned_at, summoned_by;""",
                 res.name, res.summonedAt, res.summonedBy)
         return Counter.convert(inserted)
+
+    async def count(self, counter_name):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow('''
+            select count(count), name
+            from counters
+            where name = $1
+            group by name;
+            ''', counter_name)
+            return fetched['count']
