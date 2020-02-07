@@ -7,6 +7,7 @@ from discord.ext import commands
 import keys
 from database import database
 import util
+import random
 from quart import Quart
 from routes import blueprint
 import hypercorn
