@@ -94,7 +94,7 @@ class BitchBot(commands.Bot):
         ctx = await self.get_context(message)
         mentions = [x.id for x in message.mentions]
         if not ctx.valid and self.user.id in mentions:
-            await message.channel.send(random.choice["<a:ping:610784135627407370>", "<a:pinng:675402071083843593>"])
+            await message.channel.send(random.choice(["<a:ping:610784135627407370>", "<a:pinng:675402071083843593>"]))
             embed = discord.Embed(title=f"{self.user.name} was mentioned in {message.guild}",
                                   color=util.random_discord_color(),
                                   description=f'**Message content:**\n{message.content}')
