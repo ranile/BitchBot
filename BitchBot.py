@@ -94,15 +94,14 @@ class BitchBot(commands.Bot):
         ctx = await self.get_context(message)
         mentions = [x.id for x in message.mentions]
         if not ctx.valid and self.user.id in mentions:
-            await message.channel.send("<a:ping:610784135627407370>")
+            await message.channel.send(random.choice["<a:ping:610784135627407370>", "<a:pinng:675402071083843593>"])
             embed = discord.Embed(title=f"{self.user.name} was mentioned in {message.guild}",
                                   color=util.random_discord_color(),
                                   description=f'**Message content:**\n{message.content}')
             embed.set_author(name=message.author, icon_url=message.author.avatar_url)
             embed.set_thumbnail(url=message.guild.icon_url)
             embed.add_field(name='Guild', value=f'{message.guild} ({message.guild.id})')
-            embed.add_field(name='Channel',
-                            value=f'{message.channel.mention} ({message.channel}; {message.channel.id})')
+            embed.add_field(name='Channel', value=f'{message.channel.mention}')
             embed.add_field(name='Author',
                             value=f'{message.author.display_name} ({message.author}; {message.author.id})')
             embed.add_field(name='Link', value=f'[Jump to message]({message.jump_url})')
