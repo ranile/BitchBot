@@ -15,7 +15,6 @@ rabbit_match = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r 
 THE_CAUSE = 505655510263922700
 RABBIT_WEBHOOK = 651333096829878272
 HAIKU_BOT = 372175794895585280
-RABBIT_PFP = 'https://raw.githubusercontent.com/hamza1311/BitchBot/master/res/rabbitman2.jpg'
 
 
 class Cause(commands.Cog, name="The Cause"):
@@ -37,6 +36,11 @@ class Cause(commands.Cog, name="The Cause"):
         await asyncio.sleep(self.rabbitCooldownTime)
         self.isRabbitOnCooldown = False
 
+    @property
+    def _rabbit_pfp(self):
+        return f'https://firebasestorage.googleapis.com/v0/b/bitchbot-discordbot.appspot.com/o/' \
+               f'images%2Frabbit%2Frabbitman{random.randint(1, 9)}.jpg?alt=media'
+
     async def send_counter_update(self, msg, username, pfp):
         webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
         await webhook.send(msg, username=username, avatar_url=pfp)
@@ -47,7 +51,7 @@ class Cause(commands.Cog, name="The Cause"):
         if not self.isRabbitOnCooldown:
             await self.send_counter_update(
                 f"{message.author.display_name} called the rabbit {rabbit}, "
-                f"Kaylie's man {rabbit}.\nRabbit count: {count}", 'Rabbit', RABBIT_PFP)
+                f"Kaylie's man {rabbit}.\nRabbit count: {count}", 'Rabbit', self._rabbit_pfp)
             await message.add_reaction(rabbit)
 
         self.rabbitAlreadySummoned.append(message.id)
@@ -93,9 +97,7 @@ class Cause(commands.Cog, name="The Cause"):
 
     @commands.group(invoke_without_command=True, aliases=["kayliesman"])
     async def rabbit(self, ctx):
-        url = f'https://firebasestorage.googleapis.com/v0/b/bitchbot-discordbot.appspot.com/o/' \
-              f'images%2Frabbit%2Frabbitman{random.randint(1, 9)}.jpg?alt=media'
-        await ctx.channel.send(embed=discord.Embed().set_image(url=url))
+        await ctx.channel.send(embed=discord.Embed().set_image(url=self._rabbit_pfp))
 
     @rabbit.group(invoke_without_command=True)
     async def stats(self, ctx, member: discord.Member = None):
