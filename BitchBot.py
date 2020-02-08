@@ -2,7 +2,7 @@ import asyncio
 import logging
 import aiohttp
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import keys
 from database import database
@@ -11,6 +11,7 @@ import random
 from quart import Quart
 from routes import blueprint
 import hypercorn
+
 from services import ActivityService
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,7 @@ class BitchBot(commands.Bot):
                 logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
+        self.refresh_materialized_views_task.start()
 
         await super().start(*args, **kwargs)
 
@@ -92,6 +94,7 @@ class BitchBot(commands.Bot):
         await self.clientSession.close()
         await self.db.close()
         await super().close()
+        self.refresh_materialized_views_task.cancel()
 
     async def send_ping_log_embed(self, message):
         embed = discord.Embed(title=f"{self.user.name} was mentioned in {message.guild}",
@@ -116,7 +119,7 @@ class BitchBot(commands.Bot):
         mentions = [x.id for x in message.mentions]
         if not ctx.valid:
             if self.user.id in mentions:  # Bot was mentioned so
-                await message.channel.send(random.choice( # :pinng:
+                await message.channel.send(random.choice(  # :pinng:
                     ["<a:ping:610784135627407370>", "<a:pinng:675402071083843593>"]))
                 await self.send_ping_log_embed(message)  # and log the message
 
@@ -135,3 +138,9 @@ class BitchBot(commands.Bot):
             status=discord.Status.online,
             activity=discord.Game(f"use >help or @mention me")
         )
+
+    @tasks.loop(hours=1)
+    async def refresh_materialized_views_task(self):
+        await self.activity_service.update_material_view()
+        logger.debug('Refreshed ActivityView Materialized view')
+        # TODO: update ConfigView here too

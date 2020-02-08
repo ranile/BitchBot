@@ -20,7 +20,6 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.cache = {}
         self.bot_channel_pattern = re.compile(r'(bot-?commands|spam)')
         self.command_pattern = re.compile(rf'>[a-z]+')
-        self.refresh_activity_material_view.start()
         self.activity_service = ActivityService(self.bot.db)
 
     def cog_check(self, ctx):
@@ -106,14 +105,6 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         for page in paginator.pages:
             await ctx.send(page)
-
-    @tasks.loop(minutes=30)
-    async def refresh_activity_material_view(self):
-        await self.activity_service.update_material_view()
-        log.debug('Refreshed ActivityView Materialized view')
-
-    def cog_unload(self):
-        self.refresh_activity_material_view.cancel()
 
 
 def setup(bot):
