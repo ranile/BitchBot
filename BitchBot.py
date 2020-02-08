@@ -11,6 +11,7 @@ import random
 from quart import Quart
 from routes import blueprint
 import hypercorn
+from services import ActivityService
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -32,7 +33,11 @@ class BitchBot(commands.Bot):
         # self.app = Quart(__name__)
         # self.app.register_blueprint(blueprint)
 
+        # TODO: Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')
+
+        # activity tracking related props
+        self.activity_bucket = commands.CooldownMapping.from_cooldown(1.0, 120.0, commands.BucketType.member)
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
@@ -58,7 +63,7 @@ class BitchBot(commands.Bot):
 
         self.db = await database.init(self.loop)
         self.timers = util.Timers(self)
-
+        self.activity_service = ActivityService(self.db)
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
@@ -88,27 +93,38 @@ class BitchBot(commands.Bot):
         await self.db.close()
         await super().close()
 
+    async def send_ping_log_embed(self, message):
+        embed = discord.Embed(title=f"{self.user.name} was mentioned in {message.guild}",
+                              color=util.random_discord_color(),
+                              description=f'**Message content:**\n{message.content}')
+        embed.set_author(name=message.author, icon_url=message.author.avatar_url)
+        embed.set_thumbnail(url=message.guild.icon_url)
+        embed.add_field(name='Guild', value=f'{message.guild} ({message.guild.id})')
+        embed.add_field(name='Channel', value=f'{message.channel.mention}')
+        embed.add_field(name='Author', value=f'{message.author.display_name} ({message.author}; {message.author.id})')
+        embed.add_field(name='Link', value=f'[Jump to message]({message.jump_url})')
+
+        webhook = discord.Webhook.from_url(keys.logWebhook,
+                                           adapter=discord.AsyncWebhookAdapter(self.clientSession))
+        await webhook.send(embed=embed)
+
     async def process_commands(self, message):  # not on_message so I'm not calling `get_context` twice
-        if message.author.bot:
+        if message.author.bot:  # don't do anything if the author is a bot
             return
 
         ctx = await self.get_context(message)
         mentions = [x.id for x in message.mentions]
-        if not ctx.valid and self.user.id in mentions:
-            await message.channel.send(random.choice(["<a:ping:610784135627407370>", "<a:pinng:675402071083843593>"]))
-            embed = discord.Embed(title=f"{self.user.name} was mentioned in {message.guild}",
-                                  color=util.random_discord_color(),
-                                  description=f'**Message content:**\n{message.content}')
-            embed.set_author(name=message.author, icon_url=message.author.avatar_url)
-            embed.set_thumbnail(url=message.guild.icon_url)
-            embed.add_field(name='Guild', value=f'{message.guild} ({message.guild.id})')
-            embed.add_field(name='Channel', value=f'{message.channel.mention}')
-            embed.add_field(name='Author',
-                            value=f'{message.author.display_name} ({message.author}; {message.author.id})')
-            embed.add_field(name='Link', value=f'[Jump to message]({message.jump_url})')
+        if not ctx.valid:
+            if self.user.id in mentions:  # Bot was mentioned so
+                await message.channel.send(random.choice( # :pinng:
+                    ["<a:ping:610784135627407370>", "<a:pinng:675402071083843593>"]))
+                await self.send_ping_log_embed(message)  # and log the message
 
-            webhook = discord.Webhook.from_url(keys.logWebhook, adapter=discord.AsyncWebhookAdapter(self.clientSession))
-            await webhook.send(embed=embed)
+            if not self.activity_bucket.update_rate_limit(message):  # been two minutes since last update
+                increment_by = 2
+                await self.activity_service.increment(message.author.id, message.guild.id, increment_by)
+                logger.debug(f'Incremented activity of {message.author} ({message.author.id}) '
+                             f'in {message.guild} ({message.guild.id}) by {increment_by}')
 
         await self.invoke(ctx)
 
