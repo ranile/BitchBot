@@ -27,46 +27,19 @@ class Activity(commands.Cog, name='Activity Tracking'):
             raise commands.NoPrivateMessage("Activity Tracking not available in DMs")
         return True
 
-    def should_increment(self, message):
-        try:
-            cached = self.cache[f'{message.author.id}-{message.guild.id}']
-        except KeyError:
-            cached = None
-
-        return (
-                (cached is None or
-                 (datetime.datetime.now(tz=cached.tzinfo) - cached) > datetime.timedelta(minutes=2)) and
-                (not re.match(self.command_pattern, message.content) and
-                 not message.author.bot and
-                 not re.match(self.bot_channel_pattern, message.channel.name))
-        )
-
-    # @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.bot.user or message.guild is None:
-            return
-
-        if self.should_increment(message):
-            await self.activity_service.increment(message.author.id, message.guild.id, 2)
-            try:
-                last_updated = (await self.activity_service.get(message.author.id, message.guild.id)).last_updated_time
-            except errors.NotFound:
-                last_updated = datetime.datetime.utcnow()
-            self.cache[f'{message.author.id}-{message.guild.id}'] = last_updated
-
     @commands.group(invoke_without_command=True)
-    async def activity(self, ctx, of: discord.Member = None):
+    async def activity(self, ctx, target: discord.Member = None):
         """
         Shows activity on the server's leaderboard
 
          Args:
-            of: The member whose activity you want to see. Author's activity is shown if omitted
+            target: The member whose activity you want to see. Author's activity is shown if omitted
         """
-        if of is None:
-            of = ctx.author
+        if target is None:
+            target = ctx.author
         try:
-            fetched = await self.activity_service.get(of.id, ctx.guild.id)
-            member = ctx.guild.get_member(fetched.user)
+            fetched = await self.activity_service.get(target)
+            member = ctx.guild.get_member(fetched.user_id)
             embed = discord.Embed(color=funs.random_discord_color())
             embed.set_author(name=member.display_name, icon_url=member.avatar_url)
             embed.add_field(name='Activity Points', value=fetched.points)
@@ -75,24 +48,20 @@ class Activity(commands.Cog, name='Activity Tracking'):
             embed.timestamp = fetched.last_updated_time
             await ctx.send(embed=embed)
         except errors.NotFound:
-            await ctx.send(f'Activity for user `{funs.format_human_readable_user(of)}` not found')
+            await ctx.send(f'Activity for user `{funs.format_human_readable_user(target)}` not found')
 
     @activity.command(name='top')
-    async def top_users(self, ctx):
+    async def top_users(self, ctx, amount=10):
         """Shows top users in server's activity leaderboard"""
-        top = await self.activity_service.get_top(guild=ctx.guild)
+        top = await self.activity_service.get_top(guild=ctx.guild, limit=amount)
 
         paginator = commands.Paginator(prefix='```md')
 
         length = 0
         count = 0
         for user in top:
-            if count > 10:
-                break
-            if user.user is None:
-                continue
-
-            line = f'{count + 1}. {user.user.display_name} - {user.points} points'
+            member = ctx.guild.get_member(user.user_id)
+            line = f'{count + 1}. {member.display_name} - {user.points} points'
             paginator.add_line(line)
             if length < len(line):
                 length = len(line)
@@ -100,7 +69,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         paginator.add_line()
         paginator.add_line('-' * length)
-        me = await self.activity_service.get(ctx.author.id, ctx.guild.id)
+        me = await self.activity_service.get(ctx.author)
         paginator.add_line(f'You have {me.points} points')
 
         for page in paginator.pages:

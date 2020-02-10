@@ -31,14 +31,9 @@ async def createTables(connection):
     );
     ''')
 
-    await connection.execute(services.ActivityService.sql().createTable)
+    await connection.execute(services.ActivityService.sql.createTable)
     await connection.execute(services.StarboardService.sql().createTable)
     await connection.execute(services.ConfigService.sql().createTable)
-    await connection.execute('''
-    create materialized view if not exists ActivityView as
-    select *, pg_xact_commit_timestamp(xmin) as last_time_updated
-    from Activity;
-    ''')
     await connection.execute(services.BanService.sql().createTable)
     await connection.execute(services.MuteService.sql().createTable)
     await connection.execute(services.WarningsService.sql().createTable)

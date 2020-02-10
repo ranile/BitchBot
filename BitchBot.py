@@ -2,7 +2,7 @@ import asyncio
 import logging
 import aiohttp
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 import keys
 from database import database
@@ -71,7 +71,6 @@ class BitchBot(commands.Bot):
                 logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
-        self.refresh_materialized_views_task.start()
 
         await super().start(*args, **kwargs)
 
@@ -94,7 +93,6 @@ class BitchBot(commands.Bot):
         await self.clientSession.close()
         await self.db.close()
         await super().close()
-        self.refresh_materialized_views_task.cancel()
 
     async def send_ping_log_embed(self, message):
         embed = discord.Embed(title=f"{self.user.name} was mentioned in {message.guild}",
@@ -138,9 +136,3 @@ class BitchBot(commands.Bot):
             status=discord.Status.online,
             activity=discord.Game(f"use >help or @mention me")
         )
-
-    @tasks.loop(hours=1)
-    async def refresh_materialized_views_task(self):
-        await self.activity_service.update_material_view()
-        logger.debug('Refreshed ActivityView Materialized view')
-        # TODO: update ConfigView here too
