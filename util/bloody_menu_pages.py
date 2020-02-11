@@ -21,17 +21,21 @@ class EmbedPagesData(menus.ListPageSource):
 
 
 class TextPagesData(menus.ListPageSource):
-    def __init__(self, data, *, prefix='```', suffix='```', max_size=1980):
+    def __init__(self, data, *, prefix='```', suffix='```', max_size=1980, per_page=1):
         if isinstance(data, str):
             command_paginator = commands.Paginator(prefix=prefix, suffix=suffix, max_size=max_size)
             split = data.split('\n')
             for line in split:
                 command_paginator.add_line(line)
+        elif isinstance(data, list):
+            command_paginator = commands.Paginator(prefix=prefix, suffix=suffix, max_size=max_size)
+            for line in data:
+                command_paginator.add_line(line)
         elif isinstance(data, commands.Paginator):
             command_paginator = data
         else:
-            raise BadArgument(f"Expected `str` or `commands.Paginator`, got {data.__class__}")
-        super().__init__(command_paginator.pages, per_page=1)
+            raise BadArgument(f"Expected `str`, `list` or `commands.Paginator`, got {data.__class__.__name__}")
+        super().__init__(command_paginator.pages, per_page=per_page)
 
     async def format_page(self, menu, page):
         return '\n'.join((page, f'*Page {menu.current_page + 1} of {self.get_max_pages()}*'))
