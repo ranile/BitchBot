@@ -1,11 +1,8 @@
-import datetime
 import re
-
 import discord
-from discord.ext import commands, tasks
-
+from discord.ext import commands
 from services import ActivityService
-from util import funs
+import util
 from database import errors
 import logging
 
@@ -40,7 +37,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         try:
             fetched = await self.activity_service.get(target)
             member = ctx.guild.get_member(fetched.user_id)
-            embed = discord.Embed(color=funs.random_discord_color())
+            embed = discord.Embed(color=util.random_discord_color())
             embed.set_author(name=member.display_name, icon_url=member.avatar_url)
             embed.add_field(name='Activity Points', value=fetched.points)
             embed.add_field(name='Position', value=fetched.position)
@@ -48,32 +45,28 @@ class Activity(commands.Cog, name='Activity Tracking'):
             embed.timestamp = fetched.last_updated_time
             await ctx.send(embed=embed)
         except errors.NotFound:
-            await ctx.send(f'Activity for user `{funs.format_human_readable_user(target)}` not found')
+            await ctx.send(f'Activity for user `{util.format_human_readable_user(target)}` not found')
 
     @activity.command(name='top')
     async def top_users(self, ctx, amount=10):
         """Shows top users in server's activity leaderboard"""
-        top = await self.activity_service.get_top(guild=ctx.guild, limit=amount)
-
-        paginator = commands.Paginator(prefix='```md')
-
+        fetched = await self.activity_service.get_top(guild=ctx.guild, limit=amount)
+        data = []
         length = 0
-        count = 0
-        for user in top:
-            member = ctx.guild.get_member(user.user_id)
-            line = f'{count + 1}. {member.display_name} - {user.points} points'
-            paginator.add_line(line)
+        for activity in fetched:
+            member = ctx.guild.get_member(activity.user_id)
+            line = f'{activity.position}. {member.display_name} - {activity.points} points'
+            data.append(line)
             if length < len(line):
                 length = len(line)
-            count += 1
 
-        paginator.add_line()
-        paginator.add_line('-' * length)
+        data.append('\n')
+        data.append('-' * length)
+        # I probably should use one query but I don't know how to do it so we just gonna go with two
         me = await self.activity_service.get(ctx.author)
-        paginator.add_line(f'You have {me.points} points')
+        data.append(f'You have {me.points} points')
 
-        for page in paginator.pages:
-            await ctx.send(page)
+        await util.BloodyMenuPages(util.TextPagesData(data)).start(ctx)
 
 
 def setup(bot):
