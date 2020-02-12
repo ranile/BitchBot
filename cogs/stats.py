@@ -5,6 +5,7 @@ from services import ActivityService
 import util
 from database import errors
 import logging
+import pprint
 
 log = logging.getLogger(__name__)
 
@@ -19,12 +20,12 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.command_pattern = re.compile(rf'>[a-z]+')
         self.activity_service = ActivityService(self.bot.db)
 
-    def cog_check(self, ctx):
-        if ctx.guild is None:
-            raise commands.NoPrivateMessage("Activity Tracking not available in DMs")
-        return True
-
     @commands.group(invoke_without_command=True)
+    async def stats(self, ctx):
+        await ctx.send(f'```{pprint.pformat(self.bot.socket_stats)}```')
+
+    @stats.group(invoke_without_command=True )
+    @commands.guild_only()
     async def activity(self, ctx, target: discord.Member = None):
         """
         Shows activity on the server's leaderboard
@@ -48,6 +49,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
             await ctx.send(f'Activity for user `{util.format_human_readable_user(target)}` not found')
 
     @activity.command(name='top')
+    @commands.guild_only()
     async def top_users(self, ctx, amount=10):
         """Shows top users in server's activity leaderboard"""
         fetched = await self.activity_service.get_top(guild=ctx.guild, limit=amount)

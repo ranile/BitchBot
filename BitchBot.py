@@ -40,6 +40,9 @@ class BitchBot(commands.Bot):
         # activity tracking related props
         self.activity_bucket = commands.CooldownMapping.from_cooldown(1.0, 120.0, commands.BucketType.member)
 
+        # socket stats props
+        self.socket_stats = {}
+
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
         discord_handler = util.DiscordLoggingHandler(self.loop, self.clientSession)
@@ -136,3 +139,12 @@ class BitchBot(commands.Bot):
             status=discord.Status.online,
             activity=discord.Game(f"use >help or @mention me")
         )
+
+    async def on_socket_response(self, msg):
+        event = msg['t']
+        if event is None:
+            return
+        try:
+            self.socket_stats[event] += 1
+        except KeyError:
+            self.socket_stats[event] = 1
