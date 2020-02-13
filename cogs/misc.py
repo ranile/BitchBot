@@ -312,6 +312,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name='Comamnds', value=f"{len(self.bot.cogs)} Cogs loaded\n{len(self.bot.commands)} commands")
         members = list(self.bot.get_all_members())
         embed.add_field(name='Members', value=f'Total: {len(members)}\nUnique: {len(set(m.id for m in members))}')
+        embed.add_field(name='Total web socket events received', value=str(sum(list(self.bot.socket_stats.values()))))
         embed.set_footer(text=f'Written in discord.py v{discord.__version__}',
                          icon_url='https://i.imgur.com/RPrw70n.png')
 
