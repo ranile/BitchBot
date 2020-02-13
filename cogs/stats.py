@@ -27,7 +27,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
             count = socket_stats[event_name]
             out.append(f'{event_name}: {count}')
         txt = '\n'.join(out)
-        await ctx.send(discord.Embed(description=f'```{txt}```', color=util.random_discord_color()))
+        await ctx.send(embed=discord.Embed(description=f'```{txt}```', color=util.random_discord_color()))
 
     @stats.group(invoke_without_command=True)
     @commands.guild_only()
