@@ -5,7 +5,6 @@ from services import ActivityService
 import util
 from database import errors
 import logging
-import pprint
 
 log = logging.getLogger(__name__)
 
@@ -22,9 +21,15 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @commands.group(invoke_without_command=True)
     async def stats(self, ctx):
-        await ctx.send(f'```{pprint.pformat(self.bot.socket_stats)}```')
+        out = []
+        socket_stats = self.bot.socket_stats
+        for event_name in sorted(socket_stats, key=socket_stats.get, reverse=True):
+            count = socket_stats[event_name]
+            out.append(f'{event_name}: {count}')
+        txt = '\n'.join(out)
+        await ctx.send(discord.Embed(description=f'```{txt}```', color=util.random_discord_color()))
 
-    @stats.group(invoke_without_command=True )
+    @stats.group(invoke_without_command=True)
     @commands.guild_only()
     async def activity(self, ctx, target: discord.Member = None):
         """
