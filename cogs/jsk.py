@@ -4,7 +4,7 @@ from jishaku.cog import JishakuBase, jsk
 from jishaku.metacog import GroupCogMeta
 
 
-class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=jsk):
+class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=jsk, name='Jishaku'):
 
     @commands.command(name="py", aliases=["python"])
     async def jsk_python(self, ctx: commands.Context, *, argument: codeblock_converter):

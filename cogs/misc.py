@@ -13,6 +13,7 @@ import dialogflow_v2 as dialogflow
 import git
 from TextToOwO.owo import text_to_owo
 from datetime import datetime
+import humanize
 from keys import logWebhook, project_id
 from util import funs, converters  # pylint: disable=no-name-in-module
 from util import checks
@@ -308,12 +309,12 @@ class Miscellaneous(commands.Cog):
         embed.set_author(name=f"{owner.name}#{owner.discriminator}", icon_url=owner.avatar_url)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
         embed.add_field(name="Source", value=f"[GitHub Respositiory]({list(repo.remote('origin').urls)[0]})")
-        embed.add_field(name="Deployed branch", value=repo.active_branch)
         embed.add_field(name='Comamnds', value=f"{len(self.bot.cogs)} Cogs loaded\n{len(self.bot.commands)} commands")
         members = list(self.bot.get_all_members())
         embed.add_field(name='Members', value=f'Total: {len(members)}\nUnique: {len(set(m.id for m in members))}')
         embed.add_field(name='Total web socket events received', value=str(sum(list(self.bot.socket_stats.values()))))
-        embed.set_footer(text=f'Written in discord.py v{discord.__version__}',
+        embed.set_footer(text=f"Written in discord.py v{discord.__version__}. "
+                              f"Up since {humanize.naturaldelta(self.bot.get_cog('Jishaku').load_time)}",
                          icon_url='https://i.imgur.com/RPrw70n.png')
 
         await ctx.send(embed=embed)
