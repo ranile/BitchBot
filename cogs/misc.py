@@ -13,7 +13,6 @@ import dialogflow_v2 as dialogflow
 import git
 from TextToOwO.owo import text_to_owo
 from datetime import datetime
-import humanize
 from keys import logWebhook, project_id
 from util import funs, converters  # pylint: disable=no-name-in-module
 from util import checks
@@ -304,7 +303,9 @@ class Miscellaneous(commands.Cog):
                        f"{message} - {commit.author}; {time} ago")
 
         joined = '\n'.join(out)
-        embed = discord.Embed(color=funs.random_discord_color(), description=f"Latest commits:\n{joined}")
+        embed = discord.Embed(color=funs.random_discord_color(),
+                              description=f"Latest commits:\n{joined}",
+                              timestamp=self.bot.get_cog('Jishaku').load_time)
         owner = self.bot.get_user(self.bot.owner_id)
         embed.set_author(name=f"{owner.name}#{owner.discriminator}", icon_url=owner.avatar_url)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
@@ -313,8 +314,7 @@ class Miscellaneous(commands.Cog):
         members = list(self.bot.get_all_members())
         embed.add_field(name='Members', value=f'Total: {len(members)}\nUnique: {len(set(m.id for m in members))}')
         embed.add_field(name='Total web socket events received', value=str(sum(list(self.bot.socket_stats.values()))))
-        embed.set_footer(text=f"Written in discord.py v{discord.__version__}. "
-                              f"Up since {humanize.naturaldelta(self.bot.get_cog('Jishaku').load_time)}",
+        embed.set_footer(text=f"Written in discord.py v{discord.__version__}. Uptime ",
                          icon_url='https://i.imgur.com/RPrw70n.png')
 
         await ctx.send(embed=embed)
