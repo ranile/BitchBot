@@ -3,3 +3,4 @@ from .help_command import BloodyHelpCommand
 from .timers import Timers
 from .discord_logging_handler import DiscordLoggingHandler
 from .funs import *
+from .quart_fix import *

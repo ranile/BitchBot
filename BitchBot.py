@@ -8,8 +8,6 @@ import keys
 from database import database
 import util
 import random
-from quart import Quart
-from routes import blueprint
 import hypercorn
 
 from services import ActivityService
@@ -31,10 +29,9 @@ class BitchBot(commands.Bot):
             case_insensitive=True,
         )
 
-        # self.app = Quart(__name__)
-        # self.app.register_blueprint(blueprint)
+        self.quart_app = util.QuartWithBot(__name__, static_folder=None)
 
-        # TODO: Probably should put it with config
+        # Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')
 
         # activity tracking related props
@@ -74,23 +71,22 @@ class BitchBot(commands.Bot):
                 logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
-
+        for i in ('spa_serve', 'routes'):
+            self.load_extension(f'web.backend.routes.{i}')
         await super().start(*args, **kwargs)
 
     def run(self, *args, **kwargs):
-        super().run(*args, **kwargs)
-        """
         async def start_quart():
             config = hypercorn.Config()
             config.bind = ["0.0.0.0:6969"]
-            await hypercorn.asyncio.serve(self.app, config)
+            await hypercorn.asyncio.serve(self.quart_app, config)
 
         def done_callback(_):
             self.loop.create_task(self.close())
 
         future = asyncio.ensure_future(start_quart(), loop=self.loop)
         future.add_done_callback(done_callback)
-        """
+        super().run(*args, **kwargs)
 
     async def close(self):
         await self.clientSession.close()
