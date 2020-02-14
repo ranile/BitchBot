@@ -5,3 +5,4 @@ __pycache__
 yeet.py
 venv
 .idea
+service_account.json

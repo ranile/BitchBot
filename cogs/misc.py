@@ -10,9 +10,7 @@ import string
 from bs4 import BeautifulSoup
 from discord.ext import commands
 import dialogflow_v2 as dialogflow
-import git
 from TextToOwO.owo import text_to_owo
-from datetime import datetime
 from keys import logWebhook, project_id
 from util import funs, converters  # pylint: disable=no-name-in-module
 from util import checks
@@ -277,14 +275,14 @@ class Miscellaneous(commands.Cog):
         Args:
             text: What you wanna say
         """
-        session = self.session_client.session_path(project_id, ctx.author.id)
 
-        text_input = dialogflow.types.TextInput(text=text, language_code='en-US')
+        def do_chat():
+            session = self.session_client.session_path(project_id, ctx.author.id)
+            text_input = dialogflow.types.TextInput(text=text, language_code='en-US')
+            query_input = dialogflow.types.QueryInput(text=text_input)
+            return self.session_client.detect_intent(session=session, query_input=query_input)
 
-        query_input = dialogflow.types.QueryInput(text=text_input)
-
-        response = self.session_client.detect_intent(session=session, query_input=query_input)
-
+        response = await self.bot.loop.run_in_executor(None, do_chat)
         await ctx.send(response.query_result.fulfillment_text)
 
     @commands.command()
@@ -292,29 +290,17 @@ class Miscellaneous(commands.Cog):
         """
         Gives link to GitHub repository, shows latest commits, owner name and amount of members in all servers
         """
-        repo = git.Repo()
-        commits = list(repo.iter_commits())[:3]
-        out = []
-        for commit in commits:
-            message = commit.message.split('\n')[0]
-            time = '{0} minutes'.format(str(datetime.now(tz=commit.authored_datetime.tzinfo) - commit.authored_datetime)
-                                        .split('.')[0][:-3].replace(':', ' hours, '))
-            out.append(f"[`{commit.hexsha[0:7]}`](https://github.com/hamza1311/BitchBot/commit/{commit.hexsha}) "
-                       f"{message} - {commit.author}; {time} ago")
-
-        joined = '\n'.join(out)
         embed = discord.Embed(color=funs.random_discord_color(),
-                              description=f"Latest commits:\n{joined}",
                               timestamp=self.bot.get_cog('Jishaku').load_time)
         owner = self.bot.get_user(self.bot.owner_id)
         embed.set_author(name=f"{owner.name}#{owner.discriminator}", icon_url=owner.avatar_url)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
-        embed.add_field(name="Source", value=f"[GitHub Respositiory]({list(repo.remote('origin').urls)[0]})")
+        embed.add_field(name="Source", value=f"[GitHub Respositiory](https://github.com/hamza1311/BitchBot)")
         embed.add_field(name='Comamnds', value=f"{len(self.bot.cogs)} Cogs loaded\n{len(self.bot.commands)} commands")
         members = list(self.bot.get_all_members())
         embed.add_field(name='Members', value=f'Total: {len(members)}\nUnique: {len(set(m.id for m in members))}')
         embed.add_field(name='Total web socket events received', value=str(sum(list(self.bot.socket_stats.values()))))
-        embed.set_footer(text=f"Written in discord.py v{discord.__version__}. Uptime ",
+        embed.set_footer(text=f"Written in discord.py v{discord.__version__}. Up Since",
                          icon_url='https://i.imgur.com/RPrw70n.png')
 
         await ctx.send(embed=embed)
