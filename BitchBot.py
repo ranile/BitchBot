@@ -79,6 +79,7 @@ class BitchBot(commands.Bot):
         async def start_quart():
             config = hypercorn.Config()
             config.bind = ["0.0.0.0:6969"]
+            # noinspection PyUnresolvedReferences
             await hypercorn.asyncio.serve(self.quart_app, config)
 
         def done_callback(_):

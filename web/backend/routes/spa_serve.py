@@ -2,7 +2,7 @@ import util
 import quart
 
 spa_blueprint = util.BlueprintWithBot('spa_blueprint', __name__, static_folder=None)
-DIR = './web/frontend/out'
+DIR = './web/frontend/dist/bitch-bot'
 
 
 @spa_blueprint.route('/', defaults={'path': 'index.html'})
