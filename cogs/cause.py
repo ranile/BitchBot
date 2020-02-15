@@ -117,10 +117,13 @@ class Cause(commands.Cog, name="The Cause"):
         async with self.bot.db.acquire() as conn:
             fetched = await conn.fetch('''
             select summoned_by, actual_count as count
-            from (select *, row_number() over ( order by count ) as actual_count
-            from counters
-            where name = 'rabbit' and summoned_by = any ($2::bigint[])
-            order by count) as ic
+            from (
+                     select *, row_number() over ( order by count ) as actual_count
+                     from counters
+                     where name = 'rabbit'
+                     order by count
+                 ) as ic
+            where ic.summoned_by = any ($2::bigint[])
             limit $1;
             ''', limit, [x.id for x in ctx.guild.members])
 
