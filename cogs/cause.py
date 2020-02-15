@@ -118,10 +118,11 @@ class Cause(commands.Cog, name="The Cause"):
             fetched = await conn.fetch('''
             select summoned_by, actual_count as count
             from (
-                     select *, row_number() over ( order by count ) as actual_count
+                     select summoned_by, count(count) as actual_count
                      from counters
                      where name = 'rabbit'
-                     order by count
+                     group by summoned_by
+                     order by actual_count desc
                  ) as ic
             where ic.summoned_by = any ($2::bigint[])
             limit $1;
