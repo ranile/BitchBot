@@ -7,13 +7,13 @@ DIR = './web/frontend/dist/bitch-bot'
 
 @spa_blueprint.route('/', defaults={'path': 'index.html'})
 @spa_blueprint.route("/<path:path>")
-def static_file(path):
-    return quart.send_from_directory(DIR, path)
+async def static_file(path):
+    return await quart.send_from_directory(DIR, path)
 
 
 @spa_blueprint.errorhandler(404)
-def send_index(path):
-    return quart.send_from_directory(DIR, 'index.html')
+async def send_index(path):
+    return await quart.send_from_directory(DIR, 'index.html')
 
 
 def setup(bot):
