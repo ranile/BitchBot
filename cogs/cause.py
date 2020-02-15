@@ -127,6 +127,8 @@ class Cause(commands.Cog, name="The Cause"):
         paginator = commands.Paginator(prefix='```md')
         for item in fetched:
             member = ctx.guild.get_member(item['summoned_by'])
+            if member is None:
+                continue
             line = f"{member.display_name} ({member.name}#{member.discriminator}): {item['count']}"
             paginator.add_line(line)
             if length < len(line):
