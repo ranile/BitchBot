@@ -116,12 +116,13 @@ class Cause(commands.Cog, name="The Cause"):
     async def top(self, ctx, limit=10):
         async with self.bot.db.acquire() as conn:
             fetched = await conn.fetch('''
-            select summoned_by, count(count) from counters
-            where name = 'rabbit'
-            group by summoned_by
-            order by count(count) desc
+            select summoned_by, actual_count as count
+            from (select *, row_number() over ( order by count ) as actual_count
+            from counters
+            where name = 'rabbit' and summoned_by = any ($2::bigint[])
+            order by count) as ic
             limit $1;
-            ''', limit)
+            ''', limit, [x.id for x in ctx.guild.members])
 
         length = 0
         paginator = commands.Paginator(prefix='```md')
