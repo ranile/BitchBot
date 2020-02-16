@@ -1,6 +1,6 @@
 import functools
 import os
-from quart import session, redirect, request, url_for, jsonify
+from quart import session, redirect, request, jsonify
 from requests_oauthlib import OAuth2Session
 import asyncio
 import util
@@ -14,7 +14,7 @@ API_BASE_URL = 'https://discordapp.com/api'
 AUTHORIZATION_BASE_URL = API_BASE_URL + '/oauth2/authorize'
 TOKEN_URL = API_BASE_URL + '/oauth2/token'
 
-app = util.BlueprintWithBot('discord_oauth_login', __name__, url_prefix='/login')
+app = util.BlueprintWithBot('discord_oauth_login', __name__, url_prefix='/api/auth')
 
 if 'http://' in OAUTH2_REDIRECT_URI:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
@@ -40,14 +40,14 @@ def make_session(token=None, state=None, scopes=None):
     )
 
 
-@app.route('/')
+@app.route('/login')
 async def index():
     discord = make_session(scopes='identify guilds')
     authorization_url, state = discord.authorization_url(AUTHORIZATION_BASE_URL)
     session['oauth2_state'] = state
     url = authorization_url + '&prompt=none'
     print(url)
-    return redirect(url)
+    return jsonify(url=url)
 
 
 async def run_in_executor(partial_func):
@@ -69,7 +69,7 @@ async def callback():
         )
     )
     session['oauth2_token'] = token
-    return redirect(url_for('.me'))
+    return redirect(keys.redirect_after_login_url)
 
 
 @app.route('/me')
