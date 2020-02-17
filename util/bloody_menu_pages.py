@@ -83,6 +83,6 @@ class BloodyMenuPages(menus.MenuPages, inherit_buttons=False):
     async def go_to_last_page(self, payload):
         await super().go_to_last_page(payload)
 
-    @menus.button('\N{BLACK SQUARE FOR STOP}\ufe0f')
+    @menus.button('<:stop:678961746869747739>')
     async def stop_pages(self, payload):
         await super().stop_pages(payload)
