@@ -11,7 +11,7 @@ from services import CounterService
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 rabbits = [THE_RABBIT, THE_RABBIT_V2]
-rabbit_match = r"(kaylie'?s? ?(man)|r( +)?(a|@)( +)?b( +)?b( +)?i( +)?t(man)?|r ?word)"
+rabbit_match = r"(kaylie'?s? ?(man)|r( +)?([a@])( +)?b( +)?b( +)?i( +)?t(man)?|r ?word|(elizabeth|liz)'?s ?hoe)"
 THE_CAUSE = 505655510263922700
 RABBIT_WEBHOOK = 651333096829878272
 HAIKU_BOT = 372175794895585280
@@ -36,8 +36,8 @@ class Cause(commands.Cog, name="The Cause"):
         await asyncio.sleep(self.rabbitCooldownTime)
         self.isRabbitOnCooldown = False
 
-    @property
-    def _rabbit_pfp(self):
+    # noinspection PyMethodMayBeStatic
+    def get_rabbit_pfp(self):
         return f'https://firebasestorage.googleapis.com/v0/b/bitchbot-discordbot.appspot.com/o/' \
                f'images%2Frabbit%2Frabbitman{random.randint(1, 9)}.jpg?alt=media'
 
@@ -51,7 +51,7 @@ class Cause(commands.Cog, name="The Cause"):
         if not self.isRabbitOnCooldown:
             await self.send_counter_update(
                 f"{message.author.display_name} called the rabbit {rabbit}, "
-                f"Kaylie's man {rabbit}.\nRabbit count: {count}", 'Rabbit', self._rabbit_pfp)
+                f"Kaylie's man {rabbit}.\nRabbit count: {count}", 'Rabbit', self.get_rabbit_pfp())
             await message.add_reaction(rabbit)
 
         self.rabbitAlreadySummoned.append(message.id)
@@ -97,7 +97,7 @@ class Cause(commands.Cog, name="The Cause"):
 
     @commands.group(invoke_without_command=True, aliases=["kayliesman"])
     async def rabbit(self, ctx):
-        await ctx.channel.send(embed=discord.Embed().set_image(url=self._rabbit_pfp))
+        await ctx.channel.send(embed=discord.Embed().set_image(url=self.get_rabbit_pfp()))
 
     @rabbit.group(invoke_without_command=True)
     async def stats(self, ctx, member: discord.Member = None):
