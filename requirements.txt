@@ -9,3 +9,4 @@ psutil
 parsedatetime
 git+https://github.com/Rapptz/discord-ext-menus
 Quart
+requests_oauthlib
