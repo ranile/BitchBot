@@ -71,7 +71,7 @@ class BitchBot(commands.Bot):
                 logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
-        for i in ('spa_serve', 'routes', 'auth'):
+        for i in ('spa_serve', 'routes', 'auth', 'mod_routes'):
             self.load_extension(f'web.backend.routes.{i}')
         await super().start(*args, **kwargs)
 

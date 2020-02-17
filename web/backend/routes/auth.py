@@ -69,6 +69,8 @@ async def callback():
         )
     )
     session['oauth2_token'] = token
+    user = (await fetch_user_from_session(discord)).json()
+    session['user_id'] = user['id']
     return redirect(keys.redirect_after_login_url)
 
 
@@ -87,12 +89,15 @@ async def logout():
     return {'code': logout_.status_code, 'text': logout_.text}
 
 
+async def fetch_user_from_session(_session):
+    user = (await run_in_executor(functools.partial(_session.get, API_BASE_URL + '/users/@me')))
+    return user
+
+
 @app.route('/me')
 async def me():
-    discord = make_session(token=session.get('oauth2_token'))
-    user = (await run_in_executor(functools.partial(discord.get, API_BASE_URL + '/users/@me'))).json()
-    app.bot.get_user(int(user['id']))
-    return jsonify(user=user)
+    user = await fetch_user_from_session(make_session(token=session.get('oauth2_token')))
+    return jsonify(user=user.json(), id_from_session=session.get('user_id'))
 
 
 @app.route('/guilds')
