@@ -72,6 +72,21 @@ async def callback():
     return redirect(keys.redirect_after_login_url)
 
 
+@app.route('/logout')
+async def logout():
+    discord = make_session(token=session.get('oauth2_token'))
+    logout_ = discord.post(API_BASE_URL + f'/oauth2/token/revoke', data={
+        'client_id': OAUTH2_CLIENT_ID,
+        'client_secret': OAUTH2_CLIENT_SECRET,
+        'token': discord.access_token,
+        'token_type_hint': 'access_token'
+    }, headers={
+        'Content-Type': 'application/x-www-form-urlencoded'
+    })
+    # logout_ = (await run_in_executor(functools.partial(discord.get, )))
+    return {'code': logout_.status_code, 'text': logout_.text}
+
+
 @app.route('/me')
 async def me():
     discord = make_session(token=session.get('oauth2_token'))
