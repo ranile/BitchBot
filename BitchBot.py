@@ -31,6 +31,7 @@ class BitchBot(commands.Bot):
 
         self.quart_app = util.QuartWithBot(__name__, static_folder=None)
         self.quart_app.config['SECRET_KEY'] = keys.client_secret
+        self.quart_app.debug = keys.debug
         # Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')
 
@@ -71,7 +72,7 @@ class BitchBot(commands.Bot):
                 logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
-        for i in ('spa_serve', 'routes', 'auth', 'mod_routes'):
+        for i in ('spa_serve', 'routes', 'auth', 'mod_routes', 'user_routes'):
             self.load_extension(f'web.backend.routes.{i}')
         await super().start(*args, **kwargs)
 

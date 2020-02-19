@@ -10,7 +10,7 @@ export class UserService {
   constructor(private httpClient: HttpClient) { }
 
   async fetchCurrentUser() {
-    const res = await this.httpClient.get<UserResponse>('/api/auth/me').toPromise()
+    const res = await this.httpClient.get<UserResponse>('/api/users/me').toPromise()
     localStorage.setItem('user', JSON.stringify(res.user))
     return res
   }
