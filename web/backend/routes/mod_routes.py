@@ -1,4 +1,4 @@
-from quart import session, jsonify, abort
+from quart import session, jsonify, abort, request
 
 import util
 import services
@@ -7,8 +7,8 @@ mod_routes = util.BlueprintWithBot('mod_blueprint', __name__, url_prefix='/api/m
 _services = {}
 
 
-@mod_routes.route('/<int:guild_id>/warnings/<int:target_id>')
-async def warnings(guild_id: int, target_id: int):
+@mod_routes.route('/<int:guild_id>/warns')
+async def warnings(guild_id: int):
     try:
         user_id = int(session['user_id'])
     except KeyError:
@@ -27,6 +27,8 @@ async def warnings(guild_id: int, target_id: int):
     if not (set(x.id for x in member.roles) & set(config.mod_roles)):
         return abort(403, 'Not a mod')
 
+    target_id = request.args.get('victim_id')
+    print(target_id)
     warnings_service: services.WarningsService = _services['warnings']
     warns = await warnings_service.get_all(guild_id, target_id)
     return jsonify(warnings=[vars(warn) for warn in warns])

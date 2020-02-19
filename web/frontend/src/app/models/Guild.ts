@@ -1,7 +1,7 @@
 export class Guild {
   constructor(
-    name: string,
-    id: string,
-    icon: string,
+    public name: string,
+    public id: string,
+    public icon: string,
   ) {}
 }
