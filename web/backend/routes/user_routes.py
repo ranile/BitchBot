@@ -16,18 +16,21 @@ async def me():
     try:
         id_from_session = session['user_id']
         user = user_routes.bot.get_user(int(id_from_session))
-        resp = {}
+        out = {}
         for attrib in discord.User.__slots__:
             if attrib.startswith('_') or attrib in ('system', 'bot'):
                 continue
-            resp[attrib] = getattr(user, attrib)
-        return jsonify(user=resp, id_from_session=id_from_session)
+            out[attrib] = getattr(user, attrib)
     except KeyError:
         res = await fetch_user_from_session(util.make_oauth_session(token=session.get('oauth2_token')))
-        resp_json = res.json()
+        out = res.json()
         if res.status_code != 200:
-            return abort(res.status_code, json.dumps(resp_json))
-        return jsonify(user=resp_json, id_from_session=session.get('user_id'))
+            return abort(res.status_code, json.dumps(out))
+
+    mutual_guilds = user_routes.bot.get_mutual_guilds(int(out['id']))
+    out['guilds'] = [{'name': guild.name, 'id': str(guild.id), 'icon': str(guild.icon_url)} for guild in mutual_guilds]
+    print(out)
+    return jsonify(user=out, id_from_session=session.get('user_id'))
 
 
 def setup(bot):

@@ -14,6 +14,10 @@ export class UserService {
     localStorage.setItem('user', JSON.stringify(res.user))
     return res
   }
+
+  get currentUser() {
+    return JSON.parse(localStorage.getItem('user'))
+  }
 }
 
 interface UserResponse {

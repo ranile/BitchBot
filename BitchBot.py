@@ -146,3 +146,10 @@ class BitchBot(commands.Bot):
             self.socket_stats[event] += 1
         except KeyError:
             self.socket_stats[event] = 1
+
+    def get_mutual_guilds(self, member_id):
+        print(member_id)
+        for guild in self.guilds:
+            if member_id in [x.id for x in guild.members]:
+                print('yes')
+                yield guild
