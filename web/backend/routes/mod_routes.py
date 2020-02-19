@@ -31,7 +31,18 @@ async def warnings(guild_id: int):
     print(target_id)
     warnings_service: services.WarningsService = _services['warnings']
     warns = await warnings_service.get_all(guild_id, target_id)
-    return jsonify(warnings=[vars(warn) for warn in warns])
+    out = []
+    for warn in warns:
+        out.append({
+            "guild_id": str(warn.guild_id),
+            "id": warn.id,
+            "reason": warn.reason,
+            "warned_at": int(warn.warned_at.timestamp()),
+            "warned_by_id": str(warn.warned_by_id),
+            "warned_user_id": str(warn.warned_user_id),
+        })
+    print(out)
+    return jsonify(out)
 
 
 def setup(bot):

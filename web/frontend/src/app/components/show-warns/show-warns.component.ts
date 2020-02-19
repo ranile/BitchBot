@@ -22,6 +22,8 @@ export class ShowWarnsComponent implements OnInit {
   showWarns(guild: Guild) {
     this.warnsService.getGuildWarns(guild.id).then(warns => {
       this.warns = warns
+      console.log(warns)
+      console.log(this.warns)
     })
   }
 }
