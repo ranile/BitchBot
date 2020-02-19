@@ -12,16 +12,20 @@ async def warnings(guild_id: int, target_id: int):
     try:
         user_id = int(session['user_id'])
     except KeyError:
-        abort(401, 'Not logged in')
-        return
+        return abort(401, 'Not logged in')
+
+    guild = mod_routes.bot.get_guild(guild_id)
+    if guild is None:
+        return abort(400, 'Bot is not in the provided guild')
 
     config_service: services.ConfigService = _services['config']
     config = await config_service.get(guild_id)
-    member = mod_routes.bot.get_guild(guild_id).get_member(user_id)
     if config is None:
-        abort(400, 'Not configured properly')
-    elif not (set(x.id for x in member.roles) & set(config.mod_roles)):
-        abort(403, 'Not a mod')
+        return abort(400, 'Not configured properly')
+
+    member = guild.get_member(user_id)
+    if not (set(x.id for x in member.roles) & set(config.mod_roles)):
+        return abort(403, 'Not a mod')
 
     warnings_service: services.WarningsService = _services['warnings']
     warns = await warnings_service.get_all(guild_id, target_id)
