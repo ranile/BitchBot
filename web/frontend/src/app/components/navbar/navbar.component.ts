@@ -11,7 +11,7 @@ import {DOCUMENT} from "@angular/common";
 })
 export class NavbarComponent implements OnInit {
   currentUser: User;
-  showLoginButton: boolean = true;
+  isLoggedIn: boolean = false;
 
   constructor(private authService: AuthService, private userService: UserService, @Inject(DOCUMENT) private document: Document) {
   }
@@ -20,11 +20,11 @@ export class NavbarComponent implements OnInit {
     this.userService.fetchCurrentUser()
       .then(resp => {
         this.currentUser = resp.user
-        this.showLoginButton = false
+        this.isLoggedIn = true
       })
       .catch(error => {
         if (error.status == 401) {
-          this.showLoginButton = true
+          this.isLoggedIn = false
         }
         console.error(error)
       })
@@ -33,6 +33,12 @@ export class NavbarComponent implements OnInit {
   login() {
     this.authService.login().then(it => {
       this.document.location.href = it['url']
+    })
+  }
+
+  logout() {
+    this.authService.logout().then(() => {
+      this.isLoggedIn = false
     })
   }
 

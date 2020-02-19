@@ -12,4 +12,8 @@ export class AuthService {
     // localStorage.setItem('user', JSON.stringify(user))
     return await this.httpClient.get('/api/auth/login').toPromise()
   }
+
+  logout() {
+    return this.httpClient.get('/api/auth/logout').toPromise()
+  }
 }

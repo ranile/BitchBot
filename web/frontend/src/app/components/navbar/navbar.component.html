@@ -1,3 +1,4 @@
 <p>navbar works!</p>
 <p>{{currentUser | json}}</p>
-<button *ngIf="showLoginButton" (click)="login()">Login</button>
+<button *ngIf="!isLoggedIn" (click)="login()">Login</button>
+<button *ngIf="isLoggedIn" (click)="logout()">Logout</button>
