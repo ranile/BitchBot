@@ -6,12 +6,16 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 import { TestComponent } from './components/test/test.component';
 import {HttpClientModule} from "@angular/common/http";
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { ShowWarnsComponent } from './components/show-warns/show-warns.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
-    TestComponent
+    TestComponent,
+    NavbarComponent,
+    ShowWarnsComponent
   ],
   imports: [
     BrowserModule,
