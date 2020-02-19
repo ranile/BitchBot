@@ -1,9 +1,4 @@
 <p>show-warns works!</p>
-<ul>
-  <li *ngFor="let guild of currentUser.guilds">
-    <a (click)="showWarns(guild)"><img width="20px" height="20px" src="{{guild.icon}}"> {{guild.name}}</a>
-  </li>
-</ul>
 
 <div *ngIf="warns">
   <p>{{warns | json}}</p>

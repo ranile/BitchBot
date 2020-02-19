@@ -1,0 +1,9 @@
+<p>mod-dashboard works!</p>
+
+<select (change)="onGuildSelect($event)" [(ngModel)]="selectedGuild">
+  <option *ngFor="let guild of currentUser.guilds">
+    <img width="20px" height="20px" src="{{guild.icon}}"> {{guild.name}}
+  </option>
+</select>
+
+<button (click)="navigateToWarns()">Warns</button>

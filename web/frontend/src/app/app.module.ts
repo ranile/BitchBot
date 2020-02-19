@@ -8,6 +8,8 @@ import { TestComponent } from './components/test/test.component';
 import {HttpClientModule} from "@angular/common/http";
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ShowWarnsComponent } from './components/show-warns/show-warns.component';
+import { ModDashboardComponent } from './components/mod-dashboard/mod-dashboard.component';
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -15,12 +17,14 @@ import { ShowWarnsComponent } from './components/show-warns/show-warns.component
     HomeComponent,
     TestComponent,
     NavbarComponent,
-    ShowWarnsComponent
+    ShowWarnsComponent,
+    ModDashboardComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    FormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

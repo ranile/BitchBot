@@ -1,26 +1,34 @@
-import { Component, OnInit } from '@angular/core';
-import { User } from "../../models/User";
-import { UserService } from "../../services/user/user.service";
-import {Guild} from "../../models/Guild";
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {WarnsService} from "../../services/mod/warns/warns.service";
 import {Warn} from "../../models/Warn";
+import {ActivatedRoute} from "@angular/router";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-show-warns',
   templateUrl: './show-warns.component.html',
   styleUrls: ['./show-warns.component.scss']
 })
-export class ShowWarnsComponent implements OnInit {
-  currentUser: User;
+export class ShowWarnsComponent implements OnInit, OnDestroy {
   warns: Warn[];
-  constructor(private userService: UserService, private warnsService: WarnsService) {}
+  routeMapSubscription: Subscription;
 
-  ngOnInit(): void {
-    this.currentUser = this.userService.currentUser
+  constructor(private warnsService: WarnsService, private activatedRoute: ActivatedRoute) {
   }
 
-  showWarns(guild: Guild) {
-    this.warnsService.getGuildWarns(guild.id).then(warns => {
+  ngOnInit(): void {
+    this.routeMapSubscription = this.activatedRoute.paramMap.subscribe(async (map) => {
+      this.showWarns(map.get('guild_id'))
+    })
+  }
+
+  ngOnDestroy(): void {
+    this.routeMapSubscription.unsubscribe()
+  }
+
+
+  showWarns(guildId) {
+    this.warnsService.getGuildWarns(guildId).then(warns => {
       this.warns = warns
       console.log(warns)
       console.log(this.warns)
