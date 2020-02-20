@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import discord
@@ -5,6 +6,8 @@ from discord.ext import commands
 
 from services import ConfigService
 from util import funs
+
+logger = logging.getLogger(__name__)
 
 
 class Logging(commands.Cog):
@@ -40,6 +43,9 @@ class Logging(commands.Cog):
                 guild = member.guild
 
         config = await self.config_service.get(guild.id)
+        if config is None or config.event_log_webhook is None:
+            logger.debug(f'Skipping {name} log for guild id {guild.id}')
+            return
         await self.trigger_webhook(config.event_log_webhook, embed, name)
 
     @commands.Cog.listener()
