@@ -357,12 +357,6 @@ class Moderation(commands.Cog):
         inserted = await self.config_service.add_mod_role(role.id, ctx.guild.id)
         await ctx.send(f'Current mod roles are: {inserted.mod_roles}')
 
-    async def cog_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(f'{error}\nSee `>help {ctx.command.qualified_name}` for more info')
-            raise error.original
-        raise error
-
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

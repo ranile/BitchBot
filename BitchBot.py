@@ -147,9 +147,19 @@ class BitchBot(commands.Bot):
         except KeyError:
             self.socket_stats[event] = 1
 
+    async def on_command_error(self, ctx: commands.Context, exception):
+        msg = f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info'
+        if isinstance(exception, commands.CheckFailure):
+            await ctx.send(str(exception))
+        elif isinstance(exception, commands.UserInputError):
+            await ctx.send('\n'.join(["Invalid arguments provided", str(exception), msg]))
+        elif isinstance(exception, commands.CommandNotFound):
+            pass
+        else:
+            await ctx.send(f'{exception.__class__.__name__}: {str(exception)}')
+            logger.exception(exception)
+
     def get_mutual_guilds(self, member_id):
-        print(member_id)
         for guild in self.guilds:
             if member_id in [x.id for x in guild.members]:
-                print('yes')
                 yield guild
