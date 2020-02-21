@@ -148,10 +148,10 @@ class BitchBot(commands.Bot):
             self.socket_stats[event] = 1
 
     async def on_command_error(self, ctx: commands.Context, exception):
-        msg = f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info'
         if isinstance(exception, commands.CheckFailure):
             await ctx.send(str(exception))
         elif isinstance(exception, commands.UserInputError):
+            msg = f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info'
             await ctx.send('\n'.join(["Invalid arguments provided", str(exception), msg]))
         elif isinstance(exception, commands.CommandNotFound):
             pass
