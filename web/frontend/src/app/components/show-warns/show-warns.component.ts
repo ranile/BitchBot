@@ -1,8 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {WarnsService} from "../../services/mod/warns/warns.service";
 import {Warn} from "../../models/Warn";
 import {ActivatedRoute} from "@angular/router";
 import {Subscription} from "rxjs";
+import {Guild} from "../../models/Guild";
 
 @Component({
   selector: 'app-show-warns',
@@ -10,6 +11,7 @@ import {Subscription} from "rxjs";
   styleUrls: ['./show-warns.component.scss']
 })
 export class ShowWarnsComponent implements OnInit, OnDestroy {
+  @Input() guild: Guild;
   warns: Warn[];
   routeMapSubscription: Subscription;
 

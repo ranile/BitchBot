@@ -4,7 +4,6 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
-import { TestComponent } from './components/test/test.component';
 import {HttpClientModule} from "@angular/common/http";
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ShowWarnsComponent } from './components/show-warns/show-warns.component';
@@ -13,12 +12,14 @@ import {FormsModule} from "@angular/forms";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatButtonModule} from "@angular/material/button";
 import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatSidenavModule} from "@angular/material/sidenav";
+import {MatListModule} from "@angular/material/list";
+import {MatTabsModule} from "@angular/material/tabs";
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
-    TestComponent,
     NavbarComponent,
     ShowWarnsComponent,
     ModDashboardComponent
@@ -31,6 +32,9 @@ import {MatToolbarModule} from "@angular/material/toolbar";
     BrowserAnimationsModule,
     MatButtonModule,
     MatToolbarModule,
+    MatSidenavModule,
+    MatListModule,
+    MatTabsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

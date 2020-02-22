@@ -1,9 +1,18 @@
-<p>mod-dashboard works!</p>
-
 <select (change)="onGuildSelect($event)" [(ngModel)]="selectedGuild">
-  <option *ngFor="let guild of currentUser.guilds">
+  <option>Test</option>
+  <!--<option *ngFor="let guild of currentUser.guilds">
     <img width="20px" height="20px" src="{{guild.icon}}"> {{guild.name}}
-  </option>
+  </option>-->
 </select>
 
-<button (click)="navigateToWarns()">Warns</button>
+<mat-tab-group mat-align-tabs="center" *ngIf="selectedGuild.name != ''">
+  <mat-tab label="Mod mail">
+    Mod mail
+  </mat-tab>
+  <mat-tab label="Warns">
+    <app-show-warns [guild]="selectedGuild"></app-show-warns>
+  </mat-tab>
+  <mat-tab label="Mutes">
+    Mutes
+  </mat-tab>
+</mat-tab-group>
