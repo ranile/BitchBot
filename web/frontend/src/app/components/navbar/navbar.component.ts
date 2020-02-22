@@ -39,6 +39,7 @@ export class NavbarComponent implements OnInit {
   logout() {
     this.authService.logout().then(() => {
       this.isLoggedIn = false
+      //  TODO: Navigate to /home
     })
   }
 
