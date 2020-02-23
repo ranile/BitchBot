@@ -1,7 +1,7 @@
 <mat-form-field id="select-guild-form">
   <mat-label>Select a guild</mat-label>
   <mat-select [(value)]="selectedGuild" (selectionChange)="onGuildSelect()">
-    <mat-option value="{{guild.id}}" *ngFor="let guild of currentUser.guilds">{{guild.name}}</mat-option>
+    <mat-option value="{{guild.id}}" *ngFor="let guild of modIn">{{guild.name}}</mat-option>
   </mat-select>
 </mat-form-field>
 

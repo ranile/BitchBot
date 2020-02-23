@@ -50,11 +50,11 @@ async def guild_i_mod():
     user_id = util.get_user_id_from_session(session)
     mutual_guilds = mod_routes.bot.get_mutual_guilds(int(user_id))
     for guild in mutual_guilds:
-        config = await _get_config(guild)
+        config = await _get_config(guild.id)
         if util.is_mod(config, guild, user_id):
             guilds.append(guild)
 
-    return util.format_guilds_for_response(guilds)
+    return jsonify(id_from_session=user_id, guilds=util.format_guilds_for_response(guilds))
 
 
 def setup(bot):

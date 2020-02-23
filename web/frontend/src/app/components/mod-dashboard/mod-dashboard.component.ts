@@ -12,14 +12,18 @@ import {Router} from "@angular/router";
 export class ModDashboardComponent implements OnInit {
   currentUser: User;
   selectedGuild: string | Guild;
+  modIn: Guild[];
 
-  constructor(private userService: UserService, private router: Router) {
+  constructor(private userService: UserService) {
   }
 
   ngOnInit(): void {
     this.currentUser = this.userService.currentUser
     console.log(this.currentUser.guilds)
-    // this.selectedGuild = this.currentUser.guilds[0]
+    this.userService.modIn
+      .then(it => { this.modIn = it })
+      .catch(it => { console.error(it) })
+
   }
 
   onGuildSelect() {
