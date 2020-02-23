@@ -1,10 +1,12 @@
-<select (select)="onGuildSelect($event)">
-  <option *ngFor="let guild of currentUser.guilds">
-    <img width="20px" height="20px" src="{{guild.icon}}"> {{guild.name}}
-  </option>
-</select>
+<mat-form-field style="padding: 1em; margin: 1em;">
+  <mat-label>Select a guild</mat-label>
+  <mat-select [(value)]="selectedGuild" (selectionChange)="onGuildSelect()">
+    <mat-option value="{{guild.id}}" *ngFor="let guild of currentUser.guilds">{{guild.name}}</mat-option>
+  </mat-select>
+</mat-form-field>
 
-<mat-tab-group mat-align-tabs="center" *ngIf="selectedGuild">
+
+<mat-tab-group style="margin: 0.5em" mat-align-tabs="center" *ngIf="selectedGuild">
   <mat-tab label="Mod mail">
     <ng-template matTabContent>Mod mail</ng-template>
   </mat-tab>

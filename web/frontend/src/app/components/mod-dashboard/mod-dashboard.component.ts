@@ -11,7 +11,7 @@ import {Router} from "@angular/router";
 })
 export class ModDashboardComponent implements OnInit {
   currentUser: User;
-  selectedGuild: Guild;
+  selectedGuild: string | Guild;
 
   constructor(private userService: UserService, private router: Router) {
   }
@@ -19,16 +19,12 @@ export class ModDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.userService.currentUser
     console.log(this.currentUser.guilds)
-    this.selectedGuild = this.currentUser.guilds[0]
+    // this.selectedGuild = this.currentUser.guilds[0]
   }
 
-  navigateToWarns() {
+  onGuildSelect() {
     console.log(this.selectedGuild)
-    this.router.navigateByUrl(`mod/guild/${this.selectedGuild.id}/warns`).then(() => {})
-  }
-
-  onGuildSelect(event) {
-    const guild = this.currentUser.guilds.find(it => it.name == event.target.value)
+    const guild = this.currentUser.guilds.find(it => it.id == this.selectedGuild.toString())
     console.log(guild)
     this.selectedGuild = guild
   }
