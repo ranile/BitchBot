@@ -1,11 +1,10 @@
-<select (change)="onGuildSelect($event)" [(ngModel)]="selectedGuild">
-  <option>Test</option>
-  <!--<option *ngFor="let guild of currentUser.guilds">
+<select (select)="onGuildSelect($event)">
+  <option *ngFor="let guild of currentUser.guilds">
     <img width="20px" height="20px" src="{{guild.icon}}"> {{guild.name}}
-  </option>-->
+  </option>
 </select>
 
-<mat-tab-group mat-align-tabs="center" *ngIf="selectedGuild.name != ''">
+<mat-tab-group mat-align-tabs="center" *ngIf="selectedGuild">
   <mat-tab label="Mod mail">
     <ng-template matTabContent>Mod mail</ng-template>
   </mat-tab>
