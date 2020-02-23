@@ -1,5 +1,4 @@
 from quart import session, jsonify, abort, request
-
 import util
 import services
 
@@ -7,24 +6,24 @@ mod_routes = util.BlueprintWithBot('mod_blueprint', __name__, url_prefix='/api/m
 _services = {}
 
 
-@mod_routes.route('/<int:guild_id>/warns')
-async def warnings(guild_id: int):
-    try:
-        user_id = int(session['user_id'])
-    except KeyError:
-        return abort(401, 'Not logged in')
-
-    guild = mod_routes.bot.get_guild(guild_id)
-    if guild is None:
-        return abort(400, 'Bot is not in the provided guild')
-
+async def _get_config(guild_id):
     config_service: services.ConfigService = _services['config']
     config = await config_service.get(guild_id)
     if config is None:
         return abort(400, 'Not configured properly')
+    return config
 
-    member = guild.get_member(user_id)
-    if not (set(x.id for x in member.roles) & set(config.mod_roles)):
+
+@mod_routes.route('/<int:guild_id>/warns')
+async def warnings(guild_id: int):
+    user_id = util.get_user_id_from_session(session)
+    guild = mod_routes.bot.get_guild(guild_id)
+    if guild is None:
+        return abort(400, 'Bot is not in the provided guild')
+
+    config = await _get_config(guild.id)
+
+    if not util.is_mod(config, guild, user_id):
         return abort(403, 'Not a mod')
 
     target_id = request.args.get('victim_id')
@@ -43,6 +42,19 @@ async def warnings(guild_id: int):
         })
     print(out)
     return jsonify(out)
+
+
+@mod_routes.route('/guilds')
+async def guild_i_mod():
+    guilds = []
+    user_id = util.get_user_id_from_session(session)
+    mutual_guilds = mod_routes.bot.get_mutual_guilds(int(user_id))
+    for guild in mutual_guilds:
+        config = await _get_config(guild)
+        if util.is_mod(config, guild, user_id):
+            guilds.append(guild)
+
+    return util.format_guilds_for_response(guilds)
 
 
 def setup(bot):
