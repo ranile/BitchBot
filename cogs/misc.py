@@ -413,7 +413,10 @@ class Miscellaneous(commands.Cog):
         """
         import pendulum
         async with ctx.typing():
-            await ctx.send(f'{repr(pendulum.instance(time_and_arg.time))}, {time_and_arg.other}')
+            time = pendulum.instance(time_and_arg.time)
+            await ctx.send(f'Time: {repr(time)}\n'
+                           f'Other argument: {time_and_arg.other}\n'
+                           f'Delta: {(time - pendulum.instance(ctx.message.created_at)).in_words()}')
 
 
 def setup(bot):
