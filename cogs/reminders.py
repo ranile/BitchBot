@@ -3,7 +3,7 @@ import parsedatetime
 from discord.ext import commands
 
 from resources import Timer
-import humanize
+import pendulum
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +34,15 @@ class Reminders(commands.Cog):
             }
         )
         await self.bot.timers.create_timer(timer)
-        await ctx.send(f"{ctx.author.mention} in {humanize.naturaltime(timer.expires_at)}:\n{timer.kwargs['text']}")
+        delta = (pendulum.instance(timer.expires_at) - pendulum.instance(ctx.message.created_at)).in_words()
+        await ctx.send(f"{ctx.author.mention} in {delta}:\n{timer.kwargs['text']}")
 
     @commands.Cog.listener()
     async def on_reminder_timer_complete(self, timer):
         channel = self.bot.get_channel(timer.kwargs['channel_id'])
         member = self.bot.get_guild(timer.kwargs['guild_id']).get_member(timer.kwargs['author_id'])
-
-        await channel.send(f"{member.mention}: {timer.kwargs['text']}")
+        delta = (pendulum.instance(timer.expires_at) - pendulum.now()).in_words()
+        await channel.send(f"{member.mention}, {delta} ago: {timer.kwargs['text']}")
 
 
 def setup(bot):
