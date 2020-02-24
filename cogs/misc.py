@@ -395,6 +395,10 @@ class Miscellaneous(commands.Cog):
                     new += x.lower()
         await ctx.send(new)
 
+    @commands.command()
+    async def parse(self, ctx, *, time: converters.HumanTime(other=True)):
+        await ctx.send(f'{time.time}, {time.other}')
+
 
 def setup(bot):
     bot.add_cog(Miscellaneous(bot))
