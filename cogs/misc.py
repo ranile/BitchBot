@@ -396,8 +396,24 @@ class Miscellaneous(commands.Cog):
         await ctx.send(new)
 
     @commands.command()
-    async def parse(self, ctx, *, time: converters.HumanTime(other=True)):
-        await ctx.send(f'{time.time}, {time.other}')
+    async def parse(self, ctx, *, time_and_arg: converters.HumanTime(other=True)):
+        """
+        Parses human time friendly time
+
+        Actual format:
+            `parse time arg`
+
+        Example:
+            `{prefix}parse 1 hour This is a test`
+            where `1 hour` is time and `This is a test` is the other arg
+
+        Args:
+            time: The time to parse
+            arg: The argument you want to pass
+        """
+        import pendulum
+        async with ctx.typing():
+            await ctx.send(f'{repr(pendulum.instance(time_and_arg.time))}, {time_and_arg.other}')
 
 
 def setup(bot):
