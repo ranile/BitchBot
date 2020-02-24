@@ -1,17 +1,12 @@
 import logging
-import parsedatetime
 from discord.ext import commands
 
 from resources import Timer
 import pendulum
 
+from util.converters import HumanTime
+
 logger = logging.getLogger(__name__)
-
-
-def _parse_time(ctx, time):
-    cal = parsedatetime.Calendar()
-    now = ctx.message.created_at
-    return cal.parseDT(datetimeString=time, sourceTime=now)
 
 
 class Reminders(commands.Cog):
@@ -19,8 +14,8 @@ class Reminders(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def remind(self, ctx, time, *, text):
-        time, _ = _parse_time(ctx, time)
+    async def remind(self, ctx, *, time_and_text: HumanTime(other=True)):
+        time, text = time_and_text.time, time_and_text.other
 
         timer = Timer(
             event='reminder',
