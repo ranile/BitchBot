@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
-import parsedatetime
+import asyncio
+import dateparser
+import functools
 
 
 class FetchedUser(commands.Converter):
@@ -15,44 +17,57 @@ class FetchedUser(commands.Converter):
             raise commands.BadArgument('An error occurred while fetching the user.')
 
 
+# noinspection PyMethodMayBeStatic
 class HumanTime(commands.Converter):
     def __init__(self, converter: commands.Converter = None, other=False):
         self.other = other
-        self.converter = converter
+        self.other_converter = converter
 
     class HumanTimeOutput:
         def __init__(self, time, other=None):
             self.time = time
             self.other = other
 
-    def sanitized_time(self, time, now):
-        if time.hour == 0 and time.minute == 0:
-            time = time.replace(day=time.day + 1)
+    async def parse(self, user_input, ctx):
+        dateparser_settings = {
+            'TIMEZONE': 'UTC',
+            'RETURN_AS_TIMEZONE_AWARE': True,
+            'TO_TIMEZONE': 'UTC',
+            'PREFER_DATES_FROM': 'future'
+        }
 
-        if time < now:
-            raise commands.BadArgument('Time is in the past')
+        text = f"in {user_input}".split(" ")
+        length = len(text[:7])
+        out = None
+        used = ""
 
-        return time
+        while out is None:
+            used = " ".join(text[:length])
 
-    # noinspection DuplicatedCode,PyMethodMayBeStatic
-    def get_time(self, user_input):
-        words = user_input.split(' ')
-        if words[0].isdigit():
-            inp = ' '.join(words[:2])
-            other = ' '.join(words[2:])
-        else:
-            inp = words[0]
-            other = ' '.join(words[1:])
-        return inp, other.strip()
+            fut = ctx.bot.loop.run_in_executor(
+                None,
+                functools.partial(dateparser.parse, used, settings=dateparser_settings))
+
+            try:
+                out = await asyncio.wait_for(fut, 1.0)
+            except asyncio.TimeoutError:
+                fut.cancel()
+
+            length -= 1
+
+        other = "".join(text).replace(used, "")
+        return out.replace(tzinfo=ctx.message.created_at.tzinfo), str(other).strip()
+
+    def time_check(self, time, ctx):
+        now = ctx.message.created_at.tzinfo
+        if time is None:
+            raise commands.BadArgument('Invalid time provided')
+        elif time < now:
+            raise commands.BadArgument('Time is in past')
 
     async def convert(self, ctx, argument):
-        cal = parsedatetime.Calendar()
-
-        now = ctx.message.created_at
-        actual_time, other_arg = self.get_time(argument)
-        dt, _ = cal.parseDT(datetimeString=actual_time, sourceTime=now)
-        time = self.sanitized_time(dt, now)
-        if self.other and self.converter:
-            other_arg = await self.converter.convert(ctx, other_arg)
-
-        return HumanTime.HumanTimeOutput(time, other_arg)
+        time, other = self.parse(argument, ctx)
+        self.time_check(time, ctx)
+        if self.other_converter is not None:
+            other = self.other_converter.convert(ctx, argument)
+        return HumanTime.HumanTimeOutput(time, other)

@@ -6,7 +6,8 @@ git+https://github.com/Zenrac/TextToOwO
 git+https://github.com/Gelbpunkt/aiowiki
 beautifulsoup4
 psutil
-parsedatetime
 git+https://github.com/Rapptz/discord-ext-menus
 Quart
 requests_oauthlib
+dateparser
+pendulum
