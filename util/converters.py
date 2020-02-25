@@ -1,8 +1,5 @@
-import datetime
-
 import discord
 from discord.ext import commands
-import asyncio
 import dateparser
 import functools
 
@@ -30,7 +27,7 @@ class HumanTime(commands.Converter):
             self.time = time
             self.other = other
 
-    def parse(self, user_input):
+    def parse(self, user_input, ctx):
         settings = {
             'TIMEZONE': 'UTC',
             'RETURN_AS_TIMEZONE_AWARE': True,
@@ -43,23 +40,27 @@ class HumanTime(commands.Converter):
         length = len(split[:7])
         out = None
         used = ""
-        while out is None:
-            used = " ".join(split[:length])
+        for i in range(length, 0, -1):
+            used = " ".join(split[:i])
             out = dateparser.parse(used, settings=settings)
-            length -= 1
+            if out is not None:
+                break
 
-        now = datetime.datetime.utcnow()
+        if out is None:
+            raise commands.BadArgument('Provided time is invalid')
+
+        now = ctx.message.created_at
         return out.replace(tzinfo=now.tzinfo), ''.join(to_be_passed).replace(used, '')
 
     def time_check(self, time, ctx):
         now = ctx.message.created_at
         if time is None:
-            raise commands.BadArgument('Invalid time provided')
+            raise commands.BadArgument('Provided time is invalid')
         elif time < now:
             raise commands.BadArgument('Time is in past')
 
     async def convert(self, ctx, argument):
-        time, other = await ctx.bot.loop.run_in_executor(None, functools.partial(self.parse, argument))
+        time, other = await ctx.bot.loop.run_in_executor(None, functools.partial(self.parse, argument, ctx))
         self.time_check(time, ctx)
         if self.other_converter is not None:
             other = await self.other_converter.convert(ctx, argument)
