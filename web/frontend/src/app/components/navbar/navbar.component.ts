@@ -11,7 +11,7 @@ import {DOCUMENT} from "@angular/common";
 })
 export class NavbarComponent implements OnInit {
   currentUser: User;
-  isLoggedIn: boolean = true;
+  isLoggedIn: boolean = false;
 
   constructor(private authService: AuthService, private userService: UserService, @Inject(DOCUMENT) private document: Document) {
   }

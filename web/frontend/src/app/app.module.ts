@@ -17,6 +17,7 @@ import {MatListModule} from "@angular/material/list";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatOptionModule} from "@angular/material/core";
 import {MatSelectModule} from "@angular/material/select";
+import { ShowWarnComponent } from './components/show-warn/show-warn.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import {MatSelectModule} from "@angular/material/select";
     HomeComponent,
     NavbarComponent,
     ShowWarnsComponent,
-    ModDashboardComponent
+    ModDashboardComponent,
+    ShowWarnComponent
   ],
   imports: [
     BrowserModule,

@@ -33,7 +33,7 @@ export class UserService {
       return this.fetch_guilds_i_mod()
     }
     if (this.currentUser.id == modIn.userId) {
-      return new Promise(modIn.guilds)
+      return Promise.resolve(modIn.guilds)
     } else {
       throw 'User id in modIn does not match logged in user id'
     }

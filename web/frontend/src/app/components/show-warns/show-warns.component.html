@@ -1,5 +1,8 @@
 <p>show-warns works!</p>
 
 <div *ngIf="warns">
-  <p>{{warns}}</p>
+  <div *ngFor="let warn of warns">
+    <app-show-warn [warn]="warn"></app-show-warn>
+  </div>
+
 </div>

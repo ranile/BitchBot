@@ -10,22 +10,15 @@ import {Guild} from "../../models/Guild";
   templateUrl: './show-warns.component.html',
   styleUrls: ['./show-warns.component.scss']
 })
-export class ShowWarnsComponent implements OnInit, OnDestroy {
+export class ShowWarnsComponent implements OnInit {
   @Input() guild: Guild;
   warns: Warn[];
-  routeMapSubscription: Subscription;
 
-  constructor(private warnsService: WarnsService, private activatedRoute: ActivatedRoute) {
+  constructor(private warnsService: WarnsService) {
   }
 
   ngOnInit(): void {
-    this.routeMapSubscription = this.activatedRoute.paramMap.subscribe(async (map) => {
-      this.showWarns(map.get('guild_id'))
-    })
-  }
-
-  ngOnDestroy(): void {
-    this.routeMapSubscription.unsubscribe()
+    this.showWarns(this.guild.id)
   }
 
 
