@@ -1,1 +1,10 @@
-<p>{{warn | json}}</p>
+<mat-card style="margin: 0.5em">
+    <mat-card-header>
+        <img mat-card-avatar [src]="user.avatarUrl"/>
+        <mat-card-title>{{warn.warned_user_id}}</mat-card-title>
+        <mat-card-subtitle>{{warn.warned_at}} by {{warn.warned_by_id}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <p>{{warn.reason}}</p>
+    </mat-card-content>
+</mat-card>

@@ -18,6 +18,7 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatOptionModule} from "@angular/material/core";
 import {MatSelectModule} from "@angular/material/select";
 import { ShowWarnComponent } from './components/show-warn/show-warn.component';
+import {MatCardModule} from "@angular/material/card";
 
 @NgModule({
   declarations: [
@@ -28,20 +29,21 @@ import { ShowWarnComponent } from './components/show-warn/show-warn.component';
     ModDashboardComponent,
     ShowWarnComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    FormsModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatListModule,
-    MatTabsModule,
-    MatOptionModule,
-    MatSelectModule,
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        HttpClientModule,
+        FormsModule,
+        BrowserAnimationsModule,
+        MatButtonModule,
+        MatToolbarModule,
+        MatSidenavModule,
+        MatListModule,
+        MatTabsModule,
+        MatOptionModule,
+        MatSelectModule,
+        MatCardModule,
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })
