@@ -1,6 +1,7 @@
 import json
 
 import discord
+from discord.ext import commands
 from quart import session, jsonify, abort
 
 import util
@@ -31,6 +32,16 @@ async def me():
     out['guilds'] = [{'name': guild.name, 'id': str(guild.id), 'icon': str(guild.icon_url)} for guild in mutual_guilds]
     print(out)
     return jsonify(user=out, id_from_session=session.get('user_id'))
+
+
+@user_routes.route('/<user_id>')
+async def fetch_user(user_id):
+    user = user_routes.bot.get_user(int(user_id))
+    if user is None:
+        abort(400, "Either I can't see that user or invalid user_id provided")
+    user_dict = {x: getattr(user, x) for x in discord.User.__slots__ if not x.startswith('_') and x not in ('system', 'bot')}
+    user_dict['avatar'] = str(user.avatar_url_as(size=256))
+    return user_dict
 
 
 def setup(bot):
