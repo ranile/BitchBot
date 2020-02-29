@@ -19,6 +19,8 @@ import {MatOptionModule} from "@angular/material/core";
 import {MatSelectModule} from "@angular/material/select";
 import { ShowWarnComponent } from './components/show-warn/show-warn.component';
 import {MatCardModule} from "@angular/material/card";
+import { RelativeTimePipe } from './pipes/relative-time.pipe';
+import { DiscordUserPipe } from './pipes/discord-user.pipe';
 
 @NgModule({
   declarations: [
@@ -27,7 +29,9 @@ import {MatCardModule} from "@angular/material/card";
     NavbarComponent,
     ShowWarnsComponent,
     ModDashboardComponent,
-    ShowWarnComponent
+    ShowWarnComponent,
+    RelativeTimePipe,
+    DiscordUserPipe
   ],
     imports: [
         BrowserModule,

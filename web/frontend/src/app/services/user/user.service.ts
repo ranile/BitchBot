@@ -23,6 +23,10 @@ export class UserService {
     return res.guilds
   }
 
+  fetchUser(userId: string) {
+      return this.httpClient.get<User>(`/api/users/${userId}`).toPromise()
+  }
+
   get currentUser() {
     return JSON.parse(localStorage.getItem('user'))
   }
