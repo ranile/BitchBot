@@ -34,7 +34,11 @@ class Emojis(commands.Cog):
         for emoji in emojis:
             out.append(f'{discord.utils.get(self.bot.emojis, name=emoji)}' * amount)
 
-        await ctx.send(' '.join(out))
+        sent = ' '.join(out)
+        if sent == 'None':
+            await ctx.send(sent, delete_after=2)
+        else:
+            await ctx.send(sent)
         await ctx.message.delete(delay=2)
 
     @emoji.command(aliases=["emojiimg", "emoji1"])
