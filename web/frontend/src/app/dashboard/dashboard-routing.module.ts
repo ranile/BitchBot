@@ -7,7 +7,7 @@ import {MainDashboardComponent} from "./components/main-dashboard/main-dashboard
 const routes: Routes = [
     {
         path: 'dashboard', component: MainDashboardComponent, children: [
-            { path: '', redirectTo: '/', pathMatch: 'full' },
+            { path: '', redirectTo: 'mod', pathMatch: 'full' },
             { path: 'mod', component: ModDashboardComponent, },
         ]
     }

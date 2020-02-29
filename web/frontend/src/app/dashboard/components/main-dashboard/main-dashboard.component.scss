@@ -1,0 +1,15 @@
+.dashboard-sidenav-container {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 4rem;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.dashboard-sidenav-container {
+    flex: 1;
+    background: #191919;
+}
+
