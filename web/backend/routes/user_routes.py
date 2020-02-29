@@ -38,7 +38,7 @@ async def me():
 async def fetch_user(user_id):
     user = user_routes.bot.get_user(int(user_id))
     if user is None:
-        abort(400, "Either I can't see that user or invalid user_id provided")
+        user = await user_routes.bot.fetch_user(int(user_id))
     user_dict = {x: getattr(user, x) for x in discord.User.__slots__ if not x.startswith('_') and x not in ('system', 'bot')}
     user_dict['avatar'] = str(user.avatar_url_as(size=256))
     return user_dict
