@@ -1,15 +1,53 @@
-.dashboard-sidenav-container {
+@import "src/colors";
+
+$bg-primary: #23232e;
+$bg-secondary: #141418;
+
+#container {
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    position: fixed;
+    background-color: $bg-primary;
+    height: 100%;
+}
+
+.navbar-nav {
+    list-style: none;
+    padding: 0.5em;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    position: absolute;
-    top: 4rem;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    align-items: center;
+    height: 100%;
 }
 
-.dashboard-sidenav-container {
-    flex: 1;
-    background: #191919;
+.navbar-nav a:active, a:focus {
+    outline: 0;
+    border: none;
 }
 
+.nav-item {
+    width: 100%;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    height: 5rem;
+    text-decoration: none;
+    color: $text-primary
+}
+
+.nav-link:hover {
+    filter: grayscale(0%) opacity(1);
+    background: $bg-secondary;
+    color: $text-secondary;
+}
+
+main {
+    margin-left: 5.5rem;
+    padding: 1rem;
+}
