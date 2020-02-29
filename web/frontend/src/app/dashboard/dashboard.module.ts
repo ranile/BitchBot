@@ -7,11 +7,14 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatSidenavModule} from "@angular/material/sidenav";
 import {MatListModule} from "@angular/material/list";
+import { ShowAllRemindersComponent } from './components/reminders/show-all-reminders/show-all-reminders.component';
+import { ShowReminderComponent } from './components/reminders/show-reminder/show-reminder.component';
+import {MatCardModule} from "@angular/material/card";
 
 
 
 @NgModule({
-    declarations: [MainDashboardComponent],
+    declarations: [MainDashboardComponent, ShowAllRemindersComponent, ShowReminderComponent],
     exports: [
         MainDashboardComponent
     ],
@@ -23,6 +26,7 @@ import {MatListModule} from "@angular/material/list";
         MatIconModule,
         MatSidenavModule,
         MatListModule,
+        MatCardModule,
     ]
 })
 export class DashboardModule { }
