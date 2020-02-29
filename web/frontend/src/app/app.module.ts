@@ -7,7 +7,7 @@ import { HomeComponent } from './components/home/home.component';
 import {HttpClientModule} from "@angular/common/http";
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ShowWarnsComponent } from './components/show-warns/show-warns.component';
-import { ModDashboardComponent } from './components/mod-dashboard/mod-dashboard.component';
+import { ModDashboardComponent } from './dashboard/components/mod-dashboard/mod-dashboard.component';
 import {FormsModule} from "@angular/forms";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatButtonModule} from "@angular/material/button";
@@ -21,6 +21,8 @@ import { ShowWarnComponent } from './components/show-warn/show-warn.component';
 import {MatCardModule} from "@angular/material/card";
 import { RelativeTimePipe } from './pipes/relative-time.pipe';
 import { DiscordUserPipe } from './pipes/discord-user.pipe';
+import { DashboardComponent } from './dashboard/components/dashboard/dashboard.component';
+import {DashboardModule} from "./dashboard/dashboard.module";
 
 @NgModule({
   declarations: [
@@ -31,7 +33,8 @@ import { DiscordUserPipe } from './pipes/discord-user.pipe';
     ModDashboardComponent,
     ShowWarnComponent,
     RelativeTimePipe,
-    DiscordUserPipe
+    DiscordUserPipe,
+    DashboardComponent
   ],
     imports: [
         BrowserModule,
@@ -47,6 +50,7 @@ import { DiscordUserPipe } from './pipes/discord-user.pipe';
         MatOptionModule,
         MatSelectModule,
         MatCardModule,
+        DashboardModule,
     ],
   providers: [],
   bootstrap: [AppComponent]
