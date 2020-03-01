@@ -36,6 +36,17 @@ class TimersService:
             ''')
         return Timer.convertMany(fetched)
 
+    async def get_where(self, *, extras, limit):
+        query = '''
+        select *
+        from Timers where extras @> $1::jsonb
+        limit $2;
+        '''
+        async with self.pool.acquire() as conn:
+            fetched = await conn.fetch(query, extras, limit)
+            converted = Timer.convertMany(fetched)
+        return converted
+
     @classmethod
     def sql(cls):
         return SQL(
