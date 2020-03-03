@@ -90,6 +90,12 @@ class Emojis(commands.Cog):
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=2)
 
+    @emoji.command()
+    async def react(self, ctx, message_id, emoji):
+        message = await ctx.channel.fetch_message(message_id)
+        emoji = discord.utils.get(self.bot.emojis, name=emoji)
+        await message.add_reaction(emoji)
+
 
 def setup(bot):
     bot.add_cog(Emojis(bot))
