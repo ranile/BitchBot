@@ -45,8 +45,11 @@ class Cause(commands.Cog, name="The Cause"):
         webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
         await webhook.send(msg, username=username, avatar_url=pfp)
 
-    async def increment_rabbit(self, message, rabbit=random.choice(rabbits)):
-        await self.counter_service.insert(Counter(summonedBy=message.author.id, name=Counter.RABBIT))
+    async def increment_rabbit(self, message, summoned_by=None, rabbit=random.choice(rabbits)):
+        if summoned_by is None:
+            summoned_by = message.author.id
+
+        await self.counter_service.insert(Counter(summonedBy=summoned_by, name=Counter.RABBIT))
         count = await self.counter_service.count(Counter.RABBIT)
         if not self.isRabbitOnCooldown:
             await self.send_counter_update(
@@ -70,15 +73,15 @@ class Cause(commands.Cog, name="The Cause"):
     @commands.Cog.listener()
     async def on_message(self, message):
 
-        if message.author == self.bot.user or message.guild.id != THE_CAUSE:
+        if message.author == self.bot.user or message.guild is None or message.guild.id != THE_CAUSE:
             return
-        print('yes')
+
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
         if (re.search(rabbit_match, normalized, re.IGNORECASE) and
                 message.webhook_id != RABBIT_WEBHOOK):
             await self.increment_rabbit(message)
         elif message.author.id == HAIKU_BOT:
-            print('yes 2')
+
             embed: discord.Embed = message.embeds[0]
             author = message.guild.get_member_named(embed.footer.text[2:])
             text = embed.description
@@ -86,15 +89,16 @@ class Cause(commands.Cog, name="The Cause"):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-
-        if user.id == self.bot.user.id:
+        message = reaction.message
+        if user.id == self.bot.user.id or message.guild is None or message.guild.id != THE_CAUSE:
             return
 
         if str(reaction) in rabbits:
-            if reaction.message.id in self.rabbitAlreadySummoned or self.isRabbitOnCooldown:
+            if message.id in self.rabbitAlreadySummoned or self.isRabbitOnCooldown:
                 return
 
-            await self.increment_rabbit(reaction.message, rabbit=[r for r in rabbits if r != str(reaction)][0])
+            await self.increment_rabbit(message, summoned_by=user,
+                                        rabbit=[r for r in rabbits if r != str(reaction)][0])
 
     @commands.group(invoke_without_command=True, aliases=["kayliesman"])
     async def rabbit(self, ctx):
