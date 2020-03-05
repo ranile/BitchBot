@@ -114,7 +114,6 @@ class Moderation(commands.Cog):
         else:
             time = time_and_reason.time
             reason = time_and_reason.other if time_and_reason.other is not None else ''
-        print(time, reason)
         await self.do_ban(ctx, victim, reason, time)
 
         if time:
@@ -132,14 +131,11 @@ class Moderation(commands.Cog):
             await self.bot.timers.create_timer(timer)
 
     async def do_unban(self, guild, user_id, reason):
-        print('Unbanning')
         await self.ban_service.delete(guild.id, user_id)
         await guild.unban(discord.Object(id=user_id), reason=reason)
 
     @commands.Cog.listener()
     async def on_tempban_timer_complete(self, timer):
-        print(timer)
-        print('reached here')
         kwargs = timer.kwargs
         guild = self.bot.get_guild(kwargs['guild_id'])
         reason = 'Unban from temp-ban timer expiring'
@@ -231,7 +227,6 @@ class Moderation(commands.Cog):
 
     @commands.Cog.listener()
     async def on_tempmute_timer_complete(self, timer):
-        print('listener', timer.id, timer.kwargs)
         guild = self.bot.get_guild(timer.kwargs['guild_id'])
         await self.do_unmute(guild, guild.get_member(timer.kwargs['muted_user_id']))
 

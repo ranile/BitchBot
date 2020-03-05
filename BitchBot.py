@@ -12,12 +12,12 @@ import hypercorn
 
 from services import ActivityService
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+bitch_bot_logger = logging.getLogger('BitchBot')
+bitch_bot_logger.setLevel(logging.INFO)
 file_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 fmt = '%(name)s: %(levelname)s: %(asctime)s: %(message)s'
 file_handler.setFormatter(logging.Formatter(fmt))
-logger.addHandler(file_handler)
+bitch_bot_logger.addHandler(file_handler)
 
 
 class BitchBot(commands.Bot):
@@ -50,12 +50,7 @@ class BitchBot(commands.Bot):
         dpy_logger.addHandler(file_handler)
         dpy_logger.addHandler(discord_handler)
 
-        cogs_logger = logging.getLogger('cogs')
-        cogs_logger.setLevel(logging.INFO)
-        cogs_logger.addHandler(file_handler)
-        cogs_logger.addHandler(discord_handler)
-
-        logger.addHandler(discord_handler)
+        bitch_bot_logger.addHandler(discord_handler)
 
     # noinspection PyAttributeOutsideInit
     async def start(self, *args, **kwargs):
@@ -69,9 +64,9 @@ class BitchBot(commands.Bot):
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
-                logger.debug(f'Successfully loaded extension {cog_name}')
+                bitch_bot_logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
-                logger.warning(f'Failed to load loaded extension {cog_name}. Error: {e}')
+                bitch_bot_logger.exception(f'Failed to load loaded extension {cog_name}', e)
         for i in ('spa_serve', 'routes', 'auth', 'mod_routes', 'user_routes'):
             self.load_extension(f'web.backend.routes.{i}')
         await super().start(*args, **kwargs)
@@ -125,8 +120,8 @@ class BitchBot(commands.Bot):
             if not self.activity_bucket.update_rate_limit(message):  # been two minutes since last update
                 increment_by = 2
                 await self.activity_service.increment(message.author.id, message.guild.id, increment_by)
-                logger.debug(f'Incremented activity of {message.author} ({message.author.id}) '
-                             f'in {message.guild} ({message.guild.id}) by {increment_by}')
+                bitch_bot_logger.debug(f'Incremented activity of {message.author} ({message.author.id}) '
+                                       f'in {message.guild} ({message.guild.id}) by {increment_by}')
 
         await self.invoke(ctx)
 
@@ -157,7 +152,7 @@ class BitchBot(commands.Bot):
             pass
         else:
             await ctx.send(f'{exception.__class__.__name__}: {str(exception)}')
-            logger.exception(exception)
+            bitch_bot_logger.exception(exception)
 
     def get_mutual_guilds(self, member_id):
         for guild in self.guilds:

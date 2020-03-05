@@ -7,7 +7,7 @@ from discord.ext import commands
 from services import ConfigService
 from util import funs
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('BitchBot' + __name__)
 
 
 class Logging(commands.Cog):
@@ -105,7 +105,6 @@ class Logging(commands.Cog):
 
         embed.description = repr(diff)
         embed.add_field(name='Operation', value=text)
-        print(diff)
         await self.send_log(member=after, name='on_member_update', embed=embed)
 
     @commands.Cog.listener()

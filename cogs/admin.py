@@ -9,7 +9,7 @@ from util import funs
 
 _GIT_PULL_REGEX = re.compile(r'\s+(?P<filename>.+?)\s*\|\s*[0-9]+\s*[+-]+')
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('BitchBot' + __name__)
 
 
 class Admin(commands.Cog):
@@ -28,7 +28,7 @@ class Admin(commands.Cog):
         Reloads a cog
 
         Args:
-            module: The cog to reload
+            cog: The cog to reload
         """
         try:
             actual_cog = self.bot.get_cog(cog)

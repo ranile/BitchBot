@@ -1,3 +1,5 @@
+import logging
+
 import discord
 from discord.ext import commands
 
@@ -6,9 +8,11 @@ from services import StarboardService
 from services import ConfigService
 from util import funs, checks
 
+log = logging.getLogger('BitchBot' + __name__)
 STAR = '\N{WHITE MEDIUM STAR}'
 
 
+# noinspection PyIncorrectDocstring
 class Starboard(commands.Cog):
     """A starboard.
     Allow users to star a message.
@@ -57,7 +61,8 @@ class Starboard(commands.Cog):
             return
 
         config = await self.config_service.get(reaction.message.guild.id)
-        if config.starboard_channel is None:
+        if config is None or config.starboard_channel is None:
+            log.debug(f'Skipping starboard star remove for {reaction.message.id} in {reaction.message.guild.id}')
             return
 
         await self.starboard_service.unstar(reaction)
@@ -97,7 +102,7 @@ class Starboard(commands.Cog):
         for starred in top:
             member = starred["author"]
             try:
-                line = f'{member.display_name} ({member.name}#{member.discriminator}): {starred["count"]}'
+                line = f'{member.display_name} ({member}): {starred["count"]}'
                 paginator.add_line(line)
                 if length < len(line):
                     length = len(line)

@@ -6,7 +6,7 @@ import util
 from database import errors
 import logging
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('BitchBot' + __name__)
 
 
 class Activity(commands.Cog, name='Activity Tracking'):

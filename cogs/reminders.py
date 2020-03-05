@@ -10,7 +10,7 @@ import pendulum
 
 from util.converters import HumanTime
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger('BitchBot' + __name__)
 
 
 class Reminders(commands.Cog):

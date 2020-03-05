@@ -53,7 +53,7 @@ class Cause(commands.Cog, name="The Cause"):
         count = await self.counter_service.count(Counter.RABBIT)
         if not self.isRabbitOnCooldown:
             await self.send_counter_update(
-                f"{message.author.display_name} called the rabbit {rabbit}, "
+                f"{summoned_by.display_name} called the rabbit {rabbit}, "
                 f"Kaylie's man {rabbit}.\nRabbit count: {count}\n"
                 f"[Message](<{message.jump_url}>)", 'Rabbit', self.get_rabbit_pfp())
             await message.add_reaction(rabbit)
