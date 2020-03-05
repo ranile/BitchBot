@@ -47,9 +47,9 @@ class Cause(commands.Cog, name="The Cause"):
 
     async def increment_rabbit(self, message, summoned_by=None, rabbit=random.choice(rabbits)):
         if summoned_by is None:
-            summoned_by = message.author.id
+            summoned_by = message.author
 
-        await self.counter_service.insert(Counter(summonedBy=summoned_by, name=Counter.RABBIT))
+        await self.counter_service.insert(Counter(summonedBy=summoned_by.id, name=Counter.RABBIT))
         count = await self.counter_service.count(Counter.RABBIT)
         if not self.isRabbitOnCooldown:
             await self.send_counter_update(
