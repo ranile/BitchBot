@@ -174,15 +174,13 @@ class Cause(commands.Cog, name="The Cause"):
 
         async with self.bot.db.acquire() as conn:
             fetched = await conn.fetchrow('''
-            select name, summoned_at, summoned_by, actual_count as count
+            select *
             from (
-                     select name, summoned_at, summoned_by, count(count) as actual_count
+                     select name, summoned_by, summoned_at, row_number() over (order by summoned_at) as count
                      from counters
                      where name = 'rabbit'
-                     group by summoned_by
-                     order by actual_count desc
                  ) as ic
-            where ic.count = $1
+            where count = $1;
             ''', count)
         rabbit = Counter.convert(fetched)
         author = ctx.guild.get_member(rabbit.summonedBy)
