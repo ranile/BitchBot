@@ -7,6 +7,7 @@ from discord.ext import commands
 from keys import rabbitWebhook
 from resources import Counter
 from services import CounterService
+import util
 
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
@@ -158,6 +159,45 @@ class Cause(commands.Cog, name="The Cause"):
 
         for page in paginator.pages:
             await ctx.send(page)
+
+    @rabbit.command(name='show')
+    async def rabbit_show(self, ctx, count: int):
+        """
+        Shows details about given rabbit count
+
+        Example:
+            `rabbit show 69`
+
+        Args:
+            count: The rabbit count
+        """
+
+        async with self.bot.db.acquire() as conn:
+            fetched = await conn.fetchrow('''
+            select name, summoned_at, summoned_by, actual_count as count
+            from (
+                     select name, summoned_at, summoned_by, count(count) as actual_count
+                     from counters
+                     where name = 'rabbit'
+                     group by summoned_by
+                     order by actual_count desc
+                 ) as ic
+            where ic.count = $1
+            ''', count)
+        rabbit = Counter.convert(fetched)
+        author = ctx.guild.get_member(rabbit.summonedBy)
+        author_name = f'{str(author)} ({author.display_name})'
+        if author is None:
+            author = self.bot.get_user(rabbit.summonedBy)
+            author_name = str(author)
+
+        if author is None:
+            author = await self.bot.fetch_user(rabbit.summonedBy)
+            author_name = str(author)
+
+        embed = discord.Embed(timestamp=rabbit.summonedAt, color=util.random_discord_color())
+        embed.set_author(name=author_name, icon_url=author.avatar_url)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def baby(self, ctx):
