@@ -48,26 +48,21 @@ class BloodyMenuPages(menus.MenuPages, inherit_buttons=False):
             kwargs['delete_message_after'] = True
         super().__init__(source, **kwargs)
 
-    def _skip_double_triangle_buttons(self):
-        return super()._skip_double_triangle_buttons()
-
     # noinspection PyProtectedMember
     async def update(self, payload):
         me = self.bot.get_guild(payload.guild_id).me
         cnl = self.bot.get_channel(payload.channel_id)
-
-        if payload.event_type == 'REACTION_ADD':
-            if cnl.permissions_for(me).manage_messages:
+        if cnl.permissions_for(me).manage_messages:
+            if payload.event_type == 'REACTION_ADD':
                 await self.bot.http.remove_reaction(
                     payload.channel_id, payload.message_id,
                     discord.Message._emoji_reaction(payload.emoji), payload.member.id
                 )
-            await super().update(payload)
-        else:
-            if not cnl.permissions_for(me).manage_messages:
-                await super().update(payload)
+            elif payload.event_type == 'REACTION_REMOVE':
+                return
+        await super().update(payload)
 
-    @menus.button('<:backward:656488824129454080>', skip_if=_skip_double_triangle_buttons)
+    @menus.button('<:backward:656488824129454080>', skip_if=menus.MenuPages._skip_double_triangle_buttons)
     async def go_to_first_page(self, payload):
         await super().go_to_first_page(payload)
 
@@ -79,7 +74,7 @@ class BloodyMenuPages(menus.MenuPages, inherit_buttons=False):
     async def go_to_next_page(self, payload):
         await super().go_to_next_page(payload)
 
-    @menus.button('<:forward:656487435957698560>', skip_if=_skip_double_triangle_buttons)
+    @menus.button('<:forward:656487435957698560>', skip_if=menus.MenuPages._skip_double_triangle_buttons)
     async def go_to_last_page(self, payload):
         await super().go_to_last_page(payload)
 
