@@ -34,7 +34,7 @@ class Reminders(commands.Cog):
         )
         await self.bot.timers.create_timer(timer)
         delta = (pendulum.instance(timer.expires_at) - pendulum.instance(ctx.message.created_at)).in_words()
-        await ctx.send(f"{ctx.author.mention} in {delta}:\n{timer.kwargs['text']}")
+        await ctx.send(f"{ctx.author.display_name} in {delta}:\n{timer.kwargs['text']}")
 
     @remind.command(name='list', aliases=['get'])
     async def reminders_list(self, ctx):

@@ -59,7 +59,7 @@ class BitchBot(commands.Bot):
         await self.setup_logger()
 
         self.db = await database.init(self.loop)
-        self.timers = util.Timers(self)
+        self.load_extension('util.timers')
         self.activity_service = ActivityService(self.db)
         for cog_name in self.initial_cogs:
             try:

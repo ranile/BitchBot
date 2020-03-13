@@ -77,6 +77,11 @@ class Admin(commands.Cog):
         await ctx.send(f"Successfully reloaded {successfully_reloaded_modules}/{all_modules} modules "
                        f"and {successfully_reloaded_cogs}/{all_cogs} cogs")
 
+    @reload.command(name='timers')
+    async def reload_timers(self, ctx):
+        self.bot.timers.restart()
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded Timers')
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))

@@ -1,5 +1,3 @@
-import json
-
 from database.sql import SQL
 from resources import Timer
 
@@ -33,6 +31,14 @@ class TimersService:
             select *
             from Timers
             where now() > expires_at;
+            ''')
+        return Timer.convertMany(fetched)
+
+    async def fetch_all_timers(self):
+        async with self.pool.acquire() as conn:
+            fetched = await conn.fetch('''
+            select *
+            from Timers;
             ''')
         return Timer.convertMany(fetched)
 
