@@ -9,7 +9,7 @@ from database import database
 import util
 import random
 import hypercorn
-
+import os
 from services import ActivityService
 
 bitch_bot_logger = logging.getLogger('BitchBot')
@@ -20,6 +20,7 @@ file_handler.setFormatter(logging.Formatter(fmt))
 bitch_bot_logger.addHandler(file_handler)
 
 
+# noinspection PyMethodMayBeStatic
 class BitchBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
@@ -40,6 +41,8 @@ class BitchBot(commands.Bot):
 
         # socket stats props
         self.socket_stats = {}
+
+        self.lines_of_code_count = self._count_lines_of_code()
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
@@ -158,3 +161,25 @@ class BitchBot(commands.Bot):
         for guild in self.guilds:
             if member_id in [x.id for x in guild.members]:
                 yield guild
+
+    def _get_all_files(self):
+        for root, dirs, files in os.walk("."):
+            if root.startswith(('./venv', './web/frontend/node_modules', '.git', '.idea')):
+                continue
+            for file in files:
+                if file.endswith(('.py', '.ts')):
+                    yield os.path.join(root, file)
+
+    def _count_lines_of_code(self):
+        all_files = list(self._get_all_files())
+        lines_count = 0
+        for file in all_files:
+            with open(file) as f:
+                read_file = f.read().split('\n')
+                lines = [x for x in read_file if x != '']
+                lines_count += len(lines)
+
+        return lines_count
+
+    def refresh_loc_count(self):
+        self.lines_of_code_count = self._count_lines_of_code()

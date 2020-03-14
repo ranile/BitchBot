@@ -396,6 +396,15 @@ class Miscellaneous(commands.Cog):
         await ctx.send(new)
 
     @commands.command()
+    async def source(self, ctx):
+        """Gives you a link to the source code"""
+        await ctx.send(embed=discord.Embed(
+            description=f"The {self.bot.lines_of_code_count} lines of actual Python 3 and Typescript code that "
+                        f"I'm made of can be found [here](https://github.com/hamza1311/BitchBot)",
+            color=funs.random_discord_color()
+        ))
+
+    @commands.command()
     async def parse(self, ctx, *, time_and_arg: converters.HumanTime(other=True)):
         """
         Parses human time friendly time
