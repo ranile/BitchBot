@@ -350,7 +350,7 @@ class Moderation(commands.Cog):
             role: The role you want to add
         """
         inserted = await self.config_service.add_mod_role(role.id, ctx.guild.id)
-        await ctx.send(f'Current mod roles are: {inserted.mod_roles}')
+        await ctx.send(f"Current mod roles are: {', '.join([ctx.guild.get_role(r).name for r in inserted.mod_roles])}")
 
 
 def setup(bot):

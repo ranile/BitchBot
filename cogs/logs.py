@@ -103,7 +103,7 @@ class Logging(commands.Cog):
             diff = set(before.roles) - set(after.roles)
             text = 'Role removed'
 
-        embed.description = repr(diff)
+        embed.description = repr(list(diff)[0])
         embed.add_field(name='Operation', value=text)
         await self.send_log(member=after, name='on_member_update', embed=embed)
 
@@ -130,7 +130,7 @@ class Logging(commands.Cog):
         if not channel.permissions_for(ctx.me).manage_webhooks:
             raise commands.BotMissingPermissions(['manage_webhooks'])
         webhook = await channel.create_webhook(name='Logs', reason='Logging setup')
-        inserted = await self.config_service.setup_logs(ctx.guild.id, webhook.url)
+        await self.config_service.setup_logs(ctx.guild.id, webhook.url)
         await webhook.send('This message should be sent in the channel')
         await ctx.send(f'Created a webhook in {channel.mention} and inserted it for sending logs to')
 
