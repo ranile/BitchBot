@@ -71,6 +71,17 @@ class GuildConfigService:
 
             return GuildConfig.convert(fetched) if fetched is not None else None
 
+    async def delete_starboard(self, guild_id):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow(f'''
+            update GuildConfig
+            set starboard_channel = null
+            where guild_id = $1
+            returning *;
+            ''', guild_id)
+
+            return GuildConfig.convert(fetched) if fetched is not None else None
+
     @classmethod
     def sql(cls):
         return SQL(createTable='''

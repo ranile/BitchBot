@@ -3,7 +3,6 @@ import logging
 import discord
 from discord.ext import commands
 
-from resources import GuildConfig
 from services import StarboardService
 from services import ConfigService
 from util import funs, checks
@@ -129,6 +128,18 @@ class Starboard(commands.Cog):
         inserted = await self.config_service.setup_starboard(ctx.guild.id, channel.id)
 
         await ctx.send(f'Inserted {self.bot.get_channel(inserted.starboard_channel).mention} as starboard channel')
+
+    @starboard.command()
+    @checks.can_config()
+    async def delete(self, ctx):
+        """Deletes the current starboard config
+        The starboard channel along with all of its messages is **not** deleted
+        """
+
+        deleted = await self.config_service.delete_starboard(ctx.guild.id)
+        if deleted is None:
+            return await ctx.send('This server was never configured')
+        await ctx.send('Starboard deleted')
 
 
 def setup(bot):
