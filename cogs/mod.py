@@ -329,7 +329,7 @@ class Moderation(commands.Cog):
         Args:
              role: the role you want to be used as the muted role
         """
-        await self.config_service.update(ctx.guild.id, 'mute_role_id', role.id)
+        await self.config_service.set_mute_role(ctx.guild.id, role.id)
         await ctx.send(f'Inserted {role.mention} as mute role')
 
     @commands.group()
