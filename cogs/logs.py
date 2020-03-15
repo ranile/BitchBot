@@ -128,9 +128,9 @@ class Logging(commands.Cog):
              channel: The channel to use for logs
         """
         if not channel.permissions_for(ctx.me).manage_webhooks:
-            raise commands.MissingPermissions('manage_webhooks')
+            raise commands.BotMissingPermissions(['manage_webhooks'])
         webhook = await channel.create_webhook(name='Logs', reason='Logging setup')
-        inserted = await self.config_service.setup_starboard(ctx.guild.id, webhook.url)
+        inserted = await self.config_service.setup_logs(ctx.guild.id, webhook.url)
         await webhook.send('This message should be sent in the channel')
         await ctx.send(f'Created a webhook in {channel.mention} and inserted it for sending logs to')
 
