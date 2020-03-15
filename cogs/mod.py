@@ -350,7 +350,25 @@ class Moderation(commands.Cog):
             role: The role you want to add
         """
         inserted = await self.config_service.add_mod_role(role.id, ctx.guild.id)
-        await ctx.send(f"Current mod roles are: {', '.join([ctx.guild.get_role(r).name for r in inserted.mod_roles])}")
+        await ctx.send(
+            f"Current mod roles are: {', '.join([ctx.guild.get_role(r).name for r in set(inserted.mod_roles)])}")
+
+    @mod_roles.command(name='remove')
+    @checks.can_config()
+    async def mod_role_remove(self, ctx, role: discord.Role):
+        """
+        Remove a role from mod role
+
+        Args:
+            role: The role to remove
+        """
+
+        new_config = await self.config_service.remove_mute_role(ctx.guild.id, role.id)
+        if new_config is None:
+            return await ctx.send('This server was never confirmed')
+
+        await ctx.send(
+            f"Current mod roles are: {', '.join([ctx.guild.get_role(r).name for r in set(new_config.mod_roles)])}")
 
 
 def setup(bot):

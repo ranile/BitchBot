@@ -49,6 +49,17 @@ class GuildConfigService:
 
             return GuildConfig.convert(fetched)
 
+    async def remove_mute_role(self, guild_id, role_id):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow(f'''
+            update guildconfig
+            set mod_roles = array_remove(mod_roles, $2)
+            where guild_id = $1
+            returning *;
+            ''', guild_id, role_id)
+
+            return GuildConfig.convert(fetched) if fetched is not None else None
+
     async def setup_logs(self, guild_id, webhook_url):
         async with self.pool.acquire() as connection:
             fetched = await connection.fetchrow(f'''
