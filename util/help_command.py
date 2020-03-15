@@ -129,7 +129,7 @@ class BloodyHelpCommand(commands.HelpCommand):
             embed = self.generate_base_help_embed()
             embed.title += f'\n{actual_cog.qualified_name} Commands'
             embed.description = actual_cog.description
-            for cmd in actual_cog.walk_commands():
+            for cmd in set(actual_cog.walk_commands()):
                 try:
                     if isinstance(cmd, commands.Group) and not cmd.invoke_without_command:
                         continue
@@ -150,7 +150,7 @@ class BloodyHelpCommand(commands.HelpCommand):
     async def send_cog_help(self, cog):
         embed = self.generate_base_help_embed()
         embed.title += f'\n {cog.qualified_name} Commands'
-        embed = self.add_commands_to_embed(cog.walk_commands(), cog.qualified_name, embed)
+        embed = self.add_commands_to_embed(set(cog.walk_commands()), cog.qualified_name, embed)
 
         await self.context.send(embed=embed)
 
@@ -159,7 +159,7 @@ class BloodyHelpCommand(commands.HelpCommand):
         await self.context.send(embed=embed)
 
     async def send_group_help(self, group):
-        subcommands = list(group.walk_commands())
+        subcommands = set(group.walk_commands())
 
         if len(subcommands) == 0:
             return await self.send_command_help(group)
