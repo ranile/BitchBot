@@ -126,11 +126,7 @@ class Starboard(commands.Cog):
         Args:
             channel: The channel you want to use for starboard
         """
-        config = GuildConfig(
-            guild_id=ctx.guild.id,
-            starboard_channel=channel.id
-        )
-        inserted = await self.config_service.insert(config)
+        inserted = await self.config_service.setup_starboard(ctx.guild.id, channel.id)
 
         await ctx.send(f'Inserted {self.bot.get_channel(inserted.starboard_channel).mention} as starboard channel')
 

@@ -111,6 +111,23 @@ class Logging(commands.Cog):
     async def on_voice_state_update(self, member, before, after):
         pass
 
+    @commands.group(invoke_without_command=True)
+    async def logs(self, ctx):
+        """
+        Commands group for setting up mod logs
+        """
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx)
+
+    @logs.command(name='setup')
+    async def setup_logs(self, ctx, channel: discord.TextChannel):
+        if not channel.permissions_for(ctx.me).manage_webhooks:
+            raise commands.MissingPermissions('manage_webhooks')
+        webhook = await channel.create_webhook(name='Logs', reason='Logging setup')
+        inserted = await self.config_service.setup_starboard(ctx.guild.id, webhook.url)
+        await webhook.send('This message should be sent in the channel')
+        await ctx.send(f'Created a webhook in {channel.mention} and inserted it for sending logs to')
+
 
 def setup(bot):
     bot.add_cog(Logging(bot))

@@ -10,31 +10,24 @@ class GuildConfigService:
     async def get(self, guild_id):
         async with self.pool.acquire() as con:
             fetched = await con.fetchrow('''
-            select * from GuildConfig
+            select * from config_view
             where guild_id = $1
             ''', guild_id)
         if fetched is None:
             return None
         return GuildConfig.convert(fetched)
 
-    async def insert(self, config):
-        async with self.pool.acquire() as connection:
-            try:
-                inserted = await connection.fetchrow('''
-                insert into GuildConfig (guild_id, starboard_channel)
-                values ($1, $2)
-                returning *;
-                ''', config.guild_id, config.starboard_channel)
+    async def setup_starboard(self, guild_id, starboard_channel_id):
+        query = '''
+        insert into guildconfig (guild_id, starboard_channel)
+        values ($1, $2)
+        on conflict(guild_id) do update set starboard_channel = $2
+        returning *;
+        '''
 
-            except asyncpg.exceptions.UniqueViolationError:
-                inserted = await connection.fetchrow('''
-                update GuildConfig 
-                set starboard_channel = $1
-                where guild_id = $2
-                returning *;
-                ''', config.starboard_channel, config.guild_id)
-
-            return GuildConfig.convert(inserted)
+        async with self.pool.acquire() as conn:
+            inserted = await conn.fetchrow(query, guild_id, starboard_channel_id)
+        return GuildConfig.convert(inserted)
 
     async def add_mod_role(self, role_id, guild_id):
         query = '''
@@ -46,14 +39,25 @@ class GuildConfigService:
         async with self.pool.acquire() as connection:
             return GuildConfig.convert(await connection.fetchrow(query, guild_id, [role_id]))
 
-    async def update(self, guild_id, name, value):
+    async def set_mute_role(self, guild_id, mute_role_id):
         async with self.pool.acquire() as connection:
             fetched = await connection.fetchrow(f'''
-                update GuildConfig 
-                set {name} = $1
-                where guild_id = $2
-                returning *;
-            ''', value, guild_id)
+            insert into guildconfig (guild_id, mute_role_id)
+            values ($1, $2)
+            on conflict(guild_id) do update set mute_role_id = $2
+            returning *;
+            ''', guild_id, mute_role_id)
+
+            return GuildConfig.convert(fetched)
+
+    async def setup_logs(self, guild_id, webhook_url):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow(f'''
+            insert into guildconfig (guild_id, event_log_webhook)
+            values ($1, $2)
+            on conflict(guild_id) do update set event_log_webhook = $2
+            returning *;
+            ''', guild_id, webhook_url)
 
             return GuildConfig.convert(fetched)
 
@@ -67,5 +71,28 @@ class GuildConfigService:
             event_log_webhook text,
             mute_role_id bigint,
             mod_roles bigint[] not null default '{}'
-        )
+        );
+        
+        create materialized view if not exists config_view as
+        select *
+        from guildconfig;
+        
+        create or replace function refresh_config_view()
+            returns trigger
+            language plpgsql
+        as
+        $$
+        begin
+            refresh materialized view config_view;
+            return null;
+        end
+        $$;
+        
+        drop trigger if exists refresh_config_view_on_update
+            on GuildConfig;
+        
+        create trigger refresh_config_view_on_update
+            after update or insert
+            on GuildConfig
+        execute function refresh_config_view();
         ''')
