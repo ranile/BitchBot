@@ -15,7 +15,10 @@ def random_discord_color():
 
 
 def format_human_readable_user(user: Union[discord.Member, discord.Member]):
-    return f'{user.display_name} ({user.name}#{user.discriminator}, id: {user.id})'
+    if user is discord.Member:
+        return f'{user.display_name} ({user.name}#{user.discriminator}, id: {user.id})'
+    else:
+        return str(user)
 
 
 # noinspection PyPep8Naming

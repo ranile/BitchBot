@@ -291,9 +291,9 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Warned without notice")
 
-    @commands.command()
+    @commands.command(aliases=['warnings'])
     @checks.is_mod()
-    async def warnings(self, ctx: commands.Context, warnings_for: discord.Member = None):
+    async def warns(self, ctx: commands.Context, warnings_for: discord.Member = None):
         """
         Get warnings for a user
 
@@ -309,12 +309,12 @@ class Moderation(commands.Cog):
         for warning in sorted_warnings:
             member = ctx.guild.get_member(warning.warned_user_id)
             if member is None:
-                continue
+                member = ctx.bot.get_user(warning.warned_user_id)
 
             line = f"{warning.id}.  {funs.format_human_readable_user(member)}\n" \
                    f"\tReason: {warning.reason}\n" \
                    f"\tWarned at: {warning.warned_at}\n" \
-                   f"\tWarned by {funs.format_human_readable_user(ctx.guild.get_member(warning.warned_by_id))}\n"
+                   f"\tWarned by {self.bot.get_user(warning.warned_by_id)}\n"
             pages.add_line(line)
             index += 1
 
