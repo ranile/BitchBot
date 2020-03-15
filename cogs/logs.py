@@ -121,6 +121,12 @@ class Logging(commands.Cog):
 
     @logs.command(name='setup')
     async def setup_logs(self, ctx, channel: discord.TextChannel):
+        """
+        Set up logging
+
+        Args:
+             channel: The channel to use for logs
+        """
         if not channel.permissions_for(ctx.me).manage_webhooks:
             raise commands.MissingPermissions('manage_webhooks')
         webhook = await channel.create_webhook(name='Logs', reason='Logging setup')
