@@ -134,6 +134,15 @@ class Logging(commands.Cog):
         await webhook.send('This message should be sent in the channel')
         await ctx.send(f'Created a webhook in {channel.mention} and inserted it for sending logs to')
 
+    @logs.command(name='delete')
+    async def delete_logs(self, ctx):
+        """Stops mod logs from being sent"""
+
+        deleted = await self.config_service.delete_logs_webhook(ctx.guild.id)
+        if deleted is None:
+            return await ctx.send('This server was never configured')
+        await ctx.send('The logs will no longer send\nThe log webhook still exists')
+
 
 def setup(bot):
     bot.add_cog(Logging(bot))

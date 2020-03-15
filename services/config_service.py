@@ -1,4 +1,3 @@
-import asyncpg
 from database.sql import SQL
 from resources.guild_config import GuildConfig
 
@@ -60,6 +59,17 @@ class GuildConfigService:
             ''', guild_id, webhook_url)
 
             return GuildConfig.convert(fetched)
+
+    async def delete_logs_webhook(self, guild_id):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow(f'''
+            update GuildConfig
+            set event_log_webhook = null
+            where guild_id = $1
+            returning *;
+            ''', guild_id)
+
+            return GuildConfig.convert(fetched) if fetched is not None else None
 
     @classmethod
     def sql(cls):
