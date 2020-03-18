@@ -146,16 +146,18 @@ class BitchBot(commands.Bot):
             self.socket_stats[event] = 1
 
     async def on_command_error(self, ctx: commands.Context, exception):
+        exception = getattr(exception, 'original', exception)
+
         if isinstance(exception, commands.CheckFailure):
             await ctx.send(str(exception))
         elif isinstance(exception, commands.UserInputError):
             msg = f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info'
-            await ctx.send('\n'.join(["Invalid arguments provided", str(exception), msg]))
+            await ctx.send('\n'.join([str(exception), msg]))
         elif isinstance(exception, commands.CommandNotFound):
             pass
         else:
             await ctx.send(f'{exception.__class__.__name__}: {str(exception)}')
-            bitch_bot_logger.exception(exception)
+            bitch_bot_logger.exception(f'{exception}\nMessage:{ctx.message.jump_url}')
 
     def get_mutual_guilds(self, member_id):
         for guild in self.guilds:
