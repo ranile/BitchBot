@@ -6,13 +6,13 @@ import { ShowAllRemindersComponent } from "./components/reminders/show-all-remin
 
 
 const routes: Routes = [
-    {
+    /*{
         path: 'dashboard', component: MainDashboardComponent, children: [
             { path: '', redirectTo: 'mod', pathMatch: 'full' },
             { path: 'mod', component: ModDashboardComponent, },
             { path: 'reminders', component: ShowAllRemindersComponent, },
         ]
-    }
+    }*/
 ];
 
 @NgModule({
