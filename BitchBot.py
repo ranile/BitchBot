@@ -117,7 +117,7 @@ class BitchBot(commands.Bot):
         if not ctx.valid:
             if self.user.id in mentions:  # Bot was mentioned so
                 await message.channel.send(random.choice(  # :pinng:
-                    ["<a:ping:610784135627407370>", "<a:pinng:675402071083843593>"]))
+                    ["<a:ping:610784135627407370>", "<a:pinng:689843900889694314>"]))
                 await self.send_ping_log_embed(message)  # and log the message
 
             if not self.activity_bucket.update_rate_limit(message):  # been two minutes since last update
