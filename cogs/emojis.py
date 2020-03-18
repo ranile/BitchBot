@@ -10,46 +10,38 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
+def arg_or_1(arg: str):
+    return int(arg) if arg.isdigit() else 1
+
+
 # noinspection PyIncorrectDocstring
 class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.group(aliases=["e"], invoke_without_command=True)
-    async def emoji(self, ctx, *emojis):
+    async def emoji(self, ctx, emojis: commands.Greedy[discord.Emoji], amount: arg_or_1 = 1):
         """Send any number of the emoji given by 'emojis' command
 
         Args:
-            emojis: The emoji to send. If the last value is a number, it repeats the every emoji that amount of times.
+            emojis: The emojis to send.
+            amount: The number of times to repeat
         """
-
-        emojis = list(emojis)
-        if str(emojis[-1]).isdigit():
-            amount = int(emojis[-1])
-            emojis.pop()
-        else:
-            amount = 1
-
-        out = []
-        for emoji in emojis:
-            out.append(f'{discord.utils.get(self.bot.emojis, name=emoji)}' * amount)
-
-        sent = ' '.join(out)
-        if sent == 'None':
-            await ctx.send(sent, delete_after=2)
-        else:
-            await ctx.send(sent)
+        to_be_sent = ' '.join([f'{emoji} ' * amount for emoji in emojis])
+        if to_be_sent == '':
+            return await ctx.send('No emojis of that name found', delete_after=2)
+        await ctx.send(to_be_sent)
         await ctx.message.delete(delay=2)
 
-    @emoji.command(aliases=["emojiimg", "emoji1"])
-    async def link(self, ctx, emoji):
+    @emoji.command(aliases=["emojiurl", "l"])
+    async def link(self, ctx, emoji: discord.Emoji):
         """Send link of any one of the emoji given by 'emojis' command
 
         Args:
             emoji: The emoji to link
         """
 
-        await ctx.send(discord.utils.get(self.bot.emojis, name=emoji).url)
+        await ctx.send(emoji.url)
         await ctx.message.delete(delay=2)
 
     @emoji.command()
@@ -73,8 +65,8 @@ class Emojis(commands.Cog):
         pages = BloodyMenuPages(EmbedPagesData(data))
         await pages.start(ctx)
 
-    @emoji.command(aliases=["emoji2"])
-    async def embed(self, ctx, emoji):
+    @emoji.command(aliases=['em'])
+    async def embed(self, ctx, emoji: discord.Emoji):
         """
         Send embed of any one of the emoji given by 'emojis' command
 
@@ -82,18 +74,13 @@ class Emojis(commands.Cog):
             emoji: The emoji to send in an the embed
         """
 
-        emoji = discord.utils.get(self.bot.emojis, name=emoji)
-        await ctx.message.delete(delay=2)
-
         embed = discord.Embed()
         embed.set_image(url=str(emoji.url))
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=2)
 
     @emoji.command()
-    async def react(self, ctx, message_id, emoji):
-        message = await ctx.channel.fetch_message(message_id)
-        emoji = discord.utils.get(self.bot.emojis, name=emoji)
+    async def react(self, ctx, message: discord.Message, emoji: discord.Emoji):
         await message.add_reaction(emoji)
 
 
