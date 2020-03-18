@@ -45,7 +45,7 @@ class Miscellaneous(commands.Cog):
         await funs.log(ctx, message, sentMessage)
         await ctx.message.delete(delay=5)
 
-    @commands.command(aliases=["sendembed", "embed"])
+    @commands.command(aliases=["sendembed"])
     @checks.owner_only_in_non_trusted_guilds()
     async def sayembed(self, ctx, *, message):
         """
