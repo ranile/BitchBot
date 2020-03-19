@@ -141,27 +141,7 @@ class Moderation(commands.Cog):
         reason = 'Unban from temp-ban timer expiring'
         await self.do_unban(guild, kwargs['banned_user_id'], reason=reason)
 
-    @commands.group(invoke_without_command=True)
-    @commands.has_permissions(manage_roles=True, manage_channels=True)
-    async def mute(self, ctx: commands.Context, victim: discord.Member, *,
-                   time_and_reason: converters.HumanTime(other=True)):
-        """
-        Mute a user
-
-        Args:
-            victim: Member you want to mute
-            time: Un-mute time - Optional
-            reason: Reason for mute - Optional
-        """
-
-        time = time_and_reason.time
-        reason = time_and_reason.other
-        await ctx.trigger_typing()
-
-        if victim.id == ctx.author.id:
-            await ctx.send("Why do want to mute yourself?\nI'm not gonna let you do it")
-            return
-
+    async def do_mute(self, ctx, *, victim, reason=None, time=None):
         config = await self.config_service.get(ctx.guild.id)
         muted = ctx.guild.get_role(config.muted_role_id)
 
@@ -178,32 +158,69 @@ class Moderation(commands.Cog):
         )
         inserted = await self.mute_service.insert(mute)
 
-        await victim.add_roles(muted)
+        await victim.add_roles(muted, reason=f'{reason}\n(Operation performed by {ctx.author})')
         await ctx.send(f"**User {victim.mention} has been muted by {ctx.author.mention}**\nID: {inserted.id}")
 
         try:
             msg = f"You have been muted in {ctx.guild.name} {f'for {time}' if time else ''}" \
                   f"\n{'Reason `{reason}`' if reason else ''}"
-            if reason:
-                msg += f""
 
             await victim.send(msg)
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Muted without notice")
 
-        if time:
-            extras = {
-                'mute_id': inserted.id,
-                'guild_id': inserted.guild_id,
-                'muted_user_id': inserted.muted_user_id,
-            }
-            timer = Timer(
-                event='tempmute',
-                created_at=ctx.message.created_at,
-                expires_at=time,
-                kwargs=extras
-            )
-            await self.bot.timers.create_timer(timer)
+    @commands.group(invoke_without_command=True)
+    @commands.has_permissions(manage_roles=True)
+    async def mute(self, ctx, victim: discord.Member, reason=None):
+        """
+        Permanently Mute a user
+
+        Args:
+            victim: Member you want to mute
+            reason: Reason for mute - Optional
+       """
+
+        if victim.id == ctx.author.id:
+            return await ctx.send("Why do want to mute yourself?\nI'm not gonna let you do it")
+
+        async with ctx.typing():
+            await self.do_mute(ctx, victim=victim, reason=reason)
+
+    @mute.command(name='temp')
+    @commands.has_permissions(manage_roles=True)
+    async def temp_mute(self, ctx: commands.Context, victim: discord.Member, *,
+                        time_and_reason: converters.HumanTime(other=True)):
+        """
+        Temporarily mute a user
+
+        Args:
+            victim: Member you want to mute
+            time: Un-mute time - Optional
+            reason: Reason for mute - Optional
+        """
+
+        time = time_and_reason.time
+        reason = time_and_reason.other
+
+        if victim.id == ctx.author.id:
+            return await ctx.send("Why do want to mute yourself?\nI'm not gonna let you do it")
+
+        async with ctx.typing():
+            await self.do_mute(ctx, victim=victim, time=time, reason=reason)
+
+            if time:
+                extras = {
+                    'mute_id': inserted.id,
+                    'guild_id': inserted.guild_id,
+                    'muted_user_id': inserted.muted_user_id,
+                }
+                timer = Timer(
+                    event='tempmute',
+                    created_at=ctx.message.created_at,
+                    expires_at=time,
+                    kwargs=extras
+                )
+                await self.bot.timers.create_timer(timer)
 
     async def do_unmute(self, guild, victim):
         config = await self.config_service.get(guild.id)
