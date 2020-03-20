@@ -1,0 +1,29 @@
+#home-container {
+    scroll-snap-type: y mandatory;
+    overflow: scroll -moz-scrollbars-none;
+    background-size: cover;
+    -moz-background-size: cover;
+    height: 100vh;
+}
+
+#home-container::-webkit-scrollbar {
+    width: 0 !important;
+    background: transparent;
+}
+
+.item {
+    scroll-snap-align: start;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4rem;
+}
+
+#one {
+    background: #005890;
+}
+
+#two {
+    background: darkblue;
+}
