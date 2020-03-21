@@ -27,7 +27,8 @@ class CoronaChanWrapper:
         data = await self._request("/latest")
         return data["latest"]
 
-    async def get_locations(self, rank_by=None):
+    async def get_locations_rank(self, rank_by=None):
+        # TODO: Maybe use this function too
         data = await self._request("/locations")
         data = data["locations"]
 
@@ -62,12 +63,13 @@ class CoronaChanWrapper:
         self._cache = {}
 
 
+# noinspection PyIncorrectDocstring
 class CoronaChan(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.corona_chan = CoronaChanWrapper(bot.clientSession)
 
-    @commands.group(aliases=['coronachan', 'covid'])
+    @commands.group(aliases=['coronachan', 'covid'], invoke_without_command=True)
     async def corona(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx)
@@ -85,6 +87,12 @@ class CoronaChan(commands.Cog):
 
     @corona.command(name='stats')
     async def corona_stats(self, ctx, country_code=None):
+        """Stats about [Corona Chan](https://www.reddit.com/r/coronachan) (COVID19)
+        The response will be 0 0 0 if invalid `country_code` is provided
+
+        Args:
+            country_code: The (ISO 3166-1 alpha-2)(https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code
+        """
         if country_code is None:
             data = await self.corona_chan.get_latest()
         else:
