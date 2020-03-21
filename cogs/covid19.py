@@ -2,6 +2,8 @@ import aiohttp
 import discord
 from discord.ext import commands, tasks
 
+from util import random_discord_color
+
 
 class CoronaChanWrapper:
     url = 'https://coronavirus-tracker-api.herokuapp.com/v2'
@@ -11,11 +13,14 @@ class CoronaChanWrapper:
         self._cache = {}
 
     async def _request(self, endpoint, params=None):
+        p = ''
+        for k, v in params.items():
+            p += f'{k}-{v}'
         if endpoint not in self._cache.keys():
             response = await self.session.get(self.url + endpoint, params=params)
             json = await response.json()
-            self._cache[endpoint] = json
-        return self._cache[endpoint]
+            self._cache[endpoint + p] = json
+        return self._cache[endpoint + p]
 
     async def get_latest(self):
         data = await self._request("/latest")
@@ -67,11 +72,11 @@ class CoronaChan(commands.Cog):
             await ctx.send_help(ctx)
 
     def _build_basic_embed(self, data):
-        embed = discord.Embed(title="Corona Chan's stats")
+        embed = discord.Embed(title="Corona Chan's stats", color=random_discord_color())
         for i in ('confirmed', 'recovered', 'deaths'):
-            embed.add_field(name=i.title(), value=data[i], inline=True)
+            embed.add_field(name=f'**{i.title()}**', value=data[i], inline=True)
         embed.add_field(
-            name='Source',
+            name='**Source**',
             value='[coronavirus-tracker-api](https://github.com/ExpDev07/coronavirus-tracker-api)',
             inline=False
         )
@@ -85,7 +90,7 @@ class CoronaChan(commands.Cog):
             data = await self.corona_chan.get_for_country(country_code)
         embed = self._build_basic_embed(data)
         if 'country' in data:
-            embed.insert_field_at(0, name='Country', value=data['country'])
+            embed.insert_field_at(0, name='**Country**', value=data['country'], inline=False)
         await ctx.send(embed=embed)
 
 
