@@ -405,6 +405,12 @@ class Miscellaneous(commands.Cog):
         ))
 
     @commands.command()
+    async def invite(self, ctx):
+        """Invite me to your server"""
+        await ctx.send(
+            'https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160')
+
+    @commands.command()
     async def parse(self, ctx, *, time_and_arg: converters.HumanTime(other=True)):
         """
         Parses human time friendly time

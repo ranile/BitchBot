@@ -23,6 +23,6 @@ export class HomeComponent implements OnInit {
     }
 
     navigateToOauthPage() {
-        window.location.href = "invite url"
+        window.location.href = "https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160"
     }
 }
