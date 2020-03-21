@@ -14,8 +14,9 @@ class CoronaChanWrapper:
 
     async def _request(self, endpoint, params=None):
         p = ''
-        for k, v in params.items():
-            p += f'{k}-{v}'
+        if params is not None:
+            for k, v in params.items():
+                p += f'{k}-{v}'
         if endpoint not in self._cache.keys():
             response = await self.session.get(self.url + endpoint, params=params)
             json = await response.json()
