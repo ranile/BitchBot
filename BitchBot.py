@@ -108,14 +108,15 @@ class BitchBot(commands.Bot):
                                            adapter=discord.AsyncWebhookAdapter(self.clientSession))
         await webhook.send(embed=embed)
 
-    async def process_commands(self, message):  # not on_message so I'm not calling `get_context` twice
+    async def on_message(self, message):
         if message.author.bot:  # don't do anything if the author is a bot
             return
 
         ctx = await self.get_context(message)
-        mentions = [x.id for x in message.mentions]
+
         if not ctx.valid:
-            if self.user.id in mentions:  # Bot was mentioned so
+            me = message.guild.me if message.guild is not None else self.user
+            if me.mentioned_in(message):  # Bot was mentioned so
                 await message.channel.send(random.choice(  # :pinng:
                     ["<a:ping:610784135627407370>", "<a:pinng:689843900889694314>"]))
                 await self.send_ping_log_embed(message)  # and log the message
