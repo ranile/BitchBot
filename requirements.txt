@@ -1,10 +1,8 @@
 asyncpg
 git+https://github.com/Rapptz/discord.py
-dialogflow
 git+https://github.com/Gorialis/jishaku@master#egg=jishaku
 git+https://github.com/Zenrac/TextToOwO
 git+https://github.com/Gelbpunkt/aiowiki
-beautifulsoup4
 psutil
 git+https://github.com/Rapptz/discord-ext-menus
 Quart

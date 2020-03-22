@@ -7,11 +7,9 @@ import discord
 import re
 import string
 
-from bs4 import BeautifulSoup
 from discord.ext import commands
-import dialogflow_v2 as dialogflow
 from TextToOwO.owo import text_to_owo
-from keys import logWebhook, project_id
+from keys import logWebhook
 from util import funs, converters  # pylint: disable=no-name-in-module
 from util import checks
 from util.emoji_chars import emoji_chars
@@ -29,11 +27,6 @@ def f_to_c(f: float) -> float:
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bot.loop.create_task(self.create_dialogflow_session())
-        self.session_client = None
-
-    async def create_dialogflow_session(self):
-        self.session_client = await self.bot.loop.run_in_executor(None, lambda: dialogflow.SessionsClient())
 
     @commands.command(aliases=["send"])
     @checks.owner_only_in_non_trusted_guilds()
@@ -156,6 +149,7 @@ class Miscellaneous(commands.Cog):
     @commands.command()
     @checks.private_command()
     async def hug(self, ctx):
+        """
         url = 'https://tenor.com/search/anime-hugs-gifs'
         async with self.bot.clientSession.get(url, headers={'content-type': 'text/html'}) as res:
             text = await res.content.read()
@@ -168,6 +162,8 @@ class Miscellaneous(commands.Cog):
                     links.append(src)
 
             await ctx.send(random.choice(links))
+        """
+        await ctx.send("TODO fix this")
 
     @commands.command()
     @checks.owner_only_in_non_trusted_guilds()
@@ -270,28 +266,6 @@ class Miscellaneous(commands.Cog):
             msg = await ctx.send(embed=embed)
             for i in range(len(answers)):
                 await msg.add_reaction(letter_emote[i])
-
-    # noinspection PyUnresolvedReferences
-    @commands.command(aliases=['talk', 't'])
-    async def chat(self, ctx, *, text):
-        """Talk to me
-
-        Args:
-            text: What you wanna say
-        """
-
-        if self.session_client is None:
-            return await ctx.send('This is not available yet...\nThis should never happen though')
-
-        # noinspection PyUnresolvedReferences
-        def do_chat():
-            session = self.session_client.session_path(project_id, ctx.author.id)
-            text_input = dialogflow.types.TextInput(text=text, language_code='en-US')
-            query_input = dialogflow.types.QueryInput(text=text_input)
-            return self.session_client.detect_intent(session=session, query_input=query_input)
-
-        response = await self.bot.loop.run_in_executor(None, do_chat)
-        await ctx.send(response.query_result.fulfillment_text)
 
     @commands.command()
     async def about(self, ctx):
