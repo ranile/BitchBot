@@ -29,7 +29,11 @@ def f_to_c(f: float) -> float:
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.session_client = dialogflow.SessionsClient()
+        self.bot.loop.create_task(self.create_dialogflow_session())
+        self.session_client = None
+
+    async def create_dialogflow_session(self):
+        self.session_client = await self.bot.loop.run_in_executor(None, lambda: dialogflow.SessionsClient())
 
     @commands.command(aliases=["send"])
     @checks.owner_only_in_non_trusted_guilds()
@@ -276,6 +280,10 @@ class Miscellaneous(commands.Cog):
             text: What you wanna say
         """
 
+        if self.session_client is None:
+            return await ctx.send('This is not available yet...\nThis should never happen though')
+
+        # noinspection PyUnresolvedReferences
         def do_chat():
             session = self.session_client.session_path(project_id, ctx.author.id)
             text_input = dialogflow.types.TextInput(text=text, language_code='en-US')
@@ -410,6 +418,7 @@ class Miscellaneous(commands.Cog):
         await ctx.send(
             'https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160')
 
+    # noinspection PyUnresolvedReferences
     @commands.command()
     async def parse(self, ctx, *, time_and_arg: converters.HumanTime(other=True)):
         """
