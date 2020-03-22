@@ -2,7 +2,7 @@ import functools
 import os
 
 from quart import session, redirect, request, jsonify
-
+import jwt
 import keys
 from util import (run_in_executor, fetch_user_from_session, make_oauth_session, AUTHORIZATION_BASE_URL,
                   BlueprintWithBot,
@@ -44,13 +44,18 @@ async def callback():
     )
     session['oauth2_token'] = token
     user = (await fetch_user_from_session(discord_session)).json()
-    session['user_id'] = user['id']
+    to_encode = {
+        'oauth2_token': token,
+        'user_id': str(user['id'])
+    }
+    session['token'] = jwt.encode(to_encode, keys.jwt_secret)
     return redirect(keys.redirect_after_login_url)
 
 
 @app.route('/logout')
 async def logout():
-    discord_session = make_oauth_session(token=session.get('oauth2_token'))
+    decoded = jwt.decode(session.get('token'), keys.jwt_secret)
+    discord_session = make_oauth_session(token=decoded['oauth2_token'])
     logout_ = discord_session.post(API_BASE_URL + f'/oauth2/token/revoke', data={
         'client_id': OAUTH2_CLIENT_ID,
         'client_secret': OAUTH2_CLIENT_SECRET,
@@ -59,7 +64,7 @@ async def logout():
     }, headers={
         'Content-Type': 'application/x-www-form-urlencoded'
     })
-    del session['user_id']
+    del session['token']
     return {'code': logout_.status_code, 'text': logout_.text}
 
 

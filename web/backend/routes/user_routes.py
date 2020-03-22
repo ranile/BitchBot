@@ -1,12 +1,10 @@
-import json
-
 import discord
-from discord.ext import commands
+import jwt
 from quart import session, jsonify, abort
 
+import keys
 import util
 import services
-from util import fetch_user_from_session
 
 user_routes = util.BlueprintWithBot('users_blueprint', __name__, url_prefix='/api/users')
 _services = {}
@@ -15,23 +13,18 @@ _services = {}
 @user_routes.route('/me')
 async def me():
     try:
-        id_from_session = session['user_id']
-        user = user_routes.bot.get_user(int(id_from_session))
-        out = {}
-        for attrib in discord.User.__slots__:
-            if attrib.startswith('_') or attrib in ('system', 'bot'):
-                continue
-            out[attrib] = getattr(user, attrib)
+        decoded = jwt.decode(session['token'], keys.jwt_secret)
     except KeyError:
-        res = await fetch_user_from_session(util.make_oauth_session(token=session.get('oauth2_token')))
-        out = res.json()
-        if res.status_code != 200:
-            return abort(res.status_code, json.dumps(out))
+        return abort(401, 'Not logged in')
+    user = user_routes.bot.get_user(int(decoded['user_id']))
+    out = {attrib: str(getattr(user, attrib))
+           for attrib in discord.User.__slots__
+           if not (attrib.startswith('_') or attrib in ('system', 'bot'))}
 
-    mutual_guilds = user_routes.bot.get_mutual_guilds(int(out['id']))
-    out['guilds'] = [{'name': guild.name, 'id': str(guild.id), 'icon': str(guild.icon_url)} for guild in mutual_guilds]
-    print(out)
-    return jsonify(user=out, id_from_session=session.get('user_id'))
+    out['avatar'] = str(user.avatar_url_as(static_format='png'))
+    out['guilds'] = [{'name': guild.name, 'id': str(guild.id), 'icon': str(guild.icon_url)} for guild in
+                     user_routes.bot.get_mutual_guilds(int(out['id']))]
+    return jsonify(user=out)
 
 
 @user_routes.route('/<user_id>')
@@ -39,7 +32,8 @@ async def fetch_user(user_id):
     user = user_routes.bot.get_user(int(user_id))
     if user is None:
         user = await user_routes.bot.fetch_user(int(user_id))
-    user_dict = {x: getattr(user, x) for x in discord.User.__slots__ if not x.startswith('_') and x not in ('system', 'bot')}
+    user_dict = {x: getattr(user, x) for x in discord.User.__slots__ if
+                 not x.startswith('_') and x not in ('system', 'bot')}
     user_dict['avatar'] = str(user.avatar_url_as(size=256))
     return user_dict
 
