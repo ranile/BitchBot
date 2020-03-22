@@ -1,5 +1,6 @@
 from typing import Optional
 import quart
+from quart import abort
 
 
 class BlueprintWithBot(quart.Blueprint):
@@ -11,6 +12,12 @@ class BlueprintWithBot(quart.Blueprint):
         self.bot = bot
         super().__init__(name, import_name, static_folder, static_url_path, template_folder, url_prefix, subdomain,
                          root_path)
+
+    def get_guild_or_error(self, guild_id):
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return abort(400, 'Bot is not in the provided guild')
+        return guild
 
 
 class QuartWithBot(quart.Quart):

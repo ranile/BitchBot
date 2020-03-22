@@ -1,8 +1,6 @@
 import discord
 import jwt
-from quart import session, jsonify, abort
-
-import keys
+from quart import session, jsonify
 import util
 import services
 
@@ -12,11 +10,8 @@ _services = {}
 
 @user_routes.route('/me')
 async def me():
-    try:
-        decoded = jwt.decode(session['token'], keys.jwt_secret)
-    except KeyError:
-        return abort(401, 'Not logged in')
-    user = user_routes.bot.get_user(int(decoded['user_id']))
+    user = session.get_user()
+    print(user)
     out = {attrib: str(getattr(user, attrib))
            for attrib in discord.User.__slots__
            if not (attrib.startswith('_') or attrib in ('system', 'bot'))}

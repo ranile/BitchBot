@@ -16,8 +16,8 @@ async def _get_config(guild_id):
 
 @mod_routes.route('/<int:guild_id>/warns')
 async def warnings(guild_id: int):
-    user_id = util.get_user_id_from_session(session)
-    guild = util.get_guild(mod_routes, guild_id)
+    user_id = session.get_user_id()
+    guild = mod_routes.get_guild_or_error(guild_id)
 
     config = await _get_config(guild.id)
 
@@ -45,7 +45,7 @@ async def warnings(guild_id: int):
 @mod_routes.route('/guilds')
 async def guild_i_mod():
     guilds = []
-    user_id = util.get_user_id_from_session(session)
+    user_id = session.get_user_id()
     mutual_guilds = mod_routes.bot.get_mutual_guilds(user_id)
     for guild in mutual_guilds:
         config = await _get_config(guild.id)

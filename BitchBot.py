@@ -11,6 +11,8 @@ import random
 import hypercorn
 import os
 from services import ActivityService
+from util.monkeypatches import *
+from quart.local import LocalProxy
 
 bitch_bot_logger = logging.getLogger('BitchBot')
 bitch_bot_logger.setLevel(logging.INFO)
@@ -29,7 +31,7 @@ class BitchBot(commands.Bot):
             owner_id=529535587728752644,
             case_insensitive=True,
         )
-
+        LocalProxy.bot = self
         self.quart_app = util.QuartWithBot(__name__, static_folder=None)
         self.quart_app.config['SECRET_KEY'] = keys.client_secret
         self.quart_app.debug = keys.debug
@@ -70,7 +72,7 @@ class BitchBot(commands.Bot):
                 bitch_bot_logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 bitch_bot_logger.exception(f'Failed to load loaded extension {cog_name}', e)
-        for i in ('spa_serve', 'routes', 'user_routes', 'auth'):
+        for i in ('spa_serve', 'routes', 'user_routes', 'auth', 'mod'):
             self.load_extension(f'web.backend.routes.{i}')
         await super().start(*args, **kwargs)
 
