@@ -1,4 +1,7 @@
+import jwt
 from quart import abort
+
+import keys
 
 
 def format_guilds_for_response(guilds):
@@ -12,6 +15,14 @@ def is_mod(config, guild, user_id):
 
 def get_user_id_from_session(session):
     try:
-        return int(session['user_id'])
+        decoded = jwt.decode(session['token'], keys.jwt_secret)
+        return int(decoded['user_id'])
     except KeyError:
         return abort(401, 'Not logged in')
+
+
+def get_guild(bp, guild_id):
+    guild = bp.bot.get_guild(guild_id)
+    if guild is None:
+        return abort(400, 'Bot is not in the provided guild')
+    return guild

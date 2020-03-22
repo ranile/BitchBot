@@ -10,20 +10,16 @@ async def _get_config(guild_id):
     config_service: services.ConfigService = _services['config']
     config = await config_service.get(guild_id)
     if config is None:
-        return None
+        return abort(400, 'Not configured properly')
     return config
 
 
 @mod_routes.route('/<int:guild_id>/warns')
 async def warnings(guild_id: int):
     user_id = util.get_user_id_from_session(session)
-    guild = mod_routes.bot.get_guild(guild_id)
-    if guild is None:
-        return abort(400, 'Bot is not in the provided guild')
+    guild = util.get_guild(mod_routes, guild_id)
 
     config = await _get_config(guild.id)
-    if config is None:
-        return abort(400, 'Not configured properly')
 
     if not util.is_mod(config, guild, user_id):
         return abort(403, 'Not a mod')
@@ -50,7 +46,7 @@ async def warnings(guild_id: int):
 async def guild_i_mod():
     guilds = []
     user_id = util.get_user_id_from_session(session)
-    mutual_guilds = mod_routes.bot.get_mutual_guilds(int(user_id))
+    mutual_guilds = mod_routes.bot.get_mutual_guilds(user_id)
     for guild in mutual_guilds:
         config = await _get_config(guild.id)
         if config is not None and util.is_mod(config, guild, user_id):
