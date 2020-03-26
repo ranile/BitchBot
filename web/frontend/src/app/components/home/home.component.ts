@@ -46,10 +46,10 @@ export class HomeComponent implements OnInit {
         console.log(window.innerHeight, rect, this.lastTopValue)
         if (this.lastTopValue >= (window.innerHeight / 1.7)) {
             this.document.getElementById('icon-container').style.opacity = '0';
-            this.document.getElementById('home-avatar-container').style.opacity = '1';
+            this.document.getElementById('info-content').style.opacity = '1';
         } else {
             this.document.getElementById('icon-container').style.opacity = '1';
-            this.document.getElementById('home-avatar-container').style.opacity = '0';
+            this.document.getElementById('info-content').style.opacity = '0';
         }
         this.lastTopValue = rect
     }

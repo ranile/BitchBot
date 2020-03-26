@@ -1,23 +1,30 @@
 <div id="home-container">
-    <div class="item" id="one">
-        <div id="home-avatar-container">
+    <div class="item" id="info">
+        <div id="info-content">
             <img id="avatar" [src]="avatarUrl" alt="icon">
             <div>
-                <span>BitchBot</span>
-                <p class="description-text">
-                    Fun Discord bot with moderation and utility tools like reminders, starboard, activity tracking and
-                    more
-                </p>
+                <div class="text">
+                    <h1 class="title">BitchBot</h1>
+                    <p class="description-text">
+                        Fun Discord bot with moderation and utility tools like reminders, starboard, activity tracking and
+                        more
+                    </p>
+                </div>
+                <div id="buttons">
+                    <button mat-raised-button color="primary" class="home-button" (click)="navigateToOauthPage()">Invite Me
+                    </button>
+                    <button mat-raised-button color="primary" class="home-button" (click)="navigateToGithubRepo()">Source
+                    </button>
+                </div>
             </div>
         </div>
-        <div style="align-self: center">
-            <button mat-raised-button color="primary" class="home-button" (click)="navigateToOauthPage()">Invite Me</button>
-            <button mat-raised-button color="primary" class="home-button" (click)="navigateToGithubRepo()">Source</button>
-        </div>
-
     </div>
+
     <div class="item" id="two">
-        Find me here
+        <div class="card">1</div>
+        <div class="card">2</div>
+        <div class="card">3</div>
+        <div class="card">4</div>
     </div>
 </div>
 
