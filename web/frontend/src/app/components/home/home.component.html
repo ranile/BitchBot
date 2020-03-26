@@ -1,7 +1,20 @@
 <div id="home-container">
     <div class="item" id="one">
-        <button mat-raised-button color="primary" class="navbar-button" (click)="navigateToOauthPage()">Invite Me
-        </button>
+        <div id="home-avatar-container">
+            <img id="avatar" [src]="avatarUrl" alt="icon">
+            <div>
+                <span>BitchBot</span>
+                <p class="description-text">
+                    Fun Discord bot with moderation and utility tools like reminders, starboard, activity tracking and
+                    more
+                </p>
+            </div>
+        </div>
+        <div style="align-self: center">
+            <button mat-raised-button color="primary" class="home-button" (click)="navigateToOauthPage()">Invite Me</button>
+            <button mat-raised-button color="primary" class="home-button" (click)="navigateToGithubRepo()">Source</button>
+        </div>
+
     </div>
     <div class="item" id="two">
         Find me here

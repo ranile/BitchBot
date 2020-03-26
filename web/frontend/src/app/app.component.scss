@@ -8,3 +8,17 @@
     margin-right: 1em;
     border-radius: 50%;
 }
+
+#main-toolbar {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+#icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: all 1s ease;
+}

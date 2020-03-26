@@ -1,9 +1,12 @@
-<mat-toolbar>
-  <mat-toolbar-row>
-    <img class="toolbar-icon" [src]="avatarUrl" alt="icon">
-    <span>BitchBot</span>
-    <span class="spacer"></span>
-    <app-navbar></app-navbar>
-  </mat-toolbar-row>
+<mat-toolbar id="main-toolbar">
+    <mat-toolbar-row>
+        <div id="icon-container">
+            <img class="toolbar-icon" [src]="avatarUrl" alt="icon">
+            <span style="">BitchBot</span>
+        </div>
+
+        <span class="spacer"></span>
+        <app-navbar></app-navbar>
+    </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>
