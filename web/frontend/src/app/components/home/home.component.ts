@@ -11,6 +11,10 @@ import {UserService} from "../../services/user/user.service";
 })
 export class HomeComponent implements OnInit {
     avatarUrl: string;
+    INVITE_URL = "https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160"
+    REPO_URL = "https://www.github.com/hamza1311/BitchBot"
+    DBOTS_URL = "https://discord.bots.gg/bots/595363392886145046"
+    DISCORDAPPS_URL = "https://discordapps.dev/en-GB/bots/595363392886145046"
 
     constructor(
         private authService: AuthService,
@@ -34,15 +38,15 @@ export class HomeComponent implements OnInit {
         })
     }
 
-    navigateToOauthPage() {
-        window.location.href = "https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160"
+    setHrefTo(url) {
+        window.location.href = url
     }
 
     lastTopValue = 0
 
     @HostListener('window:scroll', [])
     onScroll() {
-        const rect = this.document.getElementById('two').getBoundingClientRect().top
+        const rect = this.document.getElementById('links').getBoundingClientRect().top
         console.log(window.innerHeight, rect, this.lastTopValue)
         if (this.lastTopValue >= (window.innerHeight / 1.7)) {
             this.document.getElementById('icon-container').style.opacity = '0';
@@ -52,9 +56,5 @@ export class HomeComponent implements OnInit {
             this.document.getElementById('info-content').style.opacity = '0';
         }
         this.lastTopValue = rect
-    }
-
-    navigateToGithubRepo() {
-        window.location.href = "https://www.github.com/hamza1311/BitchBot"
     }
 }
