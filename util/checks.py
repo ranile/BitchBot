@@ -45,3 +45,17 @@ def owner_only_in_non_trusted_guilds():
             raise commands.CheckFailure("You can't use this command")
 
     return commands.check(predicate)
+
+
+def nsfw_only_in_non_trusted_guilds():
+    async def predicate(ctx):
+        is_owner = await ctx.bot.is_owner(ctx.author)
+        if ctx.guild is None or is_owner:
+            return True
+        elif ctx.guild.id in keys.trusted_guilds or ctx.channel.is_nsfw():
+            return True
+        else:
+            # thanks bot lists
+            raise commands.CheckFailure(f"This command can only be used in an NSFW channel or DMs with the bot")
+
+    return commands.check(predicate)

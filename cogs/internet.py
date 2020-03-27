@@ -5,7 +5,7 @@ from aiowiki import Wiki
 from discord.ext import commands
 
 from util.funs import random_discord_color  # pylint: disable=no-name-in-module
-from util import BloodyMenuPages, EmbedPagesData
+from util import BloodyMenuPages, EmbedPagesData, checks
 
 
 # noinspection PyIncorrectDocstring
@@ -122,7 +122,10 @@ class Internet(commands.Cog):
         link = f"https://belikebill.ga/billgen-API.php?default=1&name={urllib.parse.quote(name)}"
         await ctx.send(embed=discord.Embed().set_image(url=link))
 
+    URBAN_LINK_EXP = re.compile(r'(\[(.+?)\])')
+
     @commands.command()
+    @checks.nsfw_only_in_non_trusted_guilds()
     async def urban(self, ctx, *, query):
         """
         Gets top definition from urban dictionary
@@ -135,17 +138,30 @@ class Internet(commands.Cog):
         search = urllib.parse.quote(query)
         link = f"https://www.urbandictionary.com/define.php?term={search}"
 
-        async with self.bot.clientSession.get(f"http://api.urbandictionary.com/v0/define?term={search}") as res:
-            if res.status == 404:
-                await ctx.send('Errorrrrr... Not found')
+        async with self.bot.clientSession.get(f"http://api.urbandictionary.com/v0/define",
+                                              params={'term': query}) as res:
+            if res.status != 200:
+                await ctx.send(f'Errorrrrr... {res.status}: {res.reason}')
                 return
             data = (await res.json())['list']
             embeds = []
-            for item in data:
-                embed = discord.Embed(title=item['word'], description=item['definition'], url=link,
-                                      color=random_discord_color())
 
-                embed.add_field(name="Example", value=item["example"], inline=False)
+            def replace_links(text, max_length=1024, characters_to_use=1000):
+                def pred(m):
+                    word = m.group(2)
+                    return f'[{word}](https://www.urbandictionary.com/define.php?term={urllib.parse.quote(word)})'
+
+                text = self.URBAN_LINK_EXP.sub(pred, text)
+                if len(text) >= max_length:
+                    text = text[0:characters_to_use] + '...**snippet**'
+                return text
+
+            for item in data:
+
+                embed = discord.Embed(title=item['word'], description=replace_links(item['definition'], 2048, 2000),
+                                      url=link, color=random_discord_color())
+
+                embed.add_field(name="Example", value=replace_links(item["example"], 1024, 1000), inline=False)
                 embed.set_footer(text="From Urban Dictionary")
 
                 embeds.append(embed)
