@@ -37,6 +37,7 @@ class BloodyHelpCommand(commands.HelpCommand):
 
     def generate_base_help_embed(self):
         embed = discord.Embed(title='**You wanted help? Help is provided**', color=funs.random_discord_color())
+        embed.add_field(name="Need more help? Have any ideas for the bot? Want to report a bug?", value="[Join our support server](https://discord.gg/k2ysVzd)")
         embed.set_footer(text='Do >help command/group name for information about it')
         return embed
 

@@ -46,7 +46,7 @@ export class HomeComponent implements OnInit {
 
     @HostListener('window:scroll', [])
     onScroll() {
-        const rect = this.document.getElementById('links').getBoundingClientRect().top
+        const rect = this.document.getElementById('support').getBoundingClientRect().top
         console.log(window.innerHeight, rect, this.lastTopValue)
         if (this.lastTopValue >= (window.innerHeight / 1.7)) {
             this.document.getElementById('icon-container').style.opacity = '0';
