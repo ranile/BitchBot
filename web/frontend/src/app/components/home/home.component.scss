@@ -23,16 +23,12 @@
 
 #info-content {
     display: flex;
-    flex-direction: row;
     justify-content: center;
     align-items: center;
-    flex: 0 1 auto;
     position: relative;
     left: 50%;
     transform: translateX(-50%);
     font-size: 4rem;
-    margin: 0;
-    padding: 0;
     flex-wrap: wrap;
 
     transition: all 0.5s ease;
@@ -54,13 +50,13 @@
 #avatar {
     margin-right: 2.5rem;
     border-radius: 50%;
+    align-self: center;
 }
 
 .description-text {
     margin-top: 1rem;
     text-align: left;
     font-size: 1.5rem;
-    overflow-wrap: normal;
     width: 80vh;
     line-height: 20pt;
 }
@@ -102,13 +98,39 @@
 
 #grid {
     display: grid;
-    gap: 3rem;
     grid-template-columns: repeat(2, 4fr);
 }
 
 .card {
     font-size: 2rem;
-    border-radius: 18px;
+    border-radius: 1em;
     padding: 2rem;
     vertical-align: middle;
+    width: -moz-min-content;
 }
+
+@media (max-width: 600px) {
+    .description-text {
+        width: auto;
+        text-align: center;
+    }
+    .text, #buttons {
+        text-align: center;
+    }
+
+    #avatar {
+        margin-right: 0;
+        margin-top: 1.5rem;
+    }
+
+    #repo-button {
+        margin: 0;
+    }
+
+    #grid {
+        justify-items: center;
+        gap: 2rem;
+        grid-template-columns: repeat(1, 4fr);
+    }
+}
+
