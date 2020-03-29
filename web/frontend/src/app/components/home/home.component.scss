@@ -1,142 +1,159 @@
+@import "../../../queries";
+
 #home-container {
     scroll-snap-type: y mandatory;
     overflow: scroll -moz-scrollbars-none;
     background-size: cover;
     -moz-background-size: cover;
     height: 100vh;
-}
 
-#home-container::-webkit-scrollbar {
-    width: 0 !important;
-    background: transparent;
-}
-
-.item {
-    scroll-snap-align: start;
-    height: 100vh;
-    display: flex;
-}
-
-#info {
-    background: #005890;
-}
-
-#info-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 4rem;
-    flex-wrap: wrap;
-
-    transition: all 0.5s ease;
-}
-
-
-.text {
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-}
-
-.title {
-    font-weight: bold;
-    font-size: 2rem;
-    margin-bottom: 0;
-}
-
-#avatar {
-    margin-right: 2.5rem;
-    border-radius: 50%;
-    align-self: center;
-}
-
-.description-text {
-    margin-top: 1rem;
-    text-align: left;
-    font-size: 1.5rem;
-    width: 80vh;
-    line-height: 20pt;
-}
-
-.home-button {
-    margin-right: 1rem
-}
-
-#support {
-    background-color: #4562c7;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-
-}
-
-#widget-container {
-    text-align: center
-}
-
-#widget {
-    display: inline-block;
-    border: none;
-}
-
-#help-title {
-    font-size: 1.5rem;
-    padding: 1rem;
-}
-
-#links {
-    background-color: #8d03ff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-#grid {
-    display: grid;
-    grid-template-columns: repeat(2, 4fr);
-}
-
-.card {
-    font-size: 2rem;
-    border-radius: 1em;
-    padding: 2rem;
-    vertical-align: middle;
-    width: -moz-min-content;
-}
-
-@media (max-width: 600px) {
-    .description-text {
-        width: auto;
-        text-align: center;
-    }
-    .text, #buttons {
-        text-align: center;
+    ::-webkit-scrollbar {
+        width: 0 !important;
+        background: transparent;
     }
 
-    #avatar {
-        margin-right: 0;
-        margin-top: 1.5rem;
+    .item {
+        scroll-snap-align: start;
+        height: 100vh;
+        display: flex;
+
     }
 
-    #repo-button {
-        margin: 0;
+    .text {
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
     }
 
-    #grid {
-        justify-items: center;
-        gap: 2rem;
-        grid-template-columns: repeat(1, 4fr);
+    .title {
+        font-weight: bold;
+        font-size: 2rem;
+        margin-bottom: 0;
     }
 
-    .card {
-        padding: 1rem;
-        font-size: 1.5rem;
-        border-radius: 0.75em;
+    @media (max-width: $query-max-width) {
+        .title, .text, #buttons {
+            text-align: center;
+        }
+
+        #avatar {
+            margin-right: 0;
+            margin-top: 1.5rem;
+        }
     }
+
+    #info {
+        background: #005890;
+    }
+
+    #info-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 4rem;
+        flex-wrap: wrap;
+
+        transition: all 0.5s ease;
+
+        #avatar {
+            margin-right: 2.5rem;
+            border-radius: 50%;
+            align-self: center;
+
+            @media (max-width: $query-max-width) {
+                margin-right: 0;
+            }
+        }
+
+        .description-text {
+            margin-top: 1rem;
+            text-align: left;
+            font-size: 1.5rem;
+            width: 80vh;
+            line-height: 20pt;
+
+            @media (max-width: $query-max-width) {
+                width: auto;
+                text-align: center;
+            }
+        }
+
+        .home-button {
+            margin-right: 1rem
+        }
+    }
+
+    #support {
+        background-color: #4562c7;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+
+        #help-title {
+            font-size: 1.5rem;
+            padding: 1rem;
+        }
+
+        #widget-container {
+            text-align: center;
+
+            #widget {
+                display: inline-block;
+                border: none;
+            }
+        }
+    }
+
+    #links {
+        background-color: #8d03ff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        #links-title {
+            margin-bottom: 2rem
+        }
+
+        #links-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 4fr);
+            grid-column-gap: 2rem;
+
+            .link-button {
+                width: 100%;
+                font-size: 2rem;
+                border-radius: 1em;
+                padding: 2rem;
+                vertical-align: middle;
+
+                @media (max-width: $query-max-width) {
+                    padding: 1rem;
+                    font-size: 1.5rem;
+                    border-radius: 0.75em;
+                }
+            }
+        }
+
+        @media (max-width: $query-max-width) {
+            #repo-button {
+                margin: 0;
+            }
+
+            #links-grid {
+                justify-items: center;
+                gap: 2rem;
+                grid-template-columns: repeat(1, 4fr);
+            }
+        }
+    }
+
 }
+
+
+
 
