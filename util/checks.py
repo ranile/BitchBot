@@ -39,7 +39,7 @@ def is_mod():
 def owner_only_in_non_trusted_guilds():
     async def predicate(ctx):
         is_owner = await ctx.bot.is_owner(ctx.author)
-        if ctx.guild.id in keys.trusted_guilds or is_owner:
+        if ctx.guild is not None and (ctx.guild.id in keys.trusted_guilds or is_owner):
             return True
         else:
             raise commands.CheckFailure("You can't use this command")
