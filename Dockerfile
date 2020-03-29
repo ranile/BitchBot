@@ -3,8 +3,9 @@ FROM python:3.7
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
+
 EXPOSE 6969
-ENV GOOGLE_APPLICATION_CREDENTIALS=service_account.json
+
 ENV JISHAKU_NO_DM_TRACEBACK=true
 ENV OAUTHLIB_INSECURE_TRANSPORT=true
 
