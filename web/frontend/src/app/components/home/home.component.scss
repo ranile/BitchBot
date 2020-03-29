@@ -132,5 +132,11 @@
         gap: 2rem;
         grid-template-columns: repeat(1, 4fr);
     }
+
+    .card {
+        padding: 1rem;
+        font-size: 1.5rem;
+        border-radius: 0.75em;
+    }
 }
 
