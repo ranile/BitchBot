@@ -147,25 +147,6 @@ class Miscellaneous(commands.Cog):
         await ctx.message.delete(delay=5)
 
     @commands.command()
-    @checks.private_command()
-    async def hug(self, ctx):
-        """
-        url = 'https://tenor.com/search/anime-hugs-gifs'
-        async with self.bot.clientSession.get(url, headers={'content-type': 'text/html'}) as res:
-            text = await res.content.read()
-            soup = BeautifulSoup(text, 'html.parser')
-            imgs = soup.find_all(name='img')
-            links = []
-            for img in imgs:
-                src = str(img.get('src'))
-                if src.startswith('http') and src.endswith('gif'):
-                    links.append(src)
-
-            await ctx.send(random.choice(links))
-        """
-        await ctx.send("TODO fix this")
-
-    @commands.command()
     @checks.owner_only_in_non_trusted_guilds()
     async def flip(self, ctx, *, msg):
         """
