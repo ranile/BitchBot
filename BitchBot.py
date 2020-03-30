@@ -4,7 +4,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 
-import keys
+from jishaku.paginators import WrappedPaginator
 from database import database
 import util
 import random
@@ -161,6 +161,27 @@ class BitchBot(commands.Bot):
         else:
             await ctx.send(f'{exception.__class__.__name__}: {str(exception)}')
             bitch_bot_logger.exception(f'{exception}\nMessage:{ctx.message.jump_url}')
+
+    async def on_guild_join(self, guild):
+        embed = discord.Embed(title=f'{self.user.name} just joined a server <:weebyay:676427364871307285>')
+        embed.set_thumbnail(url=guild.icon_url)
+        embed.add_field(name='Guild', value=f'{guild} ({guild.id})')
+        embed.add_field(name='Owner', value=f'{guild.owner} ({guild.owner.id})')
+        embed.add_field(name='Member count',
+                        value=f'{guild.member_count} ({len([m for m in guild.members if m.bot])} bots)')
+        embed.add_field(name='Current guild count', value=f'{guild.member_count}')
+
+        pg = WrappedPaginator(prefix='', suffix='', max_size=1024)
+        pg.add_line(' '.join(map(str, guild.emojis)))
+        first = True
+        for page in pg.pages:
+            if first:
+                embed.add_field(name='Emojis', value=f"{page}", inline=False)
+                first = False
+            else:
+                embed.add_field(name='\u200b', value=f"{page}", inline=False)
+
+        await self.get_channel(648069341341810688).send(embed=embed)
 
     def get_mutual_guilds(self, member_id):
         for guild in self.guilds:
