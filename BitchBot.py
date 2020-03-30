@@ -163,13 +163,14 @@ class BitchBot(commands.Bot):
             bitch_bot_logger.exception(f'{exception}\nMessage:{ctx.message.jump_url}')
 
     async def on_guild_join(self, guild):
-        embed = discord.Embed(title=f'{self.user.name} just joined a server <:weebyay:676427364871307285>')
+        embed = discord.Embed(title=f"'{self.user.name} just joined a server {':weebyay:676427364871307285' * 3}'",
+                              color=util.random_discord_color())
         embed.set_thumbnail(url=guild.icon_url)
         embed.add_field(name='Guild', value=f'{guild} ({guild.id})')
         embed.add_field(name='Owner', value=f'{guild.owner} ({guild.owner.id})')
         embed.add_field(name='Member count',
                         value=f'{guild.member_count} ({len([m for m in guild.members if m.bot])} bots)')
-        embed.add_field(name='Current guild count', value=f'{guild.member_count}')
+        embed.add_field(name='Current guild count', value=f'{len(guild)}')
 
         pg = WrappedPaginator(prefix='', suffix='', max_size=1024)
         pg.add_line(' '.join(map(str, guild.emojis)))
