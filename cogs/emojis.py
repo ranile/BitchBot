@@ -47,13 +47,13 @@ class Emojis(commands.Cog):
     @emoji.command()
     async def list(self, ctx):
         """Shows the emojis that can be sent by 'emoji' command"""
-
-        chunked_emojis = list(chunks(self.bot.emojis, 20))
+        emojis = [e for e in self.bot.emojis if e.available]
+        chunked_emojis = list(chunks(emojis, 20))
         count = 1
         data = []
         for emojis in chunked_emojis:
             embed = discord.Embed(title='Available emojis', color=funs.random_discord_color())
-            embed.set_footer(text='@hamza to add more')
+            embed.set_footer(text=f'Total: {len(emojis)}')
             out = []
             for emoji in emojis:
                 out.append(f'{count}. {emoji.name} \t{emoji}')
