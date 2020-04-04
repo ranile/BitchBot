@@ -23,6 +23,7 @@ class Admin(commands.Cog):
         await msg.delete()
 
     @commands.group(invoke_without_command=True)
+    @commands.is_owner()
     async def reload(self, ctx, *, cog):
         """
         Reloads a cog
@@ -40,6 +41,7 @@ class Admin(commands.Cog):
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded cog {cog}')
 
     @reload.command(name='all')
+    @commands.is_owner()
     async def reload_all(self, ctx):
         stdout, stderr = await funs.run_shell_command('git pull')
         files = _GIT_PULL_REGEX.findall(stdout)
@@ -78,6 +80,7 @@ class Admin(commands.Cog):
                        f"and {successfully_reloaded_cogs}/{all_cogs} cogs")
 
     @reload.command(name='timers')
+    @commands.is_owner()
     async def reload_timers(self, ctx):
         self.bot.timers.restart()
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded Timers')
