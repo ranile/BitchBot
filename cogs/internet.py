@@ -81,12 +81,14 @@ class Internet(commands.Cog):
                 return
 
             posts = json["data"]["children"]
+            total_posts = len(posts)
             embeds = []
+            over_18 = 0
             for post in posts:
                 post = post['data']
 
                 if post['over_18'] and not ctx.channel.is_nsfw():
-                    continue
+                    over_18 += 1
 
                 embed = discord.Embed(title=post["title"], url=f'https://reddit.com{post["permalink"]}',
                                       color=random_discord_color())
@@ -101,6 +103,8 @@ class Internet(commands.Cog):
 
                 embeds.append(embed)
 
+            if over_18 == total_posts:
+                return await ctx.send('All posts found were NSFW. Try in an NSFW channel')
         await BloodyMenuPages(EmbedPagesData(embeds)).start(ctx)
 
     @commands.command()
@@ -110,8 +114,8 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get("http://randomuselessfact.appspot.com/random.json?language=en") as res:
-            await ctx.send(((await res.json())['text']))
+        async with self.bot.clientSession.get("https://useless-facts.sameerkumar.website/api") as res:
+            await ctx.send(((await res.json())['data']))
 
     @commands.command(aliases=["belikebill"])
     async def bill(self, ctx, *, name="Bill"):
