@@ -27,6 +27,8 @@ class Config(commands.Cog):
         The prefix length must be less than 6.
         If the prefix contains spaces, it must be enclosed in braces
 
+        You need `Manage Server` permissions to run this command
+
         Args:
             prefix: The prefix to add
         """
@@ -41,6 +43,8 @@ class Config(commands.Cog):
     async def remove_prefix(self, ctx, prefix):
         """
         Removes a prefix
+
+        You need `Manage Server` permissions to run this command
 
         Args:
             prefix: The prefix to remove
