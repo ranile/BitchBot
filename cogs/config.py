@@ -24,11 +24,15 @@ class Config(commands.Cog):
     async def add_prefix(self, ctx, prefix):
         """
         Add a prefix for this server
+        The prefix length must be less than 6.
+        If the prefix contains spaces, it must be enclosed in braces
 
         Args:
             prefix: The prefix to add
         """
 
+        if len(prefix) > 6:
+            raise commands.BadArgument(f"Prefix length must be less than 6, not {len(prefix)}")
         added = await self.bot.add_prefix(Prefix(guild_id=ctx.guild.id, prefix=prefix))
         await ctx.send(f'Added prefix: `{added}`')
 
@@ -36,10 +40,10 @@ class Config(commands.Cog):
     @checks.can_config()
     async def remove_prefix(self, ctx, prefix):
         """
-        Add a prefix for this server
+        Removes a prefix
 
         Args:
-            prefix: The prefix to add
+            prefix: The prefix to remove
         """
 
         added = await self.bot.remove_prefix(Prefix(guild_id=ctx.guild.id, prefix=prefix))
