@@ -97,27 +97,27 @@ class GuildConfigService:
     async def insert_prefix(self, prefix):
         async with self.pool.acquire() as con:
             fetched = await con.fetchrow('''
-            insert into prefixes (guild_id, prefix)
-            values ($1, $2)
-            returning *;
+            update GuildConfig
+            set prefix = $2
+            where guild_id = $1
+            returning guild_id, prefix;
             ''', prefix.guild_id, prefix.prefix)
 
             return Prefix.convert(fetched)
 
-    async def delete_prefix(self, prefix):
+    async def delete_prefix(self, guild_id):
         async with self.pool.acquire() as con:
-            fetched = await con.fetchrow('''
-            delete from prefixes
-            where guild_id = $1 and prefix = $2
-            returning *;
-            ''', prefix.guild_id, prefix.prefix)
-
-            return Prefix.convert(fetched)
+            await con.execute('''
+            update GuildConfig
+            set prefix = null
+            where guild_id = $1;
+            ''', guild_id)
 
     async def get_all_prefixes(self):
         async with self.pool.acquire() as con:
             fetched = await con.fetch('''
-            select * from prefixes;
+            select guild_id, prefix from GuildConfig
+            where prefix is not null;
             ''')
 
             return Prefix.convertMany(fetched) if fetched is not None else []
@@ -156,11 +156,4 @@ class GuildConfigService:
             after update or insert
             on GuildConfig
         execute function refresh_config_view();
-        
-        create table if not exists prefixes
-        (
-            guild_id bigint,
-            prefix   text,
-            primary key (guild_id, prefix)
-        );
         ''')

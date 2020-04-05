@@ -11,7 +11,6 @@ import random
 import hypercorn
 import os
 
-from resources import Prefix
 from services import ActivityService, ConfigService
 from util.monkeypatches import *
 from quart.local import LocalProxy
@@ -25,13 +24,11 @@ bitch_bot_logger.addHandler(file_handler)
 
 
 async def _prefix_pred(bot, message):
-    if message.guild is not None:
-        try:
-            prefixes = bot.prefixes[message.guild.id]
-        except KeyError:
-            prefixes = [(await bot.add_prefix(Prefix(guild_id=message.guild.id, prefix='>'))).prefix]
-    else:
-        prefixes = ['>']
+    prefixes = ['>']
+    try:
+        prefixes.append(bot.prefixes[message.guild.id])
+    except KeyError:
+        pass
 
     return commands.when_mentioned_or(*prefixes)(bot, message)
 
@@ -73,25 +70,17 @@ class BitchBot(commands.Bot):
 
         bitch_bot_logger.addHandler(discord_handler)
 
-    async def add_prefix(self, prefix, *, should_insert=True):
+    async def set_prefix(self, prefix, *, should_insert=True):
         if should_insert:
             prefix = await self.config_service.insert_prefix(prefix)
 
-        try:
-            self.prefixes[prefix.guild_id].append(str(prefix))
-        except KeyError:
-            self.prefixes[prefix.guild_id] = [str(prefix)]
+        self.prefixes[prefix.guild_id] = str(prefix)
 
         return prefix
 
-    async def remove_prefix(self, prefix):
-        prefix = await self.config_service.delete_prefix(prefix)
-
-        try:
-            self.prefixes[prefix.guild_id].remove(str(prefix))
-        except KeyError:
-            self.prefixes[prefix.guild_id] = []
-
+    async def remove_prefix(self, guild_id):
+        prefix = await self.config_service.delete_prefix(guild_id)
+        del self.prefixes[prefix.guild_id]
         return prefix
 
     # noinspection PyAttributeOutsideInit
@@ -119,7 +108,7 @@ class BitchBot(commands.Bot):
 
         prefixes = await self.config_service.get_all_prefixes()
         for i in prefixes:
-            await self.add_prefix(i, should_insert=False)
+            await self.set_prefix(i, should_insert=False)
 
         await super().start(*args, **kwargs)
 
@@ -210,7 +199,6 @@ class BitchBot(commands.Bot):
             bitch_bot_logger.exception(f'{exception}\nMessage:{ctx.message.jump_url}')
 
     async def on_guild_join(self, guild):
-        await self.add_prefix(Prefix(guild_id=guild.id, prefix='>'))
 
         embed = discord.Embed(title=f"'{self.user.name} just joined a server {':weebyay:676427364871307285' * 3}'",
                               color=util.random_discord_color())
