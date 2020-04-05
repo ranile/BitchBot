@@ -11,7 +11,6 @@ class Prefix(Resource):
 
     @classmethod
     def convert(cls, record):
-        print(type(record))
         return cls(
             guild_id=record['guild_id'],
             prefix=record['prefix']
