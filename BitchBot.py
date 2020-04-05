@@ -10,6 +10,8 @@ import util
 import random
 import hypercorn
 import os
+
+from resources import Prefix
 from services import ActivityService
 from util.monkeypatches import *
 from quart.local import LocalProxy
@@ -22,11 +24,19 @@ file_handler.setFormatter(logging.Formatter(fmt))
 bitch_bot_logger.addHandler(file_handler)
 
 
+def _prefix_pred(bot, message):
+    if message.guild is not None:
+        prefixes = bot.prefixes[message.guild.id]
+    else:
+        prefixes = ['>']
+    return commands.when_mentioned_or(*prefixes)(bot, message)
+
+
 # noinspection PyMethodMayBeStatic
 class BitchBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
-            command_prefix=commands.when_mentioned_or('>'),
+            command_prefix=_prefix_pred,
             help_command=util.BloodyHelpCommand(),
             owner_id=529535587728752644,
             case_insensitive=True,
@@ -46,6 +56,8 @@ class BitchBot(commands.Bot):
 
         self.lines_of_code_count = self._count_lines_of_code()
 
+        self.prefixes = {}
+
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
         discord_handler = util.DiscordLoggingHandler(self.loop, self.clientSession)
@@ -56,6 +68,12 @@ class BitchBot(commands.Bot):
         dpy_logger.addHandler(discord_handler)
 
         bitch_bot_logger.addHandler(discord_handler)
+
+    async def add_prefix(self, prefix):
+        try:
+            self.prefixes[prefix.guild_id].append(str(prefix))
+        except KeyError:
+            self.prefixes[prefix.guild_id] = [str(prefix)]
 
     # noinspection PyAttributeOutsideInit
     async def start(self, *args, **kwargs):
@@ -74,6 +92,10 @@ class BitchBot(commands.Bot):
                 bitch_bot_logger.exception(f'Failed to load loaded extension {cog_name}', e)
         for i in ('spa_serve', 'routes', 'user_routes', 'auth', 'mod'):
             self.load_extension(f'web.backend.routes.{i}')
+
+        for i in (Prefix(535750941702619166, 'bb '),):
+            await self.add_prefix(i)
+
         await super().start(*args, **kwargs)
 
     def run(self, *args, **kwargs):
@@ -163,6 +185,8 @@ class BitchBot(commands.Bot):
             bitch_bot_logger.exception(f'{exception}\nMessage:{ctx.message.jump_url}')
 
     async def on_guild_join(self, guild):
+        await self.add_prefix(Prefix(guild.id, '>'))
+
         embed = discord.Embed(title=f"'{self.user.name} just joined a server {':weebyay:676427364871307285' * 3}'",
                               color=util.random_discord_color())
         embed.set_thumbnail(url=guild.icon_url)
@@ -170,7 +194,7 @@ class BitchBot(commands.Bot):
         embed.add_field(name='Owner', value=f'{guild.owner} ({guild.owner.id})')
         embed.add_field(name='Member count',
                         value=f'{guild.member_count} ({len([m for m in guild.members if m.bot])} bots)')
-        embed.add_field(name='Current guild count', value=f'{len(guild)}')
+        embed.add_field(name='Current guild count', value=f'{len(self.guilds)}')
 
         pg = WrappedPaginator(prefix='', suffix='', max_size=1024)
         pg.add_line(' '.join(map(str, guild.emojis)))
