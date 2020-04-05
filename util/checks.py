@@ -18,7 +18,7 @@ def can_config():
         if ctx.author.id == ctx.bot.owner_id or ctx.channel.permissions_for(ctx.author).manage_guild:
             return True
         else:
-            raise commands.CheckFailure("You need Manage Server permissions to run this command")
+            raise commands.MissingPermissions(['manage_guild'])
 
     return commands.check(predicate)
 
