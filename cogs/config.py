@@ -15,12 +15,20 @@ class Config(commands.Cog):
         self.config_service = ConfigService(bot.db)
 
     @commands.group(invoke_without_command=True)
+    @commands.guild_only()
     async def prefix(self, ctx):
-        """Command group for prefix related command"""
-        await ctx.send_help(ctx)
+        """
+        Command group for prefix related command
+        Running this command as is will show current prefixes
+        """
+        prefixes = []
+        for i in self.bot.prefixes[ctx.guild.id]:
+            prefixes.append(f'`{i}`')
+        await ctx.send(f"Current prefixes are : {', '.join(prefixes)}")
 
     @prefix.command(name='add')
     @checks.can_config()
+    @commands.guild_only()
     async def add_prefix(self, ctx, prefix):
         """
         Add a prefix for this server
@@ -40,6 +48,7 @@ class Config(commands.Cog):
 
     @prefix.command(name='remove')
     @checks.can_config()
+    @commands.guild_only()
     async def remove_prefix(self, ctx, prefix):
         """
         Removes a prefix
