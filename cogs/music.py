@@ -14,13 +14,13 @@ RURL = re.compile('https?://(?:www.)?.+')
 
 class MusicController:
 
-    def __init__(self, bot, guild_id):
-        self.bot = bot
-        self.guild_id = guild_id
-        self.channel = None
+    def __init__(self, ctx):
+        self.bot = ctx.bot
+        self.guild_id = ctx.guild.id
+        self.channel = ctx.channel
 
         self.next = asyncio.Event()
-        self.queue = asyncio.Queue()
+        self._queue = asyncio.Queue()
 
         self.now_playing = None
 
@@ -32,16 +32,24 @@ class MusicController:
         player = self.bot.wavelink.get_player(self.guild_id)
 
         while True:
-            if self.now_playing:
-                await self.now_playing.delete()
-
             self.next.clear()
 
-            song = await self.queue.get()
+            song = await self._queue.get()
+            print('reached till get', song)
             await player.play(song)
+            print('Should have played lol')
             self.now_playing = await self.channel.send(f'Now playing: `{song}`')
 
             await self.next.wait()
+
+    async def add_to_queue(self, track, *, should_set):
+        await self._queue.put(track)
+        print('added to queue')
+        if should_set:
+            self.next.set()
+
+    def get_current_queue(self):
+        return list(self._queue._queue)
 
 
 class Music(commands.Cog):
@@ -62,12 +70,14 @@ class Music(commands.Cog):
 
         # Initiate our nodes. For this example we will use one server.
         # Region should be a discord.py guild.region e.g sydney or us_central (Though this is not technically required)
-        node = await self.bot.wavelink.initiate_node(host='localhost',
-                                                     port=2333,
-                                                     rest_uri='http://localhost:2333',
-                                                     password=keys.lavalink_pass,
-                                                     identifier='TEST',
-                                                     region='us_central')
+        node = await self.bot.wavelink.initiate_node(
+            host='localhost',
+            port=2333,
+            rest_uri='http://localhost:2333',
+            password=keys.lavalink_pass,
+            identifier='DEBUG',
+            region='us_central'
+        )
 
         # Set our node hook callback
         node.set_hook(self.on_event_hook)
@@ -76,6 +86,7 @@ class Music(commands.Cog):
         """Node hook callback."""
         if isinstance(event, (wavelink.TrackEnd, wavelink.TrackException)):
             controller = self.get_controller(event.player)
+            print('setting on event hook')
             controller.next.set()
 
     def get_controller(self, value: Union[commands.Context, wavelink.Player]):
@@ -84,13 +95,7 @@ class Music(commands.Cog):
         else:
             gid = value.guild_id
 
-        try:
-            controller = self.controllers[gid]
-        except KeyError:
-            controller = MusicController(self.bot, gid)
-            self.controllers[gid] = controller
-
-        return controller
+        return self.controllers[gid]
 
     async def cog_check(self, ctx):
         """A local check which applies to all commands in this cog."""
@@ -113,8 +118,7 @@ class Music(commands.Cog):
         await ctx.send(f'Connecting to **`{channel.name}`**', delete_after=15)
         await player.connect(channel.id)
 
-        controller = self.get_controller(ctx)
-        controller.channel = ctx.channel
+        self.controllers[ctx.guild.id] = MusicController(ctx)
 
     @commands.command()
     async def play(self, ctx, *, query: str):
@@ -135,7 +139,8 @@ class Music(commands.Cog):
         # TODO: Add track picker menu
 
         controller = self.get_controller(ctx)
-        await controller.queue.put(track)
+        await controller.add_to_queue(track, should_set=not player.is_playing)
+
         await ctx.send(f'Added {str(track)} to the queue.', delete_after=15)
 
     @commands.command()
@@ -187,11 +192,11 @@ class Music(commands.Cog):
         """Retrieve information on the next 5 songs from the queue."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
         controller = self.get_controller(ctx)
-
-        if not player.current or not controller.queue._queue:
+        queue = controller.get_current_queue()
+        if not player.current or len(queue) == 0:
             return await ctx.send('There are no songs currently in the queue.', delete_after=20)
 
-        upcoming = list(itertools.islice(controller.queue._queue, 0, 5))
+        upcoming = list(itertools.islice(queue, 0, 5))
 
         fmt = '\n'.join(f'**`{str(song)}`**' for song in upcoming)
         embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)}', description=fmt)
