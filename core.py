@@ -2,7 +2,7 @@ import keys
 from BitchBot import BitchBot
 
 cogs = ["admin", "cause", "emojis", "internet", "starboard", 'stats', 'jsk', 'logs', 'mod', 'misc', 'reminders',
-        'config', 'covid19']
+        'config', 'music']
 
 bot = BitchBot(cogs=cogs)
 
