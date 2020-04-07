@@ -94,7 +94,7 @@ class Music(commands.Cog):
 
         self.bot.loop.create_task(self.start_nodes())
 
-        self.can_use_voice = keys.can_use_private_commands
+        self.can_use_voice = keys.trusted_guilds
 
     async def start_nodes(self):
         await self.bot.wait_until_ready()
@@ -132,7 +132,7 @@ class Music(commands.Cog):
         """A local check which applies to all commands in this cog."""
         if not ctx.guild:
             raise commands.NoPrivateMessage
-        elif ctx.author.id not in self.can_use_voice:
+        elif ctx.guild.id not in self.can_use_voice:
             raise commands.CheckFailure("You can't use music commands")
         return True
 
