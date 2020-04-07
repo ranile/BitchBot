@@ -14,6 +14,20 @@ import keys
 URL_EXP = re.compile('https?://(?:www.)?.+')
 
 
+def convert_from_ms(milliseconds):
+    seconds, milliseconds = divmod(milliseconds, 1000)
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    seconds = seconds + milliseconds / 1000
+    h, m, s = int(hours + (days * 24)), int(minutes), int(seconds)
+
+    def append_0_if_needed(val):
+        return val if len(str(val)) > 1 else f'0{val}'
+
+    return f"{f'{h}:' if h != 0 else ''}{append_0_if_needed(m)}:{append_0_if_needed(s)}"
+
+
 class BloodyPlayer(wavelink.Player):
 
     def __init__(self, bot: Union[commands.Bot, commands.AutoShardedBot], guild_id: int, node, **kwargs):
@@ -24,7 +38,6 @@ class BloodyPlayer(wavelink.Player):
 class BloodyWavelinkClient(wavelink.Client):
 
     def get_player(self, guild_id: int, *, cls=None, node_id=None, **kwargs) -> BloodyPlayer:
-        # noinspection PyTypeChecker
         return super().get_player(guild_id, cls=BloodyPlayer, node_id=node_id, **kwargs)
 
 
@@ -206,7 +219,10 @@ class Music(commands.Cog):
         if not player.current:
             return await ctx.send('I am not currently playing anything!')
 
-        await ctx.send(f'Now playing: `{player.current}`')
+        current = player.current
+
+        await ctx.send(f'Now playing: {current}\n'
+                       f'{convert_from_ms(player.position)} / {convert_from_ms(current.length)}')
 
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
@@ -219,8 +235,10 @@ class Music(commands.Cog):
 
         upcoming = list(itertools.islice(queue, 0, 5))
 
-        fmt = '\n'.join(f'**`{str(song)}`**' for song in upcoming)
-        embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)}', description=fmt)
+        embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)}')
+        for song in upcoming:
+            embed.add_field(name=str(song), value=f"**Length**: {convert_from_ms(song.length)}\n"
+                                                  f"{f'**URL**: [Link]({song.uri})' if song.uri else ''}")
 
         await ctx.send(embed=embed)
 
@@ -238,7 +256,7 @@ class Music(commands.Cog):
         await player.disconnect()
         await ctx.send('Disconnected player and killed controller.')
 
-    @commands.command(name='lavalink_info', aliases=('lavalinkinfo', 'llinfo'))
+    @commands.command(aliases=('lavalinkinfo', 'llinfo'))
     async def lavalink_info(self, ctx):
         """Retrieve various Node/Server/Player information."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
