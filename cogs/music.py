@@ -1,44 +1,60 @@
 import asyncio
 import datetime
-import discord
-import humanize
 import itertools
 import re
+from typing import Union
+
+import discord
+import humanize
 import wavelink
 from discord.ext import commands
-from typing import Union
+
 import keys
 
-RURL = re.compile('https?://(?:www.)?.+')
+URL_EXP = re.compile('https?://(?:www.)?.+')
+
+
+class BloodyPlayer(wavelink.Player):
+
+    def __init__(self, bot: Union[commands.Bot, commands.AutoShardedBot], guild_id: int, node, **kwargs):
+        super().__init__(bot, guild_id, node, **kwargs)
+        self.on_repeat = kwargs.pop('on_repeat', False)
+
+
+class BloodyWavelinkClient(wavelink.Client):
+
+    def get_player(self, guild_id: int, *, cls=None, node_id=None, **kwargs) -> BloodyPlayer:
+        # noinspection PyTypeChecker
+        return super().get_player(guild_id, cls=BloodyPlayer, node_id=node_id, **kwargs)
 
 
 class MusicController:
 
     def __init__(self, ctx):
         self.bot = ctx.bot
-        self.guild_id = ctx.guild.id
-        self.channel = ctx.channel
+        self.context = ctx
 
         self.next = asyncio.Event()
         self._queue = asyncio.Queue()
 
-        self.now_playing = None
-
+        self.current = None
         self.bot.loop.create_task(self.controller_loop())
 
     async def controller_loop(self):
         await self.bot.wait_until_ready()
 
-        player = self.bot.wavelink.get_player(self.guild_id)
+        player = self.bot.wavelink.get_player(self.context.guild.id)
 
         while True:
             self.next.clear()
-
-            song = await self._queue.get()
+            if self.current is not None and player.on_repeat:
+                song = self.current
+            else:
+                self.current = song = await self._queue.get()
             print('reached till get', song)
             await player.play(song)
             print('Should have played lol')
-            self.now_playing = await self.channel.send(f'Now playing: `{song}`')
+            await self.context.send(f'Now playing: `{song}`')
 
             await self.next.wait()
 
@@ -47,6 +63,8 @@ class MusicController:
         print('added to queue')
         if should_set:
             self.next.set()
+            player = self.bot.wavelink.get_player(self.context.guild.id)
+            player.on_repeat = False
 
     def get_current_queue(self):
         return list(self._queue._queue)
@@ -59,7 +77,7 @@ class Music(commands.Cog):
         self.controllers = {}
 
         if not hasattr(bot, 'wavelink'):
-            self.bot.wavelink = wavelink.Client(self.bot)
+            self.bot.wavelink = BloodyWavelinkClient(self.bot)
 
         self.bot.loop.create_task(self.start_nodes())
 
@@ -115,7 +133,7 @@ class Music(commands.Cog):
                 raise discord.DiscordException('No channel to join. Please either specify a valid channel or join one.')
 
         player = self.bot.wavelink.get_player(ctx.guild.id)
-        await ctx.send(f'Connecting to **`{channel.name}`**', delete_after=15)
+        await ctx.send(f'Connecting to **`{channel.name}`**')
         await player.connect(channel.id)
 
         self.controllers[ctx.guild.id] = MusicController(ctx)
@@ -123,7 +141,7 @@ class Music(commands.Cog):
     @commands.command()
     async def play(self, ctx, *, query: str):
         """Search for and add a song to the Queue."""
-        if not RURL.match(query):
+        if not URL_EXP.match(query):
             query = f'ytsearch:{query}'
 
         tracks = await self.bot.wavelink.get_tracks(f'{query}')
@@ -141,16 +159,22 @@ class Music(commands.Cog):
         controller = self.get_controller(ctx)
         await controller.add_to_queue(track, should_set=not player.is_playing)
 
-        await ctx.send(f'Added {str(track)} to the queue.', delete_after=15)
+        await ctx.send(f'Added {str(track)} to the queue.')
+
+    @commands.command()
+    async def repeat(self, ctx):
+        player = self.bot.wavelink.get_player(ctx.guild.id)
+        player.on_repeat = not player.on_repeat
+        await ctx.send(f'Set repeat to {player.on_repeat}')
 
     @commands.command()
     async def pause(self, ctx):
         """Pause the player."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
         if not player.is_playing:
-            return await ctx.send('I am not currently playing anything!', delete_after=15)
+            return await ctx.send('I am not currently playing anything!')
 
-        await ctx.send('Pausing the song!', delete_after=15)
+        await ctx.send('Pausing the song!')
         await player.set_pause(True)
 
     @commands.command()
@@ -158,9 +182,9 @@ class Music(commands.Cog):
         """Resume the player from a paused state."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
         if not player.paused:
-            return await ctx.send('I am not currently paused!', delete_after=15)
+            return await ctx.send('I am not currently paused!')
 
-        await ctx.send('Resuming the player!', delete_after=15)
+        await ctx.send('Resuming the player!')
         await player.set_pause(False)
 
     @commands.command()
@@ -169,9 +193,9 @@ class Music(commands.Cog):
         player = self.bot.wavelink.get_player(ctx.guild.id)
 
         if not player.is_playing:
-            return await ctx.send('I am not currently playing anything!', delete_after=15)
+            return await ctx.send('I am not currently playing anything!')
 
-        await ctx.send('Skipping the song!', delete_after=15)
+        await ctx.send('Skipping the song!')
         await player.stop()
 
     @commands.command(aliases=['np', 'current', 'nowplaying'])
@@ -182,10 +206,7 @@ class Music(commands.Cog):
         if not player.current:
             return await ctx.send('I am not currently playing anything!')
 
-        controller = self.get_controller(ctx)
-        await controller.now_playing.delete()
-
-        controller.now_playing = await ctx.send(f'Now playing: `{player.current}`')
+        await ctx.send(f'Now playing: `{player.current}`')
 
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
@@ -194,7 +215,7 @@ class Music(commands.Cog):
         controller = self.get_controller(ctx)
         queue = controller.get_current_queue()
         if not player.current or len(queue) == 0:
-            return await ctx.send('There are no songs currently in the queue.', delete_after=20)
+            return await ctx.send('There are no songs currently in the queue.')
 
         upcoming = list(itertools.islice(queue, 0, 5))
 
@@ -215,7 +236,7 @@ class Music(commands.Cog):
             return await ctx.send('There was no controller to stop.')
 
         await player.disconnect()
-        await ctx.send('Disconnected player and killed controller.', delete_after=20)
+        await ctx.send('Disconnected player and killed controller.')
 
     @commands.command(name='lavalink_info', aliases=('lavalinkinfo', 'llinfo'))
     async def lavalink_info(self, ctx):
