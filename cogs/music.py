@@ -28,6 +28,38 @@ def convert_from_ms(milliseconds):
     return f"{f'{h}:' if h != 0 else ''}{append_0_if_needed(m)}:{append_0_if_needed(s)}"
 
 
+class CannotManageMusic(commands.CheckFailure):
+    def __init__(self, message=None, *args):
+        if message is None:
+            message = "You must be alone in the Voice Channel with bot or has Manage Channels permission to " \
+                      "use this command"
+        super().__init__(message, *args)
+
+
+class MustBeInVoiceException(commands.CheckFailure):
+    def __init__(self, message=None, *args):
+        if message is None:
+            message = "You must be in a Voice Channel to use this command"
+        super().__init__(message, *args)
+
+
+class NoControllerFound(commands.CommandError):
+    pass
+
+
+def alone_or_has_perms():
+    def predicate(ctx):
+        m = [m for m in ctx.author.voice.channel.members if not m.id == ctx.me.id]
+        if len(m) == 1 and m[0].id == ctx.author.id:
+            return True
+        elif ctx.author.guild_permissions.manage_channels:
+            return True
+        else:
+            raise CannotManageMusic
+
+    return commands.check(predicate)
+
+
 class BloodyPlayer(wavelink.Player):
 
     def __init__(self, bot: Union[commands.Bot, commands.AutoShardedBot], guild_id: int, node, **kwargs):
@@ -64,16 +96,13 @@ class MusicController:
                 song = self.current
             else:
                 self.current = song = await self._queue.get()
-            print('reached till get', song)
             await player.play(song)
-            print('Should have played lol')
             await self.context.send(f'Now playing: `{song}`')
 
             await self.next.wait()
 
     async def add_to_queue(self, track, *, should_set):
         await self._queue.put(track)
-        print('added to queue')
         if should_set:
             self.next.set()
             player = self.bot.wavelink.get_player(self.context.guild.id)
@@ -93,8 +122,6 @@ class Music(commands.Cog):
             self.bot.wavelink = BloodyWavelinkClient(self.bot)
 
         self.bot.loop.create_task(self.start_nodes())
-
-        self.can_use_voice = keys.trusted_guilds
 
     async def start_nodes(self):
         await self.bot.wait_until_ready()
@@ -117,39 +144,64 @@ class Music(commands.Cog):
         """Node hook callback."""
         if isinstance(event, (wavelink.TrackEnd, wavelink.TrackException)):
             controller = self.get_controller(event.player)
-            print('setting on event hook')
             controller.next.set()
 
-    def get_controller(self, value: Union[commands.Context, wavelink.Player]):
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        guild = member.guild
+        members = [m for m in before.channel.members if not m.id == guild.me.id]
+        if len(members) == 0:
+            ctx = self.get_controller(member.guild).context
+            await self.stop_player(guild)
+            await ctx.send('Everyone has left the voice channel so I have decided to leave too')
+
+    def get_controller(self, value: Union[commands.Context, wavelink.Player, discord.Guild]):
         if isinstance(value, commands.Context):
             gid = value.guild.id
+        elif isinstance(value, discord.Guild):
+            gid = value.id
         else:
             gid = value.guild_id
 
-        return self.controllers[gid]
+        try:
+            return self.controllers[gid]
+        except KeyError as e:
+            raise NoControllerFound(
+                "No MusicController was found for this server. Stopping and reconnecting should fix this") from e
+
+    async def stop_player(self, guild):
+        player = self.bot.wavelink.get_player(guild.id)
+        try:
+            del self.controllers[guild.id]
+        except KeyError:
+            pass
+
+        await player.disconnect()
 
     async def cog_check(self, ctx):
         """A local check which applies to all commands in this cog."""
         if not ctx.guild:
             raise commands.NoPrivateMessage
-        elif ctx.guild.id not in self.can_use_voice:
-            raise commands.CheckFailure("You can't use music commands")
+        if ctx.author.voice is None and ctx.command.name not in (self.play.name, self.connect.name):
+            raise MustBeInVoiceException
         return True
 
-    @commands.command(name='connect')
-    async def connect_(self, ctx, *, channel: discord.VoiceChannel = None):
-        """Connect to a valid voice channel."""
-        if not channel:
+    async def connect_to_channel(self, ctx, channel=None):
+        if channel is None:
             try:
                 channel = ctx.author.voice.channel
             except AttributeError:
-                raise discord.DiscordException('No channel to join. Please either specify a valid channel or join one.')
+                raise MustBeInVoiceException('No valid voice channel specified and author is not in one.')
 
         player = self.bot.wavelink.get_player(ctx.guild.id)
-        await ctx.send(f'Connecting to **`{channel.name}`**')
+        self.controllers[ctx.guild.id] = MusicController(ctx)
         await player.connect(channel.id)
 
-        self.controllers[ctx.guild.id] = MusicController(ctx)
+    @commands.command()
+    async def connect(self, ctx, *, channel: discord.VoiceChannel = None):
+        """Connect to a valid voice channel."""
+        await self.connect_to_channel(ctx, channel)
+        await ctx.send(f'Connected to **{channel}**')
 
     @commands.command()
     async def play(self, ctx, *, query: str):
@@ -164,7 +216,7 @@ class Music(commands.Cog):
 
         player = self.bot.wavelink.get_player(ctx.guild.id)
         if not player.is_connected:
-            await ctx.invoke(self.connect_)
+            await self.connect_to_channel(ctx)
 
         track = tracks[0]
         # TODO: Add track picker menu
@@ -175,12 +227,14 @@ class Music(commands.Cog):
         await ctx.send(f'Added {str(track)} to the queue.')
 
     @commands.command()
+    @alone_or_has_perms()
     async def repeat(self, ctx):
         player = self.bot.wavelink.get_player(ctx.guild.id)
         player.on_repeat = not player.on_repeat
         await ctx.send(f'Set repeat to {player.on_repeat}')
 
     @commands.command()
+    @alone_or_has_perms()
     async def pause(self, ctx):
         """Pause the player."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
@@ -191,6 +245,7 @@ class Music(commands.Cog):
         await player.set_pause(True)
 
     @commands.command()
+    @alone_or_has_perms()
     async def resume(self, ctx):
         """Resume the player from a paused state."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
@@ -201,6 +256,7 @@ class Music(commands.Cog):
         await player.set_pause(False)
 
     @commands.command()
+    @alone_or_has_perms()
     async def skip(self, ctx):
         """Skip the currently playing song."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
@@ -243,18 +299,11 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['disconnect', 'dc'])
+    @alone_or_has_perms()
     async def stop(self, ctx):
         """Stop and disconnect the player and controller."""
-        player = self.bot.wavelink.get_player(ctx.guild.id)
-
-        try:
-            del self.controllers[ctx.guild.id]
-        except KeyError:
-            await player.disconnect()
-            return await ctx.send('There was no controller to stop.')
-
-        await player.disconnect()
-        await ctx.send('Disconnected player and killed controller.')
+        await self.stop_player(ctx.guild)
+        await ctx.send('Stopped successfully')
 
     @commands.command(aliases=('lavalinkinfo', 'llinfo'))
     async def lavalink_info(self, ctx):
