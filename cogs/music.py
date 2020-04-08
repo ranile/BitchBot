@@ -126,8 +126,6 @@ class Music(commands.Cog):
     async def start_nodes(self):
         await self.bot.wait_until_ready()
 
-        # Initiate our nodes. For this example we will use one server.
-        # Region should be a discord.py guild.region e.g sydney or us_central (Though this is not technically required)
         node = await self.bot.wavelink.initiate_node(
             host='localhost',
             port=2333,
@@ -199,13 +197,23 @@ class Music(commands.Cog):
 
     @commands.command()
     async def connect(self, ctx, *, channel: discord.VoiceChannel = None):
-        """Connect to a valid voice channel."""
+        """
+        Connect to a valid voice channel.
+
+        Args:
+            channel: The channel to connect to
+        """
         await self.connect_to_channel(ctx, channel)
         await ctx.send(f'Connected to **{channel}**')
 
     @commands.command()
     async def play(self, ctx, *, query: str):
-        """Search for and add a song to the Queue."""
+        """
+        Add a song to the queue.
+
+        Args:
+            query: The search query. Can also be a URL
+        """
         if not URL_EXP.match(query):
             query = f'ytsearch:{query}'
 
@@ -229,6 +237,7 @@ class Music(commands.Cog):
     @commands.command()
     @alone_or_has_perms()
     async def repeat(self, ctx):
+        """Puts the player on repeat"""
         player = self.bot.wavelink.get_player(ctx.guild.id)
         player.on_repeat = not player.on_repeat
         await ctx.send(f'Set repeat to {player.on_repeat}')
@@ -301,7 +310,7 @@ class Music(commands.Cog):
     @commands.command(aliases=['disconnect', 'dc'])
     @alone_or_has_perms()
     async def stop(self, ctx):
-        """Stop and disconnect the player and controller."""
+        """Stop and disconnect the player"""
         await self.stop_player(ctx.guild)
         await ctx.send('Stopped successfully')
 

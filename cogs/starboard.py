@@ -136,6 +136,7 @@ class Starboard(commands.Cog):
 
         Args:
             channel: The channel you want to use for starboard
+            limit: The number of stars required to put a message on the starboard
         """
         inserted = await self.config_service.setup_starboard(ctx.guild.id, channel.id, limit)
 
