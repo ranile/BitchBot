@@ -17,16 +17,16 @@ class GuildConfigService:
             return None
         return GuildConfig.convert(fetched)
 
-    async def setup_starboard(self, guild_id, starboard_channel_id):
+    async def setup_starboard(self, guild_id, starboard_channel_id, star_limit):
         query = '''
-        insert into guildconfig (guild_id, starboard_channel)
-        values ($1, $2)
-        on conflict(guild_id) do update set starboard_channel = $2
+        insert into guildconfig (guild_id, starboard_channel, star_limit)
+        values ($1, $2, $3)
+        on conflict(guild_id) do update set starboard_channel = $2, star_limit = $3 
         returning *;
         '''
 
         async with self.pool.acquire() as conn:
-            inserted = await conn.fetchrow(query, guild_id, starboard_channel_id)
+            inserted = await conn.fetchrow(query, guild_id, starboard_channel_id, star_limit)
         return GuildConfig.convert(inserted)
 
     async def add_mod_role(self, role_id, guild_id):
@@ -87,7 +87,7 @@ class GuildConfigService:
         async with self.pool.acquire() as connection:
             fetched = await connection.fetchrow(f'''
             update GuildConfig
-            set starboard_channel = null
+            set starboard_channel = null, star_limit = null
             where guild_id = $1
             returning *;
             ''', guild_id)

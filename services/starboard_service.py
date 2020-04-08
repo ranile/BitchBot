@@ -1,4 +1,3 @@
-import asyncpg
 from database.sql import SQL
 from resources.starboard import Starboard
 
@@ -18,33 +17,24 @@ class StarboardService:
             return Starboard.convert(fetched) if fetched is not None else None
 
     async def star(self, reaction):
-        message = reaction.message
-        should_send = False
         async with self.pool.acquire() as connection:
+            message = reaction.message
             try:
-                should_send = True
+                attachment = message.attachments[0].url
+            except IndexError:
+                attachment = None
 
-                try:
-                    attachment = message.attachments[0].url
-                except IndexError:
-                    attachment = None
-
-                starred = await connection.fetchrow('''
-                    insert into Starboard (message_id, channel_id, guild_id, message_content, attachment, stars_count, author_id)
-                    values ($1, $2, $3, $4, $5, $6, $7)
-                    returning *;
+            starred = await connection.fetchrow('''
+                insert into Starboard (message_id, channel_id, guild_id, message_content, attachment, stars_count, author_id)
+                values ($1, $2, $3, $4, $5, $6, $7)
+                on conflict(message_id) do update set stars_count = $6
+                returning *, (stars_count >=
+                              (select guildconfig.star_limit from guildconfig where guildconfig.guild_id = starboard.guild_id)) as should_send
                 ''', message.id, message.channel.id, message.guild.id,
-                                                    message.content if message.content != '' else None,
-                                                    attachment, reaction.count, message.author.id)
-            except asyncpg.exceptions.UniqueViolationError:
-                starred = await connection.fetchrow('''
-                    update starboard
-                    set stars_count = $4
-                    where message_id = $1 and channel_id = $2 and guild_id = $3
-                    returning *;
-                ''', message.id, message.channel.id, message.guild.id, reaction.count)
+                                                message.content if message.system_content != '' else None,
+                                                attachment, reaction.count, message.author.id)
 
-            return should_send, Starboard.convert(starred)
+            return starred['should_send'], Starboard.convert(starred)
 
     async def unstar(self, reaction):
         message = reaction.message

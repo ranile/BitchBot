@@ -30,33 +30,45 @@ class Starboard(commands.Cog):
         return True
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, _user):
+    async def on_reaction_add(self, reaction, user):
         if str(reaction) != STAR:
             return
 
-        if reaction.count >= 2 and reaction.message.id not in self.already_starred and not reaction.message.author.bot:
-            config = await self.config_service.get(reaction.message.guild.id)
-            if config.starboard_channel is None:
-                return
+        if user.bot:
+            return
 
-            should_send, starred = await self.starboard_service.star(reaction)
+        msg = reaction.message
 
-            if should_send and reaction.message.id not in self.already_starred:
-                author = reaction.message.author
-                embed = discord.Embed(color=funs.random_discord_color())
-                embed.set_author(name=author.display_name, icon_url=author.avatar_url)
-                embed.description = starred.message_content
-                embed.add_field(name='Original', value=f'[Link]({reaction.message.jump_url})')
-                if starred.attachment:
-                    embed.set_image(url=starred.attachment)
-                embed.set_footer(text='Starred at')
-                embed.timestamp = starred.started_at
-                self.already_starred.append(reaction.message.id)
-                await reaction.message.guild.get_channel(config.starboard_channel).send(embed=embed)
+        config = await self.config_service.get(msg.guild.id)
+        if config is None or config.starboard_channel is None:
+            return
+
+        above_limit, starred = await self.starboard_service.star(reaction)
+
+        if above_limit and msg.id not in self.already_starred:
+            author = msg.author
+
+            embed = discord.Embed(
+                color=funs.random_discord_color(),
+                description=f'**Channel**:{msg.channel.mention}\n\n'
+                            f'{starred.message_content}')
+
+            embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+            embed.description = starred.message_content
+            embed.add_field(name='Original', value=f'[Link]({reaction.message.jump_url})')
+            if starred.attachment:
+                embed.set_image(url=starred.attachment)
+            embed.timestamp = starred.started_at
+            self.already_starred.append(msg.id)
+
+            await msg.guild.get_channel(config.starboard_channel).send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_reaction_remove(self, reaction, _user):
+    async def on_reaction_remove(self, reaction, user):
         if str(reaction) != STAR:
+            return
+
+        if user.bot:
             return
 
         config = await self.config_service.get(reaction.message.guild.id)
@@ -118,14 +130,14 @@ class Starboard(commands.Cog):
 
     @starboard.command()
     @checks.can_config()
-    async def setup(self, ctx, channel: discord.TextChannel):
+    async def setup(self, ctx, channel: discord.TextChannel, limit=2):
         """
         Setup starboard
 
         Args:
             channel: The channel you want to use for starboard
         """
-        inserted = await self.config_service.setup_starboard(ctx.guild.id, channel.id)
+        inserted = await self.config_service.setup_starboard(ctx.guild.id, channel.id, limit)
 
         await ctx.send(f'Inserted {self.bot.get_channel(inserted.starboard_channel).mention} as starboard channel')
 
