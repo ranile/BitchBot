@@ -25,17 +25,17 @@ import { DashboardComponent } from './dashboard/components/dashboard/dashboard.c
 import {DashboardModule} from "./dashboard/dashboard.module";
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HomeComponent,
-    NavbarComponent,
-    ShowWarnsComponent,
-    ModDashboardComponent,
-    ShowWarnComponent,
-    RelativeTimePipe,
-    DiscordUserPipe,
-    DashboardComponent
-  ],
+    declarations: [
+        AppComponent,
+        HomeComponent,
+        NavbarComponent,
+        ShowWarnsComponent,
+        ModDashboardComponent,
+        DashboardComponent,
+        ShowWarnComponent,
+        RelativeTimePipe,
+        DiscordUserPipe,
+    ],
     imports: [
         BrowserModule,
         AppRoutingModule,
@@ -52,7 +52,8 @@ import {DashboardModule} from "./dashboard/dashboard.module";
         MatCardModule,
         DashboardModule,
     ],
-  providers: [],
-  bootstrap: [AppComponent]
+    providers: [],
+    bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

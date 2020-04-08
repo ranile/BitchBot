@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.document.getElementById('icon-container').style.opacity = '0';
+        // this.document.getElementById('icon-container').style.opacity = '0';
 
         this.userService.fetchMyAvatarUrl(1024).then(it => {
             this.avatarUrl = it
@@ -42,7 +42,7 @@ export class HomeComponent implements OnInit {
         window.location.href = url
     }
 
-    lastTopValue = 0
+    /*lastTopValue = 0
 
     @HostListener('window:scroll', [])
     onScroll() {
@@ -56,5 +56,5 @@ export class HomeComponent implements OnInit {
             this.document.getElementById('info-content').style.opacity = '0';
         }
         this.lastTopValue = rect
-    }
+    }*/
 }
