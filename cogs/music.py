@@ -84,7 +84,7 @@ class Music(commands.Cog):
 
     async def cog_check(self, ctx):
         """A local check which applies to all commands in this cog."""
-        if not ctx.guild or not ctx.author.voice:
+        if ctx.guild is None:
             raise commands.NoPrivateMessage
 
         if ctx.author.voice is None and ctx.command.name not in (self.play.name, self.connect.name):
