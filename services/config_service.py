@@ -97,10 +97,10 @@ class GuildConfigService:
     async def insert_prefix(self, prefix):
         async with self.pool.acquire() as con:
             fetched = await con.fetchrow('''
-            update GuildConfig
-            set prefix = $2
-            where guild_id = $1
-            returning guild_id, prefix;
+            insert into GuildConfig (guild_id, prefix)
+            values ($1, $2)
+            on conflict(guild_id) do update set prefix = $2
+            returning *;
             ''', prefix.guild_id, prefix.prefix)
 
             return Prefix.convert(fetched)

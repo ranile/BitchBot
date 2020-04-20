@@ -85,6 +85,12 @@ class Admin(commands.Cog):
         self.bot.timers.restart()
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded Timers')
 
+    @reload.command(name='prefix')
+    @commands.is_owner()
+    async def reload_prefixes(self, ctx):
+        await self.bot.refresh_prefixes()
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
