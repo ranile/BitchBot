@@ -34,13 +34,16 @@ class Emojis(commands.Cog):
     def ensure_safe_emojis(self, ctx, emojis):
         safe_check = self.safe_emoji_check(ctx)
         for emoji in emojis:
-            if emoji.id not in self.safe_emojis and not safe_check:
+            if (emoji.id not in self.safe_emojis and not safe_check) or ctx.channel.is_nsfw():
                 raise commands.CheckFailure(
-                    f"Channel '{ctx.channel}' needs to be NSFW in order to use {emoji.name}.")
+                    f"Channel '{ctx.channel}' needs to be NSFW in order to use emoji '{emoji.name}'.")
 
     @commands.group(aliases=["e"], invoke_without_command=True)
     async def emoji(self, ctx, emojis: commands.Greedy[discord.Emoji], amount: arg_or_1 = 1):
-        """Send any number of the emoji given by 'emojis' command
+        """Send any number of the emoji given by 'emojis'
+
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
 
         Args:
             emojis: The emojis to send.
@@ -57,6 +60,9 @@ class Emojis(commands.Cog):
     async def link(self, ctx, emoji: discord.Emoji):
         """Send link of any one of the emoji given by 'emojis' command
 
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
+
         Args:
             emoji: The emoji to link
         """
@@ -66,7 +72,12 @@ class Emojis(commands.Cog):
 
     @emoji.command()
     async def list(self, ctx):
-        """Shows the emojis that can be sent by 'emoji' command"""
+        """
+        Shows the emojis that can be sent by 'emoji' command
+
+        Only emojis that has been marked safe by bot admins are shown in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
+        """
         all_emojis = [e for e in self.bot.emojis if (e.available and self.safe_emoji_check(ctx))]
         chunked_emojis = list(chunks(all_emojis, 20))
         count = 1
@@ -90,6 +101,9 @@ class Emojis(commands.Cog):
         """
         Send embed of any one of the emoji given by 'emojis' command
 
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
+
         Args:
             emoji: The emoji to send in an the embed
         """
@@ -101,6 +115,15 @@ class Emojis(commands.Cog):
 
     @emoji.command()
     async def react(self, ctx, message: discord.Message, emoji: discord.Emoji):
+        """Make the bot react to a message with the given emoji
+
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
+
+        Arg:
+            message: The message to react to
+            emoji: The emoji to react with
+        """
         self.ensure_safe_emojis(ctx, [emoji])
         await message.add_reaction(emoji)
 
