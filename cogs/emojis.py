@@ -29,14 +29,14 @@ class Emojis(commands.Cog):
         self.safe_emojis = await self.emoji_service.fetch_all_safe_emojis()
 
     def safe_emoji_check(self, ctx):
-        return (ctx.guild is not None and ctx.guild.id not in keys.trusted_guilds) or ctx.author != self.bot.owner_id
+        return (ctx.guild is not None and ctx.guild.id in keys.trusted_guilds) or ctx.author == self.bot.owner_id
 
     def ensure_safe_emojis(self, ctx, emojis):
-        if self.safe_emoji_check(ctx):
-            for emoji in emojis:
-                if emoji.id not in self.safe_emojis:
-                    raise commands.CheckFailure(
-                        f"Channel '{ctx.channel}' needs to be NSFW in order to use {emoji.name}.")
+        safe_check = self.safe_emoji_check(ctx)
+        for emoji in emojis:
+            if emoji.id not in self.safe_emojis and not safe_check:
+                raise commands.CheckFailure(
+                    f"Channel '{ctx.channel}' needs to be NSFW in order to use {emoji.name}.")
 
     @commands.group(aliases=["e"], invoke_without_command=True)
     async def emoji(self, ctx, emojis: commands.Greedy[discord.Emoji], amount: arg_or_1 = 1):
