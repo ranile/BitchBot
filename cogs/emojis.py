@@ -29,7 +29,7 @@ class Emojis(commands.Cog):
         self.safe_emojis = await self.emoji_service.fetch_all_safe_emojis()
 
     def safe_emoji_check(self, ctx):
-        return (ctx.guild is not None and ctx.guild.id in keys.trusted_guilds) or ctx.author == self.bot.owner_id
+        return (ctx.guild is not None and ctx.guild.id in keys.trusted_guilds) or ctx.author.id == self.bot.owner_id
 
     def ensure_safe_emojis(self, ctx, emojis):
         safe_check = self.safe_emoji_check(ctx)
