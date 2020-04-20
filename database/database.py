@@ -38,6 +38,7 @@ async def createTables(connection):
     await connection.execute(services.MuteService.sql().createTable)
     await connection.execute(services.WarningsService.sql().createTable)
     await connection.execute(services.TimersService.sql().createTable)
+    await connection.execute(services.EmojiService.sql().createTable)
 
 
 async def init(loop):

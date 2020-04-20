@@ -1,10 +1,9 @@
 import discord
 import re
-import urllib
-from aiowiki import Wiki
+from urllib.parse import quote
 from discord.ext import commands
 
-from util.funs import random_discord_color  # pylint: disable=no-name-in-module
+from util.funs import random_discord_color
 from util import BloodyMenuPages, EmbedPagesData, checks
 
 
@@ -13,31 +12,6 @@ class Internet(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.is_image_regex = re.compile(r".*\.(jpg|png|gif)$")
-
-    @commands.command(aliases=["wiki"])
-    async def wikipedia(self, ctx, *, search):
-        """
-        Find a Wikipedia page on a given topic
-
-        Args:
-            search: A topic you want an article on
-        """
-
-        await ctx.channel.trigger_typing()
-        async with Wiki.wikipedia('en') as wiki:
-            page = await wiki.opensearch(search)
-            if len(page) == 0:
-                return
-            page = page[0]
-
-            embed = discord.Embed(title=page.title, description=(await page.text())[:1000], url=page.wiki.url,
-                                  color=random_discord_color())
-            embed.set_footer(text="From Wikipedia")
-            media = await page.media()
-            if len(media) != 0:
-                embed.set_thumbnail(url=media[0])
-
-            await ctx.send(embed=embed)
 
     @commands.command()
     async def joke(self, ctx):
@@ -50,17 +24,6 @@ class Internet(commands.Cog):
                                               headers={"Accept": "application/json"}) as res:
             content = await res.json()
             await ctx.send(content['joke'])
-
-    @commands.command()
-    async def norris(self, ctx):
-        """
-        Chuck Norris. Need I say more
-        """
-
-        await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get("https://api.chucknorris.io/jokes/random") as res:
-            data = (await res.json())["value"]
-            await ctx.send(data)
 
     @commands.command()
     async def reddit(self, ctx, *, search):
@@ -123,7 +86,7 @@ class Internet(commands.Cog):
         Be like bill
         """
 
-        link = f"https://belikebill.ga/billgen-API.php?default=1&name={urllib.parse.quote(name)}"
+        link = f"https://belikebill.ga/billgen-API.php?default=1&name={quote(name)}"
         await ctx.send(embed=discord.Embed().set_image(url=link))
 
     URBAN_LINK_EXP = re.compile(r'(\[(.+?)\])')
@@ -139,7 +102,7 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        search = urllib.parse.quote(query)
+        search = quote(query)
         link = f"https://www.urbandictionary.com/define.php?term={search}"
 
         async with self.bot.clientSession.get(f"http://api.urbandictionary.com/v0/define",
@@ -153,7 +116,7 @@ class Internet(commands.Cog):
             def replace_links(text, max_length=1024, characters_to_use=1000):
                 def pred(m):
                     word = m.group(2)
-                    return f'[{word}](https://www.urbandictionary.com/define.php?term={urllib.parse.quote(word)})'
+                    return f'[{word}](https://www.urbandictionary.com/define.php?term={quote(word)})'
 
                 text = self.URBAN_LINK_EXP.sub(pred, text)
                 if len(text) >= max_length:
@@ -174,10 +137,12 @@ class Internet(commands.Cog):
     @commands.command(aliases=["insult"])
     async def roast(self, ctx, *, member: discord.Member = None):
         """
-        Insult that guy, fuck him, who the fuck needs him
+        Insult that guy
+
+        **Note**: These not meant to be taken seriously
 
         Args:
-            member: The guy to fuck
+            member: The guy to insult
         """
 
         await ctx.channel.trigger_typing()

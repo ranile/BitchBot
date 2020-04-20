@@ -6,3 +6,4 @@ from services.ban_service import BanService
 from services.mute_service import MuteService
 from services.warning_service import WarningsService
 from services.timers_service import TimersService
+from services.emoji_service import EmojiService
