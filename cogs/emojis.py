@@ -78,7 +78,14 @@ class Emojis(commands.Cog):
         Only emojis that has been marked safe by bot admins are shown in non-NSFW channels.
         This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
         """
-        all_emojis = [e for e in self.bot.emojis if (e.available and self.safe_emoji_check(ctx))]
+
+        def pred(e):
+            safe_check = self.safe_emoji_check(ctx)
+            if ctx.channel.is_nsfw() or safe_check or e.id in self.safe_emojis:
+                return True
+            return False
+
+        all_emojis = [e for e in self.bot.emojis if (e.available and pred(e))]
         chunked_emojis = list(chunks(all_emojis, 20))
         count = 1
         data = []
