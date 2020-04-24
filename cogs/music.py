@@ -93,7 +93,7 @@ class Music(commands.Cog):
         return True
 
     async def cog_before_invoke(self, ctx):
-        player = self.bot.lavalink.players.create(ctx.guild.id, endpoint=str(ctx.guild.region))
+        player = self.bot.lavalink.player_manager.create(ctx.guild.id, endpoint=str(ctx.guild.region))
 
         if not player.is_connected:
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
@@ -119,7 +119,7 @@ class Music(commands.Cog):
             # await ctx.send('Everyone has left the voice channel so I have decided to leave too')
 
     async def stop_player(self, guild_id):
-        player = self.bot.lavalink.players.get(guild_id)
+        player = self.bot.lavalink.player_manager.get(guild_id)
 
         # Stop the current track so Lavalink consumes less resources.
         await player.stop()
@@ -150,7 +150,7 @@ class Music(commands.Cog):
             query: The search query. Can also be a URL
         """
         # Get the player for this guild from cache.
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         # Remove leading and trailing <>. <> may be used to suppress embedding links in Discord.
         query = query.strip('<>')
 
@@ -198,7 +198,7 @@ class Music(commands.Cog):
     @alone_or_has_perms()
     async def repeat(self, ctx):
         """Puts the player on repeat"""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         player.repeat = not player.repeat
         await ctx.send(f'Set repeat to: {player.repeat}')
 
@@ -206,7 +206,7 @@ class Music(commands.Cog):
     @alone_or_has_perms()
     async def pause(self, ctx):
         """Pause the player."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         print(player.paused)
         if player.paused:
             return await ctx.send('Already paused!')
@@ -217,7 +217,7 @@ class Music(commands.Cog):
     @alone_or_has_perms()
     async def resume(self, ctx):
         """Resume the player from a paused state."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
 
         if not player.paused:
             return await ctx.send('I am not currently paused!')
@@ -229,14 +229,14 @@ class Music(commands.Cog):
     @alone_or_has_perms()
     async def skip(self, ctx):
         """Skip the currently playing song."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         await player.skip()
         await ctx.send("Skipped!")
 
     @commands.command(aliases=['np', 'current', 'nowplaying'])
     async def now_playing(self, ctx):
         """Retrieve the currently playing song."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         current = player.current
         await ctx.send(f'Now playing: {current.title}\n'
                        f'{lavalink.format_time(player.position)} / {lavalink.format_time(current.duration)}')
@@ -244,7 +244,7 @@ class Music(commands.Cog):
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
         """Retrieve information on the next 5 songs from the queue."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         upcoming = list(itertools.islice(player.queue, 0, 5))
 
         embed = discord.Embed(title=f'Player queue', description=f'**{len(upcoming)} upcoming**')
@@ -264,7 +264,7 @@ class Music(commands.Cog):
     @commands.command(aliases=('lavalinkinfo', 'llinfo'))
     async def lavalink_info(self, ctx):
         """Retrieve various Node/Server/Player information."""
-        player = self.bot.lavalink.players.get(ctx.guild.id)
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
         if player is None:
             raise commands.CommandError('The bot must be playing something for this command to be used')
 
