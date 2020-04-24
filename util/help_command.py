@@ -1,11 +1,10 @@
-import inspect
-import re
 import discord
 from discord.ext import commands
 import itertools
 from util import funs, BloodyMenuPages, EmbedPagesData
 
 NEW_LINE = '\n'  # working around python's limitation of not allowing `\n` in f-strings
+SUPPORT_SERVER = 'https://discord.gg/ga9fNZq'
 
 
 # noinspection PyMethodMayBeStatic,PyShadowingNames
@@ -13,101 +12,27 @@ class BloodyHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__()
 
-    async def on_help_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            await ctx.send(str(error.original))
-        else:
-            # noinspection PyUnresolvedReferences
-            raise error.original
-
-    def get_command_signature(self, command):
-        parent = command.full_parent_name
-        out = command.name
-
-        aliases = ''
-        if len(command.aliases) > 0:
-            aliases = '|'.join(command.aliases)
-            out = f'[{command.qualified_name}, {aliases}]'
-
-        if parent:
-            aliases = f"|{aliases}" if (aliases != '') else ""
-            out = f'[{parent} {command.name}{aliases}]'
-
-        return f'{out} {command.signature}'
-
     def generate_base_help_embed(self):
         embed = discord.Embed(title='**You wanted help? Help is provided**', color=funs.random_discord_color())
-        embed.add_field(name="Need more help? Have any ideas for the bot? Want to report a bug?", value="[Join our support server](https://discord.gg/k2ysVzd)")
-        embed.set_footer(text='Do >help command/group name for information about it')
+        embed.add_field(name="Need more help? Have any ideas for the bot? Want to report a bug?",
+                        value=f"[Join our support server]({SUPPORT_SERVER})")
+        embed.set_footer(text=f'Do "{self.context.invoked_with}help command/group name" for information about it')
         return embed
-
-    def add_commands_to_embed(self, commands, cog_name, embed, description=None):
-        embed_description = [description or '', '**Commands**']
-        out = []
-        for cmd in commands:
-            try:
-                out.append(f"**{cmd.qualified_name}**:\t{str(cmd.help).split(NEW_LINE)[0]}")
-            except:
-                continue
-
-        if out:
-            embed_description.append('\n'.join(out))
-
-        embed.description = '\n'.join(embed_description)
-
-        return embed
-
-    def parse_docstring(self, docstring):
-        """Gets information from docstring formatted using Google's python style guide.
-
-        Args:
-            docstring: The docstring to extract information from.
-
-        Returns:
-            Tuple of dict of the arguments and their docs and everything in the docstring before the word `Args: `.
-        """
-
-        split = docstring.split("Args:\n")
-        args = inspect.cleandoc(split[1]).split('\n')
-
-        docs = {}
-        for arg in args:
-            matched = re.search(r'\w+: ', arg)
-
-            if not matched:
-                continue
-
-            name = matched.group(0)[:-2]
-            doc = arg[len(name):][1:].strip()
-
-            docs[name] = doc
-
-        return docs, split[0][:-2]
 
     def format_command_embed(self, embed, command):
+        embed.add_field(name=f'**{command.qualified_name}**', value=command.help, inline=False)
         embed.add_field(name='Format', value=self.get_command_signature(command), inline=False)
-
-        try:
-            command_help = self.parse_docstring(command.help)
-            embed.description = command_help[1]
-            embed.add_field(name=f'Parameters', value=self.generate_arg_string_for_embed(command_help[0]), inline=False)
-        except:
-            embed.description = command.help
-            if len(command.clean_params) != 0:
-                embed.add_field(name=f'Parameters', value='The docs are incomplete', inline=False)
 
         return embed
 
-    def generate_arg_string_for_embed(self, args):
-        out = ''
-        keys = list(args.keys())
-        values = list(args.values())
-        for i in range(len(args)):
-            out += f'**{keys[i]}**: {values[i]}\n'
+    def short_help_string(self, command):
+        if command.help is None:
+            help_str = f"Help not available. [Join the support server]({SUPPORT_SERVER})"
+        else:
+            help_str = str(command.help).strip().split('\n')[0]
 
-        return out
+        return help_str
 
-    # noinspection SpellCheckingInspection
     async def send_bot_help(self, mapping):
         def key(c):
             return c.cog_name or '\u200bNo Category'
@@ -137,11 +62,7 @@ class BloodyHelpCommand(commands.HelpCommand):
                 except AttributeError:
                     pass
 
-                help_string = str(cmd.help).strip().split('\n')[0]
-                if help_string is not None and len(help_string) > 0:
-                    embed.add_field(name=f'**{cmd.qualified_name}**', value=help_string, inline=False)
-                else:
-                    continue
+                embed.add_field(name=f'**{cmd.qualified_name}**', value=self.short_help_string(cmd), inline=False)
 
             data.append(embed)
 
@@ -150,8 +71,10 @@ class BloodyHelpCommand(commands.HelpCommand):
 
     async def send_cog_help(self, cog):
         embed = self.generate_base_help_embed()
-        embed.title += f'\n {cog.qualified_name} Commands'
-        embed = self.add_commands_to_embed(set(cog.walk_commands()), cog.qualified_name, embed)
+        embed.title += f'\n{cog.qualified_name} Commands'
+        cog_commands = await self.filter_commands(set(cog.walk_commands()), sort=True)
+        for command in cog_commands:
+            embed.add_field(name=command.qualified_name, value=self.short_help_string(command), inline=False)
 
         await self.context.send(embed=embed)
 
@@ -176,10 +99,7 @@ class BloodyHelpCommand(commands.HelpCommand):
 
         out = []
         for cmd in subcommands:
-            try:
-                out.append(f"**{cmd.qualified_name}**:\t{str(cmd.help).split(NEW_LINE)[0]}")
-            except:
-                continue
+            out.append(f"**{cmd.qualified_name}**:\t{self.short_help_string(cmd)}")
 
         if out:
             embed.add_field(name='Sub Commands', value='\n'.join(out), inline=False)
