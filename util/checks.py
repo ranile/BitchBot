@@ -42,7 +42,7 @@ def owner_only_in_non_trusted_guilds():
         if ctx.guild is not None and (ctx.guild.id in keys.trusted_guilds or is_owner):
             return True
         else:
-            raise commands.CheckFailure("You can't use this command")
+            raise commands.CheckFailure("This command is limited to bot owner only for security reasons")
 
     return commands.check(predicate)
 
