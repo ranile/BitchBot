@@ -28,13 +28,25 @@ class Emojis(commands.Cog):
     async def fetch_safe_emojis(self):
         self.safe_emojis = await self.emoji_service.fetch_all_safe_emojis()
 
-    def safe_emoji_check(self, ctx):
-        return (ctx.guild is not None and ctx.guild.id in keys.trusted_guilds) or ctx.author.id == self.bot.owner_id
+    def safety_check(self, ctx):
+        if ctx.author.id == self.bot.owner_id:
+            return True
+
+        if ctx.channel.is_nsfw():
+            return True
+
+        if ctx.guild is None:
+            return True
+
+        if ctx.guild.id in keys.trusted_guilds:
+            return True
 
     def ensure_safe_emojis(self, ctx, emojis):
-        safe_check = self.safe_emoji_check(ctx)
+        if self.safety_check(ctx):
+            return True
+
         for emoji in emojis:
-            if (emoji.id not in self.safe_emojis and not safe_check) or ctx.channel.is_nsfw():
+            if emoji.id not in self.safe_emojis:
                 raise commands.CheckFailure(
                     f"Channel '{ctx.channel}' needs to be NSFW in order to use emoji '{emoji.name}'.")
 
@@ -80,9 +92,12 @@ class Emojis(commands.Cog):
         """
 
         def pred(e):
-            safe_check = self.safe_emoji_check(ctx)
-            if ctx.channel.is_nsfw() or safe_check or e.id in self.safe_emojis:
+            if self.safety_check(ctx):
                 return True
+
+            if e.id in self.safe_emojis:
+                return True
+
             return False
 
         all_emojis = [e for e in self.bot.emojis if (e.available and pred(e))]
