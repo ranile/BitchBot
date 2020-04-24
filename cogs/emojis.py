@@ -58,7 +58,7 @@ class Emojis(commands.Cog):
         This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
 
         Args:
-            emojis: The emojis to send.
+            emojis: The name of the emojis to send.
             amount: The number of times to repeat
         """
         self.ensure_safe_emojis(ctx, emojis)
@@ -76,7 +76,7 @@ class Emojis(commands.Cog):
         This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
 
         Args:
-            emoji: The emoji to link
+            emoji: The emoji's name to link
         """
         self.ensure_safe_emojis(ctx, [emoji])
         await ctx.send(emoji.url)
@@ -127,7 +127,7 @@ class Emojis(commands.Cog):
         This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
 
         Args:
-            emoji: The emoji to send in an the embed
+            emoji: The name of emoji to send in an the embed
         """
         self.ensure_safe_emojis(ctx, [emoji])
         embed = discord.Embed()
@@ -144,12 +144,12 @@ class Emojis(commands.Cog):
 
         Arg:
             message: The message to react to
-            emoji: The emoji to react with
+            emoji: The name of emoji to react with
         """
         self.ensure_safe_emojis(ctx, [emoji])
         await message.add_reaction(emoji)
 
-    @emoji.command(aliases=['marksafe', 'ms'])
+    @emoji.command(aliases=['marksafe', 'ms'], hidden=True)
     @commands.check(lambda ctx: ctx.author.id in keys.can_use_private_commands)
     async def mark_safe(self, ctx, emoji: discord.Emoji):
         await self.emoji_service.mark_safe(emoji.id, ctx.author.id)

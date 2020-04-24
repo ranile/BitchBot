@@ -19,15 +19,21 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.command_pattern = re.compile(rf'>[a-z]+')
         self.activity_service = ActivityService(self.bot.db)
 
-    @commands.group(invoke_without_command=True)
+    @commands.group()
     async def stats(self, ctx):
-        out = []
+        """Command group for stats related comamnds"""
+        pass
+
+    @stats.command(name='websocket', aliases=['ws'])
+    async def ws_stats(self, ctx):
+        """Gives stats about bot's received websocket events"""
+
+        embed = discord.Embed(title='Websocket events received by the bot', color=util.random_discord_color())
         socket_stats = self.bot.socket_stats
         for event_name in sorted(socket_stats, key=socket_stats.get, reverse=True):
-            count = socket_stats[event_name]
-            out.append(f'{event_name}: {count}')
-        txt = '\n'.join(out)
-        await ctx.send(embed=discord.Embed(description=f'```{txt}```', color=util.random_discord_color()))
+            embed.add_field(name=event_name, value=socket_stats[event_name], inline=False)
+
+        await ctx.send(embed=embed)
 
     @stats.group(invoke_without_command=True)
     @commands.guild_only()

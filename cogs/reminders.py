@@ -19,6 +19,15 @@ class Reminders(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     async def remind(self, ctx, *, time_and_text: HumanTime(other=True)):
+        """
+        Reminds you of something after a certain amount of time.
+
+        The format must be:
+            `remind time text`
+
+        `time` should be a relative time like 2h, 1d, etc
+        """
+
         time, text = time_and_text.time, time_and_text.other
 
         timer = Timer(
@@ -38,6 +47,9 @@ class Reminders(commands.Cog):
 
     @remind.command(name='list', aliases=['get'])
     async def reminders_list(self, ctx):
+        """
+        Show 10 of your upcoming reminders
+        """
 
         fetched = await self.bot.timers.timers_service.get_where(extras={"author_id": ctx.author.id}, limit=10)
         if len(fetched) == 0:

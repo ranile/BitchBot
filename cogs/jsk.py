@@ -8,6 +8,10 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=jsk, name='J
 
     @commands.command(name="py", aliases=["python"])
     async def jsk_python(self, ctx: commands.Context, *, argument: codeblock_converter):
+        """
+        Direct evaluation of Python code.
+        """
+
         if '.delete(' in ctx.message.content:
             msg = "Bruh... You don't trust yourself with `.delete(` in an eval"
             await ctx.send(msg)
@@ -16,6 +20,10 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=jsk, name='J
 
     @commands.command(name="shutdown", aliases=["logout", "exit"])
     async def jsk_shutdown(self, ctx: commands.Context):
+        """
+        Logs this bot out.
+        """
+
         await ctx.send("Exiting...")
         await self.bot.close()
 

@@ -28,10 +28,12 @@ class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["send"])
+    @commands.command(aliases=["send"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
     async def say(self, ctx, *, message):
-        """Have the bot say something. Have fun!
+        """Have the bot say something.
+
+        This command can only be used bot admins
 
         Args:
             message: The message you want to say
@@ -42,11 +44,13 @@ class Miscellaneous(commands.Cog):
         await funs.log(ctx, message, sentMessage)
         await ctx.message.delete(delay=5)
 
-    @commands.command(aliases=["sendembed"])
+    @commands.command(aliases=["sendembed"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
     async def sayembed(self, ctx, *, message):
         """
-        Have the bot say something in embeds. Have fun!
+        Have the bot say something in embeds.
+
+        This command can only be used bot admins
 
         Args:
             message: The message you wamt to say in embed
@@ -78,11 +82,13 @@ class Miscellaneous(commands.Cog):
             webhook = discord.Webhook.from_url(logWebhook, adapter=discord.AsyncWebhookAdapter(session))
             await webhook.send(embed=embed, username='sayembed')
 
-    @commands.command(aliases=["addreaction"])
+    @commands.command(aliases=["addreaction"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
     async def react(self, ctx, msg: discord.Message, text):
         """
         Add the given reactions to a message
+
+        This command can only be used bot admins
 
         Args:
             msg: The message you want to react to
@@ -97,11 +103,13 @@ class Miscellaneous(commands.Cog):
 
         await funs.log(ctx, text, ctx.message, ''.join(sent))
 
-    @commands.command()
+    @commands.command(hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
     async def totogglecase(self, ctx, *, msg):
         """
         Convert string to toggle case
+
+        This command can only be used bot admins
 
         Args:
             msg: Message you want to be in toggled case
@@ -115,11 +123,13 @@ class Miscellaneous(commands.Cog):
         await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
-    @commands.command(aliases=["yell"])
+    @commands.command(aliases=["yell"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
     async def touppercase(self, ctx, *, msg):
         """
         Convert string to upper case
+
+        This command can only be used bot admins
 
         Args:
             msg: Message you want in upper case
@@ -129,11 +139,13 @@ class Miscellaneous(commands.Cog):
         await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete()
 
-    @commands.command(aliases=["wide"])
+    @commands.command(aliases=["wide"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
     async def addspaces(self, ctx, msg: str, spaces: int = 3):
         """
         Adds spaces in between every character.
+
+        This command can only be used bot admins
 
         Args:
             msg: Message you want to make wide
@@ -146,11 +158,13 @@ class Miscellaneous(commands.Cog):
         await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
     async def flip(self, ctx, *, msg):
         """
         Converts given text to flipped unicode characters
+
+        This command can only be used bot admins
 
         Args:
             msg: Message you want to flip
@@ -374,7 +388,7 @@ class Miscellaneous(commands.Cog):
             'https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160')
 
     # noinspection PyUnresolvedReferences
-    @commands.command()
+    @commands.command(hidden=True)
     async def parse(self, ctx, *, time_and_arg: converters.HumanTime(other=True)):
         """
         Parses human time friendly time
