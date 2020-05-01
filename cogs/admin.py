@@ -1,6 +1,7 @@
 import importlib
 import logging
 
+import discord
 from discord.ext import commands
 import sys
 import re
@@ -89,6 +90,18 @@ class Admin(commands.Cog):
     @commands.is_owner()
     async def reload_prefixes(self, ctx):
         await self.bot.refresh_prefixes()
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
+
+    @commands.command(aliases=['blacklist'])
+    @commands.is_owner()
+    async def block(self, ctx, user: discord.User, *, reason=None):
+        await self.bot.blacklist_user(user, reason=reason)
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
+
+    @commands.command()
+    @commands.is_owner()
+    async def unblock(self, ctx, user: discord.User):
+        await self.bot.remove_from_blacklist(user)
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 
 

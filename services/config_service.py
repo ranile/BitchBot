@@ -1,6 +1,5 @@
 from database.sql import SQL
-from resources import Prefix
-from resources.guild_config import GuildConfig
+from resources import Prefix, GuildConfig, Blacklist
 
 
 class GuildConfigService:
@@ -122,6 +121,32 @@ class GuildConfigService:
 
             return Prefix.convertMany(fetched) if fetched is not None else []
 
+    async def get_blacklisted_users(self):
+        async with self.pool.acquire() as con:
+            fetched = await con.fetch('''
+            select *
+            from blacklist;
+            ''')
+
+        return Blacklist.convertMany(fetched) if fetched is not None else []
+
+    async def blacklist_user(self, user_id, *, reason=None, until=None):
+        async with self.pool.acquire() as con:
+            inserted = await con.fetchrow('''
+            insert into blacklist (user_id, reason, blacklisted_until)
+            values ($1, $2, $3)
+            returning *;
+            ''', user_id, reason, until)
+
+            return Blacklist.convert(inserted)
+
+    async def remove_user_from_blacklist(self, user_id):
+        async with self.pool.acquire() as con:
+            return await con.execute('''
+            delete from blacklist
+            where user_id = $1;
+            ''', user_id)
+
     @classmethod
     def sql(cls):
         return SQL(createTable='''
@@ -156,4 +181,11 @@ class GuildConfigService:
             after update or insert
             on GuildConfig
         execute function refresh_config_view();
+        
+        create table if not exists blacklist
+        (
+            user_id           bigint primary key,
+            blacklisted_at    timestamptz not null default now(),
+            blacklisted_until timestamptz
+        );
         ''')

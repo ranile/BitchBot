@@ -7,3 +7,4 @@ from resources.mute import Mute
 from resources.guild_config import GuildConfig
 from resources.Timer import Timer
 from resources.Prefix import Prefix
+from resources.blacklist import Blacklist

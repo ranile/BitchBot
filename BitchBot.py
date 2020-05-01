@@ -60,6 +60,9 @@ class BitchBot(commands.Bot):
 
         self.prefixes = {}
 
+        self.blacklist = {}
+        self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1.0, 15.0, commands.BucketType.user)
+
         if not keys.debug:
             self.dbl_client = dbl.DBLClient(self, keys.dbl_token, autopost=True)
 
@@ -113,6 +116,10 @@ class BitchBot(commands.Bot):
         prefixes = await self.config_service.get_all_prefixes()
         for i in prefixes:
             await self.set_prefix(i, should_insert=False)
+
+        blacklist = await self.config_service.get_blacklisted_users()
+        for blocked_user in blacklist:
+            self.blacklist[blocked_user.user_id] = blocked_user
 
         await super().start(*args, **kwargs)
 
@@ -168,6 +175,22 @@ class BitchBot(commands.Bot):
                 await self.activity_service.increment(message.author.id, message.guild.id, increment_by)
                 bitch_bot_logger.debug(f'Incremented activity of {message.author} ({message.author.id}) '
                                        f'in {message.guild} ({message.guild.id}) by {increment_by}')
+
+        else:
+            if message.author.id in self.blacklist:  # handle blacklist
+                if message.channel.permissions_for(message.guild.me).send_messages and \
+                        not self.blacklist_message_bucket.update_rate_limit(message):
+
+                    blacklist = self.blacklist[message.author.id]
+                    reason = blacklist.reason if blacklist.reason is not None else "No reason provided"
+                    embed = discord.Embed(title='You have been blocked from using this bot by the bot owner',
+                                          description=f'**Reason**: {reason}',
+                                          timestamp=blacklist.blacklisted_at)
+                    embed.set_footer(text='Blocked at')
+
+                    await message.channel.send(embed=embed)
+
+                return
 
         await self.invoke(ctx)
 
@@ -258,3 +281,10 @@ class BitchBot(commands.Bot):
         for i in prefixes:
             await self.set_prefix(i, should_insert=False)
 
+    async def blacklist_user(self, user, *, reason=None):
+        blacklisted = await self.config_service.blacklist_user(user.id, reason=reason)
+        self.blacklist[blacklisted.user_id] = blacklisted
+
+    async def remove_from_blacklist(self, user):
+        await self.config_service.remove_user_from_blacklist(user.id)
+        del self.blacklist[user.id]
