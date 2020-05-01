@@ -251,3 +251,10 @@ class BitchBot(commands.Bot):
 
     def refresh_loc_count(self):
         self.lines_of_code_count = self._count_lines_of_code()
+
+    async def refresh_prefixes(self):
+        self.prefixes.clear()
+        prefixes = await self.config_service.get_all_prefixes()
+        for i in prefixes:
+            await self.set_prefix(i, should_insert=False)
+
