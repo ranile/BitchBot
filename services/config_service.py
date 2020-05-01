@@ -186,6 +186,7 @@ class GuildConfigService:
         (
             user_id           bigint primary key,
             blacklisted_at    timestamptz not null default now(),
-            blacklisted_until timestamptz
+            blacklisted_until timestamptz,
+            reason text
         );
         ''')
