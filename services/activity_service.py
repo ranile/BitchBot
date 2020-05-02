@@ -64,7 +64,7 @@ class ActivityService:
 
     async def get_guilds_with_tracking_enabled(self):
         async with self.pool.acquire() as connection:
-            fetched = await connection.fetchrow('''
+            fetched = await connection.fetch('''
             select guild_id from config_view
             where wants_activity_tracking = true;
             ''')
