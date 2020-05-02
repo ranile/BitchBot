@@ -48,11 +48,12 @@ class Config(commands.Cog):
     @commands.guild_only()
     async def remove_prefix(self, ctx):
         """
-        Removes a prefix
+        Removes the server's custom prefix
 
         You need `Manage Server` permissions to run this command
         """
 
+        await self.bot.clear_custom_prefix(ctx.guild.id)
         await ctx.send(f'Successfully cleared custom prefix\n'
                        f'Current prefixes are : {self._get_all_prefixes_presentable(ctx)}')
 

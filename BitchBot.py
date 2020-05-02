@@ -85,10 +85,9 @@ class BitchBot(commands.Bot):
 
         return prefix
 
-    async def remove_prefix(self, guild_id):
-        prefix = await self.config_service.delete_prefix(guild_id)
-        del self.prefixes[prefix.guild_id]
-        return prefix
+    async def clear_custom_prefix(self, guild_id):
+        await self.config_service.delete_prefix(guild_id)
+        del self.prefixes[guild_id]
 
     # noinspection PyAttributeOutsideInit
     async def start(self, *args, **kwargs):
