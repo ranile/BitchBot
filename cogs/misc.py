@@ -10,8 +10,7 @@ import string
 from discord.ext import commands
 from TextToOwO.owo import text_to_owo
 from keys import logWebhook
-from util import funs, converters  # pylint: disable=no-name-in-module
-from util import checks
+from util import funs, converters, checks, SUPPORT_SERVER_INVITE  # pylint: disable=no-name-in-module
 from util.emoji_chars import emoji_chars
 
 
@@ -376,7 +375,7 @@ class Miscellaneous(commands.Cog):
     async def source(self, ctx):
         """Gives you a link to the source code"""
         await ctx.send(embed=discord.Embed(
-            description=f"The {self.bot.lines_of_code_count} lines of actual Python 3 and Typescript code that "
+            description=f"The {self.bot.lines_of_code_count} lines of actual Python 3 code that "
                         f"I'm made of can be found [here](https://github.com/hamza1311/BitchBot)",
             color=funs.random_discord_color()
         ))
@@ -384,8 +383,18 @@ class Miscellaneous(commands.Cog):
     @commands.command()
     async def invite(self, ctx):
         """Invite me to your server"""
+
         await ctx.send(
-            'https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160')
+            embed=discord.Embed(
+                title='Invite Link',
+                url='https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160',
+                color=funs.random_discord_color()
+            ).add_field(name="Need more help? Have any ideas for the bot? Want to report a bug?",
+                        value=f"[Join our support server]({SUPPORT_SERVER_INVITE})")
+            .set_author(name=ctx.me, icon_url=ctx.me.avatar_url_as(format='png'))
+            .set_footer(text=f'Rquested by {ctx.author.display_name}',
+                        icon_url=ctx.author.avatar_url_as(format='png'))
+        )
 
     # noinspection PyUnresolvedReferences
     @commands.command(hidden=True)

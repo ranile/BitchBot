@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
 import itertools
-from util import funs, BloodyMenuPages, EmbedPagesData
+from util import BloodyMenuPages, EmbedPagesData
+import util
 
 NEW_LINE = '\n'  # working around python's limitation of not allowing `\n` in f-strings
-SUPPORT_SERVER = 'https://discord.gg/ga9fNZq'
 
 
 # noinspection PyMethodMayBeStatic,PyShadowingNames
@@ -13,9 +13,9 @@ class BloodyHelpCommand(commands.HelpCommand):
         super().__init__()
 
     def generate_base_help_embed(self):
-        embed = discord.Embed(title='**You wanted help? Help is provided**', color=funs.random_discord_color())
+        embed = discord.Embed(title='**You wanted help? Help is provided**', color=util.random_discord_color())
         embed.add_field(name="Need more help? Have any ideas for the bot? Want to report a bug?",
-                        value=f"[Join our support server]({SUPPORT_SERVER})")
+                        value=f"[Join our support server]({util.SUPPORT_SERVER_INVITE})")
         embed.set_footer(text=f'Do "{self.context.invoked_with}help command/group name" for information about it')
         return embed
 
@@ -27,7 +27,7 @@ class BloodyHelpCommand(commands.HelpCommand):
 
     def short_help_string(self, command):
         if command.help is None:
-            help_str = f"Help not available. [Join the support server]({SUPPORT_SERVER})"
+            help_str = f"Help not available. [Join the support server]({util.SUPPORT_SERVER_INVITE})"
         else:
             help_str = str(command.help).strip().split('\n')[0]
 
