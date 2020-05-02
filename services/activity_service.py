@@ -69,7 +69,7 @@ class ActivityService:
             where wants_activity_tracking = true;
             ''')
 
-            return [row for row in fetched] if fetched is not None else []
+            return [row['guild_id'] for row in fetched] if fetched is not None else []
 
     sql = SQL(createTable='''
         create table if not exists Activity
