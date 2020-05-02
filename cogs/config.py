@@ -43,12 +43,13 @@ class Config(commands.Cog):
         await ctx.send(f'Set prefix: `{added}`\n'
                        f'Current prefixes are : {self._get_all_prefixes_presentable(ctx)}')
 
-    @prefix.command(name='remove')
+    @prefix.command(name='remove', aliases=['clear'])
     @checks.can_config()
     @commands.guild_only()
     async def remove_prefix(self, ctx):
         """
-        Removes the server's custom prefix
+        Removes the server's custom prefix.
+        Once custom prefix is removed, `>` will be the prefix along with @ mention.
 
         You need `Manage Server` permissions to run this command
         """
@@ -58,11 +59,12 @@ class Config(commands.Cog):
                        f'Current prefixes are : {self._get_all_prefixes_presentable(ctx)}')
 
     def _get_all_prefixes_presentable(self, ctx):
-        prefixes = ['>', ctx.me.mention]
+        prefixes = [ctx.me.mention]
         try:
             prefixes.append(f'`{self.bot.prefixes[ctx.guild.id]}`')
         except KeyError:
-            pass
+            prefixes.append('`>`')
+
         return ', '.join(prefixes)
 
 

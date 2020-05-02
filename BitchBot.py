@@ -25,11 +25,11 @@ bitch_bot_logger.addHandler(file_handler)
 
 
 async def _prefix_pred(bot, message):
-    prefixes = ['>']
+    prefixes = []
     try:
         prefixes.append(bot.prefixes[message.guild.id])
     except KeyError:
-        pass
+        prefixes.append('>')
 
     return commands.when_mentioned_or(*prefixes)(bot, message)
 
