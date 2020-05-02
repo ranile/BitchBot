@@ -28,7 +28,7 @@ async def _prefix_pred(bot, message):
     prefixes = []
     try:
         prefixes.append(bot.prefixes[message.guild.id])
-    except KeyError:
+    except (KeyError, AttributeError):
         prefixes.append('>')
 
     return commands.when_mentioned_or(*prefixes)(bot, message)
@@ -250,7 +250,7 @@ class BitchBot(commands.Bot):
             if root.startswith(('./venv', './web/frontend/node_modules', '.git', '.idea')):
                 continue
             for file in files:
-                if file.endswith(('.py', '.ts')):
+                if file.endswith(('.py',)):
                     yield os.path.join(root, file)
 
     def _count_lines_of_code(self):
