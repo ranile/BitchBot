@@ -10,6 +10,19 @@ import logging
 log = logging.getLogger('BitchBot' + __name__)
 
 
+def must_have_activity_enabled():
+    def pred(ctx):
+        if ctx.guild is None:
+            raise commands.NoPrivateMessage
+
+        if ctx.guild.id in ctx.cog.wants_activity_tracking:
+            return True
+
+        raise commands.CheckFailure('Activity tracking must be enabled to use this command')
+
+    return commands.check(pred)
+
+
 class Activity(commands.Cog, name='Activity Tracking'):
     """Tracks your activity in the guild and give them activity points for being active."""
 
@@ -51,8 +64,8 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         await ctx.send(embed=embed)
 
-    @stats.group(invoke_without_command=True)
-    @commands.guild_only()
+    @commands.group(invoke_without_command=True)
+    @must_have_activity_enabled()
     async def activity(self, ctx, target: discord.Member = None):
         """
         Shows activity on the server's leaderboard
@@ -76,7 +89,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
             await ctx.send(f'Activity for user `{util.format_human_readable_user(target)}` not found')
 
     @activity.command(name='top')
-    @commands.guild_only()
+    @must_have_activity_enabled()
     async def top_users(self, ctx, amount=10):
         """Shows top users in server's activity leaderboard"""
         fetched = await self.activity_service.get_top(guild=ctx.guild, limit=amount)
@@ -98,6 +111,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         await util.BloodyMenuPages(util.TextPagesData(data)).start(ctx)
 
     @activity.command(name='enable')
+    @commands.guild_only()
     @checks.can_config()
     async def activity_enable(self, ctx):
         await self.activity_service.set_tracking_state(ctx.guild.id, True)
@@ -106,6 +120,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
         await ctx.send('Activity tracking has been enabled')
 
     @activity.command(name='disable')
+    @commands.guild_only()
     @checks.can_config()
     async def activity_disable(self, ctx):
         await self.activity_service.set_tracking_state(ctx.guild.id, False)
