@@ -53,6 +53,24 @@ class ActivityService:
 
         return Activity.convertMany(fetched)
 
+    async def set_tracking_state(self, guild_id, state):
+        async with self.pool.acquire() as connection:
+            return await connection.fetchrow('''
+            update guildconfig
+            set wants_activity_tracking = $1
+            where guild_id = $2
+            returning wants_activity_tracking;
+            ''', state, guild_id)
+
+    async def get_guilds_with_tracking_enabled(self):
+        async with self.pool.acquire() as connection:
+            fetched = await connection.fetchrow('''
+            select guild_id from config_view
+            where wants_activity_tracking = true;
+            ''')
+
+            return [row for row in fetched] if fetched is not None else []
+
     sql = SQL(createTable='''
         create table if not exists Activity
         (

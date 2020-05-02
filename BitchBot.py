@@ -50,9 +50,6 @@ class BitchBot(commands.Bot):
         # Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')
 
-        # activity tracking related props
-        self.activity_bucket = commands.CooldownMapping.from_cooldown(1.0, 120.0, commands.BucketType.member)
-
         # socket stats props
         self.socket_stats = {}
 
@@ -163,23 +160,19 @@ class BitchBot(commands.Bot):
         ctx = await self.get_context(message)
 
         if not ctx.valid:
-            me = message.guild.me if message.guild is not None else self.user
-            if me.mentioned_in(message):  # Bot was mentioned so
+            if self.user.mentioned_in(message) \
+                    and (message.guild is not None and message.channel.permissions_for(message.guild.me)):
+
                 await message.channel.send(random.choice(  # :pinng:
                     ["<a:ping:610784135627407370>", "<a:pinng:689843900889694314>"]))
-                await self.send_ping_log_embed(message)  # and log the message
+                if message.guild.get_member(self.owner_id) is not None:
+                    await self.send_ping_log_embed(message)  # and log the message
 
-            if not self.activity_bucket.update_rate_limit(message):  # been two minutes since last update
-                increment_by = 2
-                await self.activity_service.increment(message.author.id, message.guild.id, increment_by)
-                bitch_bot_logger.debug(f'Incremented activity of {message.author} ({message.author.id}) '
-                                       f'in {message.guild} ({message.guild.id}) by {increment_by}')
-
+            self.dispatch('regular_human_message', message)
         else:
             if message.author.id in self.blacklist:  # handle blacklist
                 if message.channel.permissions_for(message.guild.me).send_messages and \
                         not self.blacklist_message_bucket.update_rate_limit(message):
-
                     blacklist = self.blacklist[message.author.id]
                     reason = blacklist.reason if blacklist.reason is not None else "No reason provided"
                     embed = discord.Embed(title='You have been blocked from using this bot by the bot owner',

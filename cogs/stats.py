@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from services import ActivityService
 import util
+from util import checks
 from database import errors
 import logging
 
@@ -14,10 +15,25 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     def __init__(self, bot):
         self.bot = bot
-        self.cache = {}
-        self.bot_channel_pattern = re.compile(r'(bot-?commands|spam)')
         self.command_pattern = re.compile(rf'>[a-z]+')
         self.activity_service = ActivityService(self.bot.db)
+        self.activity_bucket = commands.CooldownMapping.from_cooldown(1.0, 120.0, commands.BucketType.member)
+
+        self.wants_activity_tracking = set()
+
+        self.bot.loop.create_task(self.load_guilds())
+
+    async def load_guilds(self):
+        self.wants_activity_tracking = set(await self.activity_service.get_guilds_with_tracking_enabled())
+
+    @commands.Cog.listener()
+    async def on_regular_human_message(self, message):
+        if message.guild.id in self.wants_activity_tracking:
+            if not self.activity_bucket.update_rate_limit(message):  # been two minutes since last update
+                increment_by = 2
+                await self.activity_service.increment(message.author.id, message.guild.id, increment_by)
+                log.debug(f'Incremented activity of {message.author} ({message.author.id}) '
+                          f'in {message.guild} ({message.guild.id}) by {increment_by}')
 
     @commands.group()
     async def stats(self, ctx):
@@ -80,6 +96,22 @@ class Activity(commands.Cog, name='Activity Tracking'):
         data.append(f'You have {me.points} points')
 
         await util.BloodyMenuPages(util.TextPagesData(data)).start(ctx)
+
+    @activity.command(name='enable')
+    @checks.can_config()
+    async def activity_enable(self, ctx):
+        await self.activity_service.set_tracking_state(ctx.guild.id, True)
+        self.wants_activity_tracking.add(ctx.guild.id)
+
+        await ctx.send('Activity tracking has been enabled')
+
+    @activity.command(name='disable')
+    @checks.can_config()
+    async def activity_disable(self, ctx):
+        await self.activity_service.set_tracking_state(ctx.guild.id, False)
+        self.wants_activity_tracking.remove(ctx.guild.id)
+
+        await ctx.send('Activity tracking has been disabled')
 
 
 def setup(bot):
