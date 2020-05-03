@@ -1,10 +1,10 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {MatTableDataSource} from "@angular/material/table";
-import {PageEvent} from "@angular/material/paginator";
-import {MatDialog} from "@angular/material/dialog";
-import {ShowCommandComponent} from "./show-command/show-command.component";
-import {CogCommands, Command} from "../../models/Command";
+import { Component, OnInit } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
+import { MatTableDataSource } from "@angular/material/table";
+import { PageEvent } from "@angular/material/paginator";
+import { MatDialog } from "@angular/material/dialog";
+import { ShowCommandComponent } from "./show-command/show-command.component";
+import { CogCommands, Command } from "../../models/Command";
 
 
 @Component({
@@ -41,8 +41,6 @@ export class CommandsComponent implements OnInit {
                 return 0
             });
             this.cog = this.cogs[0]
-            // this.dataSources[data[0].name] = new MatTableDataSource(data[0].commands)
-            console.log(this.cogs)
         })
 
     }
