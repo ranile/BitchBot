@@ -2,18 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {MatTableDataSource} from "@angular/material/table";
 import {PageEvent} from "@angular/material/paginator";
-
-export interface Command {
-    name: string
-    help: string
-    signature: string
-}
-
-export interface CogCommands {
-    name: string
-    description: string
-    commands: Command[]
-}
+import {MatDialog} from "@angular/material/dialog";
+import {ShowCommandComponent} from "./show-command/show-command.component";
+import {CogCommands, Command} from "../../models/Command";
 
 
 @Component({
@@ -27,13 +18,14 @@ export class CommandsComponent implements OnInit {
     dataSources: { [key: string]: MatTableDataSource<Command> } = {};
     cog: CogCommands
 
-    constructor(private httpClient: HttpClient) {
+    constructor(private httpClient: HttpClient, public dialog: MatDialog) {
     }
 
     ngOnInit(): void {
         this.httpClient.get<CogCommands[]>('/api/commands/').toPromise().then(data => {
             data.forEach(it => {
                 this.cogs.push(it)
+                it.commands.forEach(command => command.help = command.help ? command.help : 'Help for this command is not available, join our support server for help')
                 this.dataSources[it.name] = new MatTableDataSource(it.commands)
             })
 
@@ -56,7 +48,6 @@ export class CommandsComponent implements OnInit {
     }
 
     shortHelp(help: string): string {
-        if (help == null) return 'Help for this command is not available, join our support server for help'
         return help.split('\n')[0]
     }
 
@@ -65,6 +56,8 @@ export class CommandsComponent implements OnInit {
     }
 
     onCommandRowClick(row: Command) {
-        console.log(row)
+        this.dialog.open(ShowCommandComponent, {
+            data: row
+        });
     }
 }
