@@ -1,5 +1,5 @@
 @import "../../../queries";
-@import "../../../styles";
+@import "~src/colors";
 @import "~@angular/material/theming";
 
 #home-container {
@@ -155,9 +155,4 @@
             }
         }
     }
-
 }
-
-
-
-
