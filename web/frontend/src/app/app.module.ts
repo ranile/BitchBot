@@ -24,6 +24,10 @@ import { DiscordUserPipe } from './pipes/discord-user.pipe';
 import { DashboardComponent } from './dashboard/components/dashboard/dashboard.component';
 import {DashboardModule} from "./dashboard/dashboard.module";
 import { CommandsComponent } from './components/commands/commands.component';
+import {MatTableModule} from "@angular/material/table";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatPaginatorModule} from "@angular/material/paginator";
+import {MatSortModule} from "@angular/material/sort";
 
 @NgModule({
     declarations: [
@@ -53,6 +57,10 @@ import { CommandsComponent } from './components/commands/commands.component';
         MatSelectModule,
         MatCardModule,
         DashboardModule,
+        MatTableModule,
+        MatFormFieldModule,
+        MatPaginatorModule,
+        MatSortModule,
     ],
     providers: [],
     bootstrap: [AppComponent]
