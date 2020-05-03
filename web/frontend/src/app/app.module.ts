@@ -23,6 +23,7 @@ import { RelativeTimePipe } from './pipes/relative-time.pipe';
 import { DiscordUserPipe } from './pipes/discord-user.pipe';
 import { DashboardComponent } from './dashboard/components/dashboard/dashboard.component';
 import {DashboardModule} from "./dashboard/dashboard.module";
+import { CommandsComponent } from './components/commands/commands.component';
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import {DashboardModule} from "./dashboard/dashboard.module";
         ShowWarnComponent,
         RelativeTimePipe,
         DiscordUserPipe,
+        CommandsComponent,
     ],
     imports: [
         BrowserModule,
