@@ -1,4 +1,6 @@
 @import "../../../queries";
+@import "../../../styles";
+@import "~@angular/material/theming";
 
 #home-container {
     scroll-snap-type: y mandatory;
@@ -43,7 +45,7 @@
     }
 
     #info {
-        background: #005890;
+        background: mat-color($dark-primary)
     }
 
     #info-content {
@@ -87,7 +89,7 @@
     }
 
     #support {
-        background-color: #4562c7;
+        background-color: mat-color(mat-palette($mat-blue));
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -109,7 +111,8 @@
     }
 
     #links {
-        background-color: #8d03ff;
+        $pink-palette: mat-palette($mat-pink);
+        background-color: mat-color($pink-palette);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -126,10 +129,11 @@
 
             .link-button {
                 width: 100%;
-                font-size: 2rem;
+                font-size: 1.7em;
                 border-radius: 1em;
-                padding: 2rem;
+                padding: 1em;
                 vertical-align: middle;
+                background-color: mat-color($pink-palette);
 
                 @media (max-width: $query-max-width) {
                     padding: 1rem;

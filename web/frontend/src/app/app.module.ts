@@ -28,7 +28,7 @@ import {DashboardModule} from "./dashboard/dashboard.module";
     declarations: [
         AppComponent,
         HomeComponent,
-        /*NavbarComponent, */
+        NavbarComponent,
         ShowWarnsComponent,
         ModDashboardComponent,
         DashboardComponent,

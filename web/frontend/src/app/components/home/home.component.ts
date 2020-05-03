@@ -1,4 +1,4 @@
-import {Component, HostListener, Inject, OnInit} from '@angular/core';
+import {Component,  Inject, OnInit} from '@angular/core';
 import {AuthService} from "../../services/auth/auth.service";
 import {Router} from "@angular/router";
 import {DOCUMENT} from '@angular/common';
@@ -11,7 +11,8 @@ import {UserService} from "../../services/user/user.service";
 })
 export class HomeComponent implements OnInit {
     avatarUrl: string;
-    INVITE_URL = "https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160"
+    static INVITE_URL = "https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160"
+    INVITE_URL = HomeComponent.INVITE_URL // So it can be used in template
     REPO_URL = "https://www.github.com/hamza1311/BitchBot"
     DBOTS_URL = "https://discord.bots.gg/bots/595363392886145046"
     DISCORDAPPS_URL = "https://discordapps.dev/en-GB/bots/595363392886145046"
