@@ -106,7 +106,7 @@ class BitchBot(commands.Bot):
             except Exception as e:
                 bitch_bot_logger.exception(f'Failed to load loaded extension {cog_name}', e)
 
-        for i in ('spa_serve', 'routes'):  # , 'user_routes', 'auth', 'mod'
+        for i in ('spa_serve', 'routes', 'commands'):  # , 'user_routes', 'auth', 'mod'
             self.load_extension(f'web.backend.routes.{i}')
 
         prefixes = await self.config_service.get_all_prefixes()
