@@ -1,3 +1,12 @@
+@import "~src/queries";
+
 table {
     width: 100%;
+
+    @media (max-width: $query-max-width) {
+        td, th {
+            padding: 1.25em;
+        }
+    }
+
 }
