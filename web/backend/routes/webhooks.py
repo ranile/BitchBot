@@ -8,11 +8,8 @@ from http import HTTPStatus
 blueprint = util.BlueprintWithBot('webhook_routes', __name__, url_prefix='/api/webhooks')
 
 
-async def send_log_as_me(embed):
-    # noinspection PyUnresolvedReferences
-    log_webhook: discord.Webhook = blueprint.log_webhook
-    me = blueprint.bot.user
-    await log_webhook.send(embed=embed, username=str(me), avatar_url=me.avatar_url_as(format='png'))
+async def send_log(embed):
+    await blueprint.bot.get_channel.get_channel(648069341341810688).send(embed=embed)
 
 
 @blueprint.route('/dbl/vote', methods=['POST'])
@@ -34,8 +31,8 @@ async def dbl_vote():
         user = await blueprint.bot.fetch_user(data.user_id)
         fetched_user = True
 
-    await send_log_as_me(
-        discord.Embed(title=f"{blueprint.bot.user} got an upvote on DBL {'<:weebyay:676427364871307285> ' * 3}")
+    await send_log(
+        discord.Embed(title=f"{blueprint.bot.user.name} got an upvote on DBL {'<:weebyay:676427364871307285> ' * 3}")
         .set_author(name=user, icon_url=user.avatar_url_as(format='png'))
         .add_field(name='Weekend?', value=data.is_weekend)
         .set_footer(text='Btw, I had to fetch the user' if fetched_user else discord.Embed.Empty)
@@ -48,5 +45,3 @@ async def dbl_vote():
 
 def setup(bot):
     bot.quart_app.register_blueprint_with_bot(blueprint, bot)
-    blueprint.log_webhook = discord.Webhook.from_url(keys.logWebhook,
-                                                     adapter=discord.AsyncWebhookAdapter(bot.clientSession))
