@@ -46,9 +46,13 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         if not keys.debug:
             self.dbl_client = dbl.DBLClient(self.bot, keys.dbl_token, autopost=False)
+            self.stats_loop.start()
 
     async def load_guilds(self):
         self.wants_activity_tracking = set(await self.activity_service.get_guilds_with_tracking_enabled())
+
+    def cog_unload(self):
+        self.stats_loop.cancel()
 
     @commands.Cog.listener()
     async def on_regular_human_message(self, message):
@@ -143,7 +147,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
     async def stats_loop(self):
         if keys.debug:
             return
-
+        log.info("Posting stats")
         await self.dbl_client.post_guild_count()
         session: aiohttp.ClientSession = self.bot.clientSession
         await session.post(
@@ -161,7 +165,8 @@ class Activity(commands.Cog, name='Activity Tracking'):
             json={"bot": {"count": len(self.bot.guilds)}},
             headers={'Authorization': keys.discordapps_token})
 
-        self.log_webhook.send('Posted stats')
+        await self.log_webhook.send('Posted stats')
+        log.info("Successfully posted stats")
 
     @stats_loop.before_loop
     async def before_stats_loop(self):
