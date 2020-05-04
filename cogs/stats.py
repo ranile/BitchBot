@@ -45,7 +45,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
             adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
 
         if not keys.debug:
-            self.dbl_client = dbl.DBLClient(self, keys.dbl_token, autopost=False)
+            self.dbl_client = dbl.DBLClient(self.bot, keys.dbl_token, autopost=False)
 
     async def load_guilds(self):
         self.wants_activity_tracking = set(await self.activity_service.get_guilds_with_tracking_enabled())
