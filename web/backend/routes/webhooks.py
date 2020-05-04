@@ -9,7 +9,7 @@ blueprint = util.BlueprintWithBot('webhook_routes', __name__, url_prefix='/api/w
 
 
 async def send_log(embed):
-    await blueprint.bot.get_channel.get_channel(648069341341810688).send(embed=embed)
+    await blueprint.bot.get_channel(648069341341810688).send(embed=embed)
 
 
 @blueprint.route('/dbl/vote', methods=['POST'])
