@@ -219,7 +219,7 @@ class BitchBot(commands.Bot):
 
     async def on_guild_join(self, guild):
 
-        embed = discord.Embed(title=f"'{self.user.name} just joined a server {':weebyay:676427364871307285' * 3}'",
+        embed = discord.Embed(title=f"{self.user.name} just joined a server {'<:weebyay:676427364871307285> ' * 3}",
                               color=util.random_discord_color())
         embed.set_thumbnail(url=guild.icon_url)
         embed.add_field(name='Guild', value=f'{guild} ({guild.id})')
