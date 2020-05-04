@@ -65,7 +65,7 @@ class Emojis(commands.Cog):
         to_be_sent = ' '.join([f'{emoji} ' * amount for emoji in emojis])
         if to_be_sent == '':
             return await ctx.send('No emojis of that name found', delete_after=2)
-        await ctx.send(embed=discord.Embed(description=to_be_sent).set_footer(text=f"- {ctx.author.display_name}"))
+        await ctx.send(to_be_sent, embed=discord.Embed().set_author(name=f"- {ctx.author.display_name}"))
         await ctx.message.delete(delay=2)
 
     @emoji.command(aliases=["emojiurl", "l"])
