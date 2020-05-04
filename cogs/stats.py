@@ -1,6 +1,10 @@
 import re
+
+import aiohttp
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
+import dbl
+import keys
 from services import ActivityService
 import util
 from util import checks
@@ -35,6 +39,13 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.wants_activity_tracking = set()
 
         self.bot.loop.create_task(self.load_guilds())
+
+        self.log_webhook = discord.Webhook.from_url(
+            keys.logWebhook,
+            adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
+
+        if not keys.debug:
+            self.dbl_client = dbl.DBLClient(self, keys.dbl_token, autopost=False)
 
     async def load_guilds(self):
         self.wants_activity_tracking = set(await self.activity_service.get_guilds_with_tracking_enabled())
@@ -127,6 +138,34 @@ class Activity(commands.Cog, name='Activity Tracking'):
         self.wants_activity_tracking.remove(ctx.guild.id)
 
         await ctx.send('Activity tracking has been disabled')
+
+    @tasks.loop(minutes=30)
+    async def stats_loop(self):
+        if keys.debug:
+            return
+
+        await self.dbl_client.post_guild_count()
+        session: aiohttp.ClientSession = self.bot.clientSession
+        await session.post(
+            'https://listmybots.com/api/public/bot/stats',
+            json={'server_count': len(self.bot.guilds)},
+            headers={'Authorization': keys.list_my_bots_token})
+
+        await session.post(
+            f'https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats',
+            json={'guildCount': len(self.bot.guilds)},
+            headers={'Authorization': keys.dbots_token})
+
+        await session.post(
+            f'https://api.discordapps.dev/api/v2/bots/{self.bot.user.id}',
+            json={"bot": {"count": len(self.bot.guilds)}},
+            headers={'Authorization': keys.discordapps_token})
+
+        self.log_webhook.send('Posted stats')
+
+    @stats_loop.before_loop
+    async def before_stats_loop(self):
+        self.bot.wait_until_ready()
 
 
 def setup(bot):

@@ -10,7 +10,6 @@ import util
 import random
 import hypercorn
 import os
-import dbl
 
 from services import ActivityService, ConfigService
 from util.monkeypatches import *
@@ -59,9 +58,6 @@ class BitchBot(commands.Bot):
 
         self.blacklist = {}
         self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1.0, 15.0, commands.BucketType.user)
-
-        if not keys.debug:
-            self.dbl_client = dbl.DBLClient(self, keys.dbl_token, autopost=True)
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
