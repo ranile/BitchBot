@@ -425,9 +425,6 @@ class Miscellaneous(commands.Cog):
         """
         Repeats msg but with a random member's name after {prefix}someone
 
-        Actual format:
-            `someone msg`
-
         Example:
             `{prefix}someone isn't cool
 
