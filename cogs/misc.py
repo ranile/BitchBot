@@ -11,7 +11,7 @@ from discord.ext import commands
 from TextToOwO.owo import text_to_owo
 from keys import logWebhook
 from util import funs, converters, checks, SUPPORT_SERVER_INVITE  # pylint: disable=no-name-in-module
-from util.emoji_chars import emoji_chars
+from util.emoji_chars import emoji_chars, someone_emotes
 
 
 def c_to_f(c: float) -> float:
@@ -26,15 +26,6 @@ def f_to_c(f: float) -> float:
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.someone_emotes = [u'\u0CA0_\u0CA0',
-u'\u30FD\u0F3C \u0CA0\u76CA\u0CA0 \u0F3D\uFF89', 
-u'\u00AF(\u00B0_o)/\u00AF',
-u'\uFF08\u273F \u0361\u25D5 \u1D17\u25D5)\u3064\u2501\u2501\u272B\u30FBo\u3002', 
-u'(\u256F\u00B0\u25A1\u00B0\uFF09\u256F\uFE35 \u253B\u2501\u253B',
-u'\uFF08\u273F \u0361\u25D5 \u1D17\u25D5)\u3064\u2501\u2501\u272B\u30FBo\u3002',
-u'\u0F3C \u3064 \u25D5_\u25D5 \u0F3D\u3064',
-u'(\u2229 \u0361\u00B0 \u035C\u0296 \u0361\u00B0)\u2283\u2501',
-u'\u00AF\_(\u30C4)_/\u00AF']
 
     @commands.command(aliases=["send"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
@@ -430,13 +421,23 @@ u'\u00AF\_(\u30C4)_/\u00AF']
                            f'Delta: {(time - pendulum.instance(ctx.message.created_at)).in_words()}')
 
     @commands.command()
-    async def someone(self, ctx, *, text)
+    async def someone(self, ctx, *, msg):
         """
-        Repeats the message but with a random member's name after :someone
+        Repeats msg but with a random member's name after {prefix}someone
+
+        Actual format:
+            `someone msg`
+
+        Example:
+            `{prefix}someone isn't cool
+
+        Args:
+            msg: The message to be repeated
         """
-        emote = choice(self.someone_emotes)
-        user = choice(ctx.guild.members).display_name
-        response = "@someone {} ***({})*** {}".format(emote, user, text)
+
+        emote = random.choice(someone_emotes)
+        user = random.choice(ctx.guild.members).display_name
+        response = f'@someone {emote} ***({user})*** {msg}'
         await ctx.send(response)
 
 def setup(bot):
