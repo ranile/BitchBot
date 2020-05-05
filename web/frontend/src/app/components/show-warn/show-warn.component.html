@@ -1,0 +1,10 @@
+<mat-card style="margin: 0.5em">
+    <mat-card-header>
+        <img mat-card-avatar [src]="warnedUser.avatar"/>
+        <mat-card-title>{{warnedUser | discordUser}}</mat-card-title>
+        <mat-card-subtitle>{{warn.warned_at | relativeTime}} by {{warnedBy | discordUser}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <p>{{warn.reason}}</p>
+    </mat-card-content>
+</mat-card>

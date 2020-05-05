@@ -1,0 +1,49 @@
+<div id="home-container">
+    <div class="item" id="info">
+        <div id="info-content" class="mat-accent">
+            <img id="avatar" [src]="avatarUrl" alt="icon">
+            <div>
+                <div class="text">
+                    <h1 class="title">BitchBot</h1>
+                    <p class="description-text">
+                        Fun Discord bot with moderation and utility tools like reminders, starboard, activity tracking
+                        and
+                        more
+                    </p>
+                </div>
+                <div id="buttons">
+                    <button mat-raised-button color="primary" class="home-button" (click)="setHrefTo(INVITE_URL)">
+                        Invite Me
+                    </button>
+                    <button mat-raised-button color="primary" class="home-button" id="repo-button" (click)="setHrefTo(REPO_URL)">
+                        Source
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="item" id="support">
+
+        <div>
+            <h2 class="title" id="help-title">Need help? Have any ideas for the bot? Want to report a bug? Join our support server</h2>
+            <div id="widget-container">
+                <!--Maybe see if that image is actually better-->
+                <!--<a href="https://discord.gg/k2ysVzd"><img src="https://discordapp.com/api/v7/guilds/693765408787922994/widget.png?style=banner4"/></a>-->
+                <iframe id="widget" src="https://canary.discordapp.com/widget?id=693765408787922994&theme=dark" width="350" height="300" allowtransparency="true"></iframe>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="item" id="links">
+        <h3 class="title" id="links-title">Find me on:</h3>
+        <div id="links-grid">
+            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DBOTS_URL)">DiscordBots</button>
+            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DISCORDAPPS_URL)">discordapps.dev</button>
+<!--            <button mat-raised-button color="primary" class="link-button">Discord Bots List</button>-->
+<!--            <button mat-raised-button color="primary" class="link-button">Bots for Discord</button>-->
+        </div>
+    </div>
+</div>
+

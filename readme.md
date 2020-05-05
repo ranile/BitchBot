@@ -1,78 +1,52 @@
 # BitchBot
 
-It is a stupid little discord bot written in python3
+ Fun Discord bot with moderation and utility tools like reminders, starboard, activity tracking and more  
+ [Invite her to your server](https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160)
+ 
+# Features
 
-### Required Libraries:
+Fun bot that provides a lot of commands like:
 
-* discord.py
-* wikipedia
+* Send animated emojis or any emoji that the bot can see
+* Activity tracking
+* Starboard
+* Moderation
+* And more...
 
-You can install these manually or from requirements.txt
+# Getting started
 
-### Usage
+## Running my instance
 
-Get a discord bot token after creating a discord application with a bot from [here](https://discordapp.com/developers/applications/)
-Put your token in `BOT_TOKEN` constant in `core.py` in any of the following ways:
+All you need to do is [invite](https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160) the bot to your server. Once the bot is in your server, you can setup the features using the following commands:
 
-* Put the token in `BOT_TOKEN` environment variable
-* Put the token in `keys.py` file in `bot` variable
-* Assign the token string to `BOT_TOKEN` constant in `core.py`
+* `starboard setup` (for setting up starboard)
+* `mod roles` (comamnd groups for setting up mod roles. `mod roles add` for adding mod roles; `mod roles add` for removing them)
+* `mute config` (for setting up the mute role)
 
-### Currently Availabe Commands
-**Syntax: {prefix}command [args]**
+Detailed information can be obtained using the help command
 
-Following commands are given in this way: command -> result
+## Running own instance
 
-* ping -> Ping Pong
-* rickroulette -> Rick Astley = Loose, Doggo = Win
-* addspaces -> Adds 3 spaces in between every character.
+* Create a `keys.py` file in the root of the directory. An example keys file is provided
+* Install the dependencies from `requirements.txt`
+* Place your DialogFlow `service-account.json` file in the root of the directory.
+* Run `core.py`
 
-    args: Takes a string as its argument
-* totogglecase -> Convert string to toggle case
+# Getting Help
 
-    args: Takes a string as its argument
-* touppercase -> Convert string to toggle case
+## Help Command
 
-    args: Takes a string as its argument
-* dare -> Gives a dare for you to do
-* truth -> Gives a truth for you to tell
-* wyr -> Gives a *would you rather* question for you to answer
-* bill -> Be like bill
+All the commands can be viewed via `>help`. Detailed information can be accessed by provided the command/commands group to help as `>help command_name/group_name`.
 
-    args: can take a string as its argument to give a *be like bill* for that
-* fact -> Gives a fun fact
-* joke -> Tells a joke. They are horrible. Seriously
-* norris -> Chuck Norris. Need I say more
-* reddit -> Get a random reddit post
+## Need more help? Have any ideas for the bot? Want to report a bug?
 
-    args: Takes a subreddit's name as its argument
-* urban -> Gets top defination from urban dictionary
 
-    args: Takes a word as its argument to look up on urban dictionary
-* wikipedia -> Find a Wikipedia page on a given topic
+[![](https://discordapp.com/api/v7/guilds/693765408787922994/widget.png?style=banner4)](https://discord.gg/k2ysVzd)
 
-    args: Takes a word as its argument to look up on Wikipedia
-* wikirandom -> Random Wikipedia page
-* poll -> Start a poll.
+### Permissions:
 
-    args: Can take strings as arguments. First argument is the next question. Next argument(s) are answers. If no answers are provided, it will default to yes/no. Upto 10 answers can be provided
-* say -> Have the bot say something.
+If you do not want the bot to delete the messages for things like emoji commands, simply deny `Manage Messages` permission for the bot. You need to provide the required permissions for each moderation command you want to use. For example `Ban Members` to ban members, `Kick Members` to kick members, etc.
 
-    args: Takes a string as its argument and says it back
-* sayembed -> Have the bot say something in embeds.
+# Contributions
 
-    args: Takes a string as its argument and says it back in embeds
-* urban -> Looks up the given word on urban dictionary
-* rabbitman -> returns a rabbitman picture.
-* baby -> returns a *baby* picture.
-* toc -> Converts fahrenheit to celcius
-
-    args: Takes temperature in fahrenheit
-* tof -> Converts celcius to fahrenheit
-
-    args: Takes temperature in celcius
-* emojis -> Returns emojis that can be sent by 'emoji' command
-* emoji -> Sends any one of the emojis from 'emojis' command
-
-    args: Emoji to send
-* help -> Shows help message
+Your pull requests are welcome

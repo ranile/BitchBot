@@ -3,4 +3,6 @@ cogs/__pycache__
 __pycache__
 .vscode/settings.json
 yeet.py
-envs.sh
+venv
+.idea
+service_account.json

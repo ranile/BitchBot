@@ -1,0 +1,18 @@
+@import '~@angular/material/theming';
+@import "colors";
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: #191919;
+  color: $text-primary
+}
+
+@include mat-core();
+
+$dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
+
+@include angular-material-theme($dark-theme);

@@ -1,0 +1,24 @@
+#main-toolbar {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+
+    .spacer {
+        flex: 1 1 auto;
+    }
+
+    #icon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        transition: all 0.75s ease;
+
+        .toolbar-icon {
+            width: 45px;
+            height: 45px;
+            margin-right: 1em;
+            border-radius: 50%;
+        }
+    }
+}

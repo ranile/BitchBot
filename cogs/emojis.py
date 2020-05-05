@@ -1,116 +1,161 @@
-from discord.ext import commands
 import discord
-import requests
-import itertools
-import re
-import os
+from discord.ext import commands
 
-EMOJIS_LINK = os.environ['EMOJIS_LINK']
+import keys
+from services import EmojiService
+from util import funs, BloodyMenuPages, EmbedPagesData
 
-class AnimatedEmoji():
-    def __init__(self, name, id, command):
-        self.name = name
-        self.id = id
-        self.command = command
 
-class UnAnimatedEmoji():
-    def __init__(self, name, id, command):
-        self.name = name
-        self.id = id
-        self.command = command
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
+
+def arg_or_1(arg: str):
+    return int(arg) if arg.isdigit() else 1
+
+
+# noinspection PyIncorrectDocstring
 class Emojis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.safe_emojis = []
+        self.emoji_service = EmojiService(bot.db)
 
-        res = requests.get(EMOJIS_LINK)
-        json = res.json()
+        self.bot.loop.create_task(self.fetch_safe_emojis())
 
-        self.animated_emojis = {}
-        self.non_animated_emojis = {}
+    async def fetch_safe_emojis(self):
+        self.safe_emojis = await self.emoji_service.fetch_all_safe_emojis()
 
-        for i in json:
-            if i['isAnimated']:
-                self.animated_emojis[i['name']] = AnimatedEmoji(i['name'], i['id'], i['command'])
-            else:
-                self.non_animated_emojis[i['name']] = UnAnimatedEmoji(i['name'], i['id'], i['command'])
+    def safety_check(self, ctx):
+        if ctx.author.id == self.bot.owner_id:
+            return True
 
-    @commands.command(aliases=["emojiimg", "emoji1"])
-    async def emojilink(self, ctx, message):
+        if ctx.channel.is_nsfw():
+            return True
+
+        if ctx.guild is None:
+            return True
+
+        if ctx.guild.id in keys.trusted_guilds:
+            return True
+
+    def ensure_safe_emojis(self, ctx, emojis):
+        if self.safety_check(ctx):
+            return True
+
+        for emoji in emojis:
+            if emoji.id not in self.safe_emojis:
+                raise commands.CheckFailure(
+                    f"Channel '{ctx.channel}' needs to be NSFW in order to use emoji '{emoji.name}'.")
+
+    @commands.group(aliases=["e"], invoke_without_command=True)
+    async def emoji(self, ctx, emojis: commands.Greedy[discord.Emoji], amount: arg_or_1 = 1):
+        """Send any number of the emoji given by 'emojis'
+
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
+
+        Args:
+            emojis: The name of the emojis to send.
+            amount: The number of times to repeat
         """
-        Send link of any one of the emoji given by 'emojis' command
-        """
-        if message in self.animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[message].id}.gif"
-            await ctx.send(url)
-        elif message in self.non_animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[message].id}.png"
-            await ctx.send(url)
-        else:
-            await ctx.send('Emoji not available')
-
+        self.ensure_safe_emojis(ctx, emojis)
+        to_be_sent = ' '.join([f'{emoji} ' * amount for emoji in emojis])
+        if to_be_sent == '':
+            return await ctx.send('No emojis of that name found', delete_after=2)
+        await ctx.send(to_be_sent, embed=discord.Embed(color=0x00000F).set_author(name=f"- {ctx.author.display_name}"))
         await ctx.message.delete(delay=2)
 
-    @commands.command()
-    async def emoji(self, ctx, message, amount=1):
-        """
-        Send any one of the emoji given by 'emojis' command
-        """
-        if int(amount) >= 71:
-            await ctx.send(f'Too many bruh {self.nona_emojis["bruh"].command} {self.animated_emojis["oof"].command}')
-            return
-        if message in self.animated_emojis.keys():
-            await ctx.send(f'{self.animated_emojis[message].command} '* amount)
-        elif message in self.non_animated_emojis.keys():
-            await ctx.send(f'{self.non_animated_emojis[message].command} ' * amount)
-        else:
-            await ctx.send('Emoji not available')
+    @emoji.command(aliases=["emojiurl", "l"])
+    async def link(self, ctx, emoji: discord.Emoji):
+        """Send link of any one of the emoji given by 'emojis' command
 
-        await ctx.message.delete(delay=2)        
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
 
-    @commands.command()
-    async def emojis(self, ctx):
+        Args:
+            emoji: The emoji's name to link
+        """
+        self.ensure_safe_emojis(ctx, [emoji])
+        await ctx.send(emoji.url)
+        await ctx.message.delete(delay=2)
+
+    @emoji.command()
+    async def list(self, ctx):
         """
         Shows the emojis that can be sent by 'emoji' command
+
+        Only emojis that has been marked safe by bot admins are shown in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
         """
-        out_animated = ''
-        out_non_animated = ''
 
-        for i in range(0, len(self.animated_emojis.keys())):
-            emojis = list(self.animated_emojis.keys())
-            out_animated += f'{i+ 1}. {emojis[i]}: {self.animated_emojis[emojis[i]].command}\n'
-        
-        for i in range(0, len(self.non_animated_emojis.keys())):
-            emojis = list(self.non_animated_emojis.keys())
-            out_non_animated += f'{i + 1}. {emojis[i]}: {self.non_animated_emojis[emojis[i]].command}\n'
-        
-        embed=discord.Embed(title='Available emojis')
-        embed.add_field(name='Animated:', value=out_animated, inline=False)
-        embed.add_field(name='Non animated:', value=out_non_animated, inline=True)
-        embed.set_footer(text='@hamza to add more')
-        
-        await ctx.send(embed = embed)
+        def pred(e):
+            if self.safety_check(ctx):
+                return True
 
-    
-    @commands.command(aliases=["emoji2"])
-    async def emojiembed(self, ctx, message):
+            if e.id in self.safe_emojis:
+                return True
+
+            return False
+
+        all_emojis = [e for e in self.bot.emojis if (e.available and pred(e))]
+        chunked_emojis = list(chunks(all_emojis, 20))
+        count = 1
+        data = []
+        for emojis in chunked_emojis:
+            embed = discord.Embed(title='Available emojis', color=funs.random_discord_color())
+            embed.set_footer(text=f'Total: {len(all_emojis)}')
+            out = []
+            for emoji in emojis:
+                out.append(f'{count}. {emoji.name} \t{emoji}')
+                count += 1
+
+            embed.description = '\n'.join(out)
+            data.append(embed)
+
+        pages = BloodyMenuPages(EmbedPagesData(data))
+        await pages.start(ctx)
+
+    @emoji.command(aliases=['em'])
+    async def embed(self, ctx, emoji: discord.Emoji):
         """
         Send embed of any one of the emoji given by 'emojis' command
-        """
-        embed=discord.Embed() # TODO remove title
-        if message in self.animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.animated_emojis[message].id}.gif"
-            embed.set_image(url=url)
-            await ctx.send(embed=embed)
-        elif message in self.non_animated_emojis.keys():
-            url = f"https://cdn.discordapp.com/emojis/{self.non_animated_emojis[message].id}.png"
-            embed.set_image(url=url)
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send('Emoji not available')
 
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
+
+        Args:
+            emoji: The name of emoji to send in an the embed
+        """
+        self.ensure_safe_emojis(ctx, [emoji])
+        embed = discord.Embed()
+        embed.set_image(url=str(emoji.url))
+        await ctx.send(embed=embed)
         await ctx.message.delete(delay=2)
-    
+
+    @emoji.command()
+    async def react(self, ctx, message: discord.Message, emoji: discord.Emoji):
+        """Make the bot react to a message with the given emoji
+
+        Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
+        This is a safety feature so that the bot does not send any NSFW content on non-NSFW channels
+
+        Arg:
+            message: The message to react to
+            emoji: The name of emoji to react with
+        """
+        self.ensure_safe_emojis(ctx, [emoji])
+        await message.add_reaction(emoji)
+
+    @emoji.command(aliases=['marksafe', 'ms'], hidden=True)
+    @commands.check(lambda ctx: ctx.author.id in keys.can_use_private_commands)
+    async def mark_safe(self, ctx, emoji: discord.Emoji):
+        await self.emoji_service.mark_safe(emoji.id, ctx.author.id)
+        await self.fetch_safe_emojis()
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
+
+
 def setup(bot):
     bot.add_cog(Emojis(bot))
-

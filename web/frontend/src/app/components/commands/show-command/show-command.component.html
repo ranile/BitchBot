@@ -1,0 +1,12 @@
+<h1 mat-dialog-title><code>{{command.name}}</code></h1>
+<div mat-dialog-content>
+    <p>{{command.help}}</p>
+    <section>
+        <h6>Format</h6>
+        <p>{{command.signature}}</p>
+    </section>
+    <section *ngIf="command.args">
+        <h6>Args</h6>
+        <p>{{command.args}}</p>
+    </section>
+</div>
