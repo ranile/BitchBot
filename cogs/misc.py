@@ -11,7 +11,7 @@ from discord.ext import commands
 from TextToOwO.owo import text_to_owo
 from keys import logWebhook
 from util import funs, converters, checks, SUPPORT_SERVER_INVITE  # pylint: disable=no-name-in-module
-from util.emoji_chars import emoji_chars
+from util.emoji_chars import emoji_chars, someone_emotes
 
 
 def c_to_f(c: float) -> float:
@@ -420,6 +420,22 @@ class Miscellaneous(commands.Cog):
                            f'Other argument: {time_and_arg.other}\n'
                            f'Delta: {(time - pendulum.instance(ctx.message.created_at)).in_words()}')
 
+    @commands.command()
+    async def someone(self, ctx, *, msg):
+        """
+        Repeats msg but with a random member's name after {prefix}someone
+
+        Example:
+            `{prefix}someone isn't cool
+
+        Args:
+            msg: The message to be repeated
+        """
+
+        emote = random.choice(someone_emotes)
+        user = random.choice(ctx.guild.members).display_name
+        response = f'@someone {emote} ***({user})*** {msg}'
+        await ctx.send(response)
 
 def setup(bot):
     bot.add_cog(Miscellaneous(bot))
