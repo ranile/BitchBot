@@ -50,9 +50,7 @@ class BloodyMenuPages(menus.MenuPages, inherit_buttons=False):
 
     # noinspection PyProtectedMember
     async def update(self, payload):
-        guild = self.bot.get_guild(payload.guild_id)
-        cnl = self.bot.get_channel(payload.channel_id)
-        if guild is not None and cnl.permissions_for(guild.me).manage_messages:
+        if self._can_remove_reactions:
             if payload.event_type == 'REACTION_ADD':
                 await self.bot.http.remove_reaction(
                     payload.channel_id, payload.message_id,
