@@ -8,5 +8,18 @@ table {
             padding: 1.25em;
         }
     }
+}
 
+.no-bg {
+    background-color: transparent;
+}
+
+.commands-container {
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 1em;
+
+    .cog-title {
+        font-size: 1.5em;
+    }
 }

@@ -1,7 +1,8 @@
-<div style="margin-top: 69px;" *ngIf="cog">
+<div style="height: 69px"></div>
+<div *ngIf="cog" class="commands-container mat-elevation-z7">
 
-    <h3>{{cog.name}} Commands</h3>
-    <table mat-table [dataSource]="dataSources[cog.name]" class="mat-elevation-z8">
+    <h3 class="cog-title">{{cog.name}} Commands</h3>
+    <table mat-table [dataSource]="dataSources[cog.name]" class="no-bg">
 
         <!-- Name Column -->
         <ng-container matColumnDef="name">
@@ -32,6 +33,7 @@
         [pageSizeOptions]="[1]"
         (page)="pageChange($event)"
         [hidePageSize]="true"
-        showFirstLastButtons>
+        showFirstLastButtons
+        class="no-bg">
     </mat-paginator>
 </div>
