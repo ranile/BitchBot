@@ -1,6 +1,5 @@
 @import "../../../queries";
 @import "~src/colors";
-@import "~@angular/material/theming";
 
 #home-container {
     scroll-snap-type: y mandatory;
@@ -31,6 +30,11 @@
         font-weight: bold;
         font-size: 2rem;
         margin-bottom: 0;
+        text-align: center;
+    }
+
+    #buttons {
+        align-self: center;
     }
 
     @media (max-width: $query-max-width) {
@@ -57,6 +61,8 @@
         transform: translateX(-50%);
         font-size: 4rem;
         flex-wrap: wrap;
+        flex-direction: column;
+        gap: 0.5em;
 
         transition: all 0.5s ease;
 
@@ -72,10 +78,10 @@
 
         .description-text {
             margin-top: 1rem;
-            text-align: left;
             font-size: 1.5rem;
-            width: 80vh;
+            width: 100vh;
             line-height: 20pt;
+            text-align: center;
 
             @media (max-width: $query-max-width) {
                 width: auto;
@@ -89,58 +95,77 @@
     }
 
     #support {
-        background-color: mat-color(mat-palette($mat-blue));
+        background-color: mat-color(mat-palette($mat-blue), 700);
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: center;
 
-        #help-title {
-            font-size: 1.5rem;
-            padding: 1rem;
-        }
 
         #widget-container {
             text-align: center;
 
-            #widget {
-                display: inline-block;
-                border: none;
-            }
+
         }
     }
 
     #links {
         $pink-palette: mat-palette($mat-pink);
-        background-color: mat-color($pink-palette);
+        background-color: mat-color($pink-palette, 800);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        row-gap: 2em;
 
         #links-title {
-            margin-bottom: 2rem
+            font-size: 1.5rem;
         }
 
         #links-grid {
             display: grid;
-            grid-template-columns: repeat(2, 4fr);
-            grid-column-gap: 2rem;
+            grid-template-columns: repeat(4, 4fr);
+            grid-gap: 2rem;
 
             .link-button {
                 width: 100%;
-                font-size: 1.7em;
+                font-size: 1.4em;
                 border-radius: 1em;
-                padding: 1em;
+                padding: 0.7em;
                 vertical-align: middle;
-                background-color: mat-color($pink-palette);
+                background-color: mat-color($pink-palette, 600);
 
                 @media (max-width: $query-max-width) {
                     padding: 1rem;
-                    font-size: 1.5rem;
+                    font-size: 1.2rem;
                     border-radius: 0.75em;
                 }
             }
+        }
+
+        .help-container {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+
+            .help-text-container {
+                padding: 1rem;
+
+                .help-title {
+                    font-weight: normal;
+                    font-size: 1.5rem;
+                    line-height: 1.7rem;
+                    text-align: left;
+                    margin: 0;
+                }
+            }
+
+            #widget {
+                display: inline-block;
+                border: none;
+                filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.14)) drop-shadow(0px 3px 1px rgba(0, 0, 0, 0.12)) drop-shadow(0px 1px 5px rgba(0, 0, 0, 0.2))
+            }
+
         }
 
         @media (max-width: $query-max-width) {

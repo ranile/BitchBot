@@ -1,8 +1,9 @@
 <div id="home-container">
     <div class="item" id="info">
         <div id="info-content" class="mat-accent">
+
             <img id="avatar" [src]="avatarUrl" alt="icon">
-            <div>
+            <div style="display: flex; flex-direction: column; align-self: center">
                 <div class="text">
                     <h1 class="title">BitchBot</h1>
                     <p class="description-text">
@@ -23,26 +24,27 @@
         </div>
     </div>
 
-    <div class="item" id="support">
-
-        <div>
-            <h2 class="title" id="help-title">Need help? Have any ideas for the bot? Want to report a bug? Join our support server</h2>
-            <div id="widget-container">
-                <!--Maybe see if that image is actually better-->
-                <!--<a href="https://discord.gg/k2ysVzd"><img src="https://discordapp.com/api/v7/guilds/693765408787922994/widget.png?style=banner4"/></a>-->
-                <iframe id="widget" src="https://canary.discordapp.com/widget?id=693765408787922994&theme=dark" width="350" height="300" allowtransparency="true"></iframe>
-            </div>
-        </div>
-
-    </div>
+<!--    <div class="item" id="support">
+TODO: Make this features
+    </div>-->
 
     <div class="item" id="links">
+        <div class="help-container">
+            <div class="help-text-container">
+                <p class="help-title">Need help? Have any ideas for the bot?</p>
+                <p class="help-title">Want to report a bug? <a href="https://discord.gg/k2ysVzd">Join our support server</a></p>
+            </div>
+<!--                <a href="https://discord.gg/k2ysVzd"><img src="https://discordapp.com/api/v7/guilds/693765408787922994/widget.png?style=banner2"/></a>-->
+                <iframe id="widget" src="https://canary.discordapp.com/widget?id=693765408787922994&theme=dark" width="70%" height="300px" allowtransparency="true"></iframe>
+        </div>
+
         <h3 class="title" id="links-title">Find me on:</h3>
         <div id="links-grid">
-            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DBOTS_URL)">DiscordBots</button>
+            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DBL_URL)">Discord Bot List</button>
+            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DBOTS_URL)">Discord Bots</button>
             <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DISCORDAPPS_URL)">discordapps.dev</button>
-<!--            <button mat-raised-button color="primary" class="link-button">Discord Bots List</button>-->
-<!--            <button mat-raised-button color="primary" class="link-button">Bots for Discord</button>-->
+            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(LIST_MY_BOTS_URL)">List My Bot</button>
+            <!--            <button mat-raised-button color="primary" class="link-button">Bots for Discord</button>-->
         </div>
     </div>
 </div>

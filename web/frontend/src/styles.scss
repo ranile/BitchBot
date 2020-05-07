@@ -13,6 +13,11 @@ body {
 
 @include mat-core();
 
-$dark-theme: mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
+$dark-theme: mat-dark-theme($dark-primary, $dark-accent);
 
 @include angular-material-theme($dark-theme);
+
+a {
+    color: mat-color($mat-blue, 500);
+    text-decoration: none;
+}

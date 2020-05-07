@@ -1,4 +1,4 @@
-import {Component,  Inject, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {AuthService} from "../../services/auth/auth.service";
 import {Router} from "@angular/router";
 import {DOCUMENT} from '@angular/common';
@@ -16,6 +16,8 @@ export class HomeComponent implements OnInit {
     REPO_URL = "https://www.github.com/hamza1311/BitchBot"
     DBOTS_URL = "https://discord.bots.gg/bots/595363392886145046"
     DISCORDAPPS_URL = "https://discordapps.dev/en-GB/bots/595363392886145046"
+    DBL_URL = "https://top.gg/bot/595363392886145046"
+    LIST_MY_BOTS_URL = "https://listmybots.com/bot/595363392886145046"
 
     constructor(
         private authService: AuthService,
@@ -26,7 +28,6 @@ export class HomeComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // this.document.getElementById('icon-container').style.opacity = '0';
 
         this.userService.fetchMyAvatarUrl(1024).then(it => {
             this.avatarUrl = it
@@ -47,14 +48,12 @@ export class HomeComponent implements OnInit {
 
     @HostListener('window:scroll', [])
     onScroll() {
-        const rect = this.document.getElementById('support').getBoundingClientRect().top
+        const rect = this.document.getElementById('links').getBoundingClientRect().top
         console.log(window.innerHeight, rect, this.lastTopValue)
-        if (this.lastTopValue >= (window.innerHeight / 1.7)) {
-            this.document.getElementById('icon-container').style.opacity = '0';
-            this.document.getElementById('info-content').style.opacity = '1';
+        if (this.lastTopValue >= (window.innerHeight / 3)) {
+            this.document.getElementById('main-toolbar').style.background = '';
         } else {
-            this.document.getElementById('icon-container').style.opacity = '1';
-            this.document.getElementById('info-content').style.opacity = '0';
+            this.document.getElementById('main-toolbar').style.background = '#3f51b5';
         }
         this.lastTopValue = rect
     }*/
