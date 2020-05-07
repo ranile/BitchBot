@@ -6,6 +6,16 @@ from services import MuteService, WarningsService, BanService, ConfigService
 from util import funs, checks, BloodyMenuPages, TextPagesData, converters
 
 
+def bot_and_author_have_permissions(**perms):
+    async def pred(ctx):
+        res = await commands.has_permissions(**perms).predicate(ctx)
+        if res:
+            res = await commands.bot_has_permissions(**perms).predicate(ctx)
+        return res
+
+    return commands.check(pred)
+
+
 # noinspection PyIncorrectDocstring,PyUnresolvedReferences
 class Moderation(commands.Cog):
     def __init__(self, bot):
@@ -18,11 +28,11 @@ class Moderation(commands.Cog):
 
     def cog_check(self, ctx):
         if ctx.guild is None:
-            raise commands.NoPrivateMessage("Mod commands can't be used in DMs")
+            raise commands.NoPrivateMessage("Moderation commands can't be used in DMs")
         return True
 
     @commands.command()
-    @commands.has_permissions(kick_members=True)
+    @bot_and_author_have_permissions(kick_members=True)
     async def kick(self, ctx: commands.Context, victim: discord.Member, *, reason: str = None):
         """
         Yeet a user
@@ -84,7 +94,7 @@ class Moderation(commands.Cog):
         await victim.ban(reason=f'{reason}\n(Operation performed by {ctx.author}; ID: {ctx.author.id})')
 
     @commands.command()
-    @commands.has_permissions(ban_members=True)
+    @bot_and_author_have_permissions(ban_members=True)
     async def ban(self, ctx: commands.Context, victim: discord.Member, *, reason: str = None):
         """
         Ban a user
@@ -97,7 +107,7 @@ class Moderation(commands.Cog):
         await self.do_ban(ctx, victim, reason)
 
     @commands.command()
-    @commands.has_permissions(ban_members=True)
+    @bot_and_author_have_permissions(ban_members=True)
     async def tempban(self, ctx: commands.Context, victim: discord.Member, *,
                       time_and_reason: converters.HumanTime(other=True) = None):
         """
@@ -170,7 +180,7 @@ class Moderation(commands.Cog):
             await ctx.send("I can't DM that user. Muted without notice")
 
     @commands.group(invoke_without_command=True)
-    @commands.has_permissions(manage_roles=True)
+    @bot_and_author_have_permissions(manage_roles=True)
     async def mute(self, ctx, victim: discord.Member, reason=None):
         """
         Permanently Mute a user
@@ -187,7 +197,7 @@ class Moderation(commands.Cog):
             await self.do_mute(ctx, victim=victim, reason=reason)
 
     @mute.command(name='temp')
-    @commands.has_permissions(manage_roles=True)
+    @bot_and_author_have_permissions(manage_roles=True)
     async def temp_mute(self, ctx: commands.Context, victim: discord.Member, *,
                         time_and_reason: converters.HumanTime(other=True)):
         """
@@ -229,7 +239,7 @@ class Moderation(commands.Cog):
         await self.mute_service.delete(guild.id, victim.id)
 
     @commands.command()
-    @commands.has_permissions(manage_roles=True, manage_channels=True)
+    @bot_and_author_have_permissions(manage_roles=True)
     async def unmute(self, ctx: commands.Context, victim: discord.Member):
         """
         Unmute a user
@@ -248,7 +258,7 @@ class Moderation(commands.Cog):
         await self.do_unmute(guild, guild.get_member(timer.kwargs['muted_user_id']))
 
     @commands.command()
-    @commands.has_permissions(manage_messages=True)
+    @bot_and_author_have_permissions(manage_messages=True)
     async def purge(self, ctx, limit, messages_of: discord.Member = None):
         """
         Purges given amount of messages from a given member if named
@@ -339,6 +349,7 @@ class Moderation(commands.Cog):
         await react_paginator.start(ctx)
 
     @mute.command(name='config')
+    @checks.can_config()
     async def mute_config(self, ctx, role: discord.Role):
         """
         Configure mute role
@@ -346,6 +357,7 @@ class Moderation(commands.Cog):
         Args:
              role: the role you want to be used as the muted role
         """
+
         await self.config_service.set_mute_role(ctx.guild.id, role.id)
         await ctx.send(f'Inserted {role.mention} as mute role')
 
@@ -353,7 +365,7 @@ class Moderation(commands.Cog):
     async def mod(self, ctx):
         pass
 
-    @mod.group(invoke_without_command=True, name='roles')
+    @mod.group(name='roles')
     async def mod_roles(self, ctx):
         pass
 
