@@ -12,7 +12,7 @@ import util
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 rabbits = [THE_RABBIT, THE_RABBIT_V2]
-rabbit_match = r"(kaylie'?s? ?(man)|r( +)?([a@])( +)?b( +)?b( +)?i( +)?t(man)?|r ?word|(elizabeth|liz)'?s ?hoe)"
+rabbit_match = r"(kaylie'?s? ?(man)|([rw])( +)?([a@])( +)?b(( +)?b)?( +)?i( +)?t(man)?|\br ?word\b|(elizabeth|liz)'?s ?hoe)"
 THE_CAUSE = 505655510263922700
 RABBIT_WEBHOOK = 651333096829878272
 HAIKU_BOT = 372175794895585280
