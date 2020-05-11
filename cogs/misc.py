@@ -264,7 +264,7 @@ class Miscellaneous(commands.Cog):
     @commands.command()
     async def about(self, ctx):
         """
-        Gives link to GitHub repository, shows latest commits, owner name and amount of members in all servers
+        Tells you about me
         """
         embed = discord.Embed(color=funs.random_discord_color(),
                               timestamp=self.bot.get_cog('Jishaku').load_time)
