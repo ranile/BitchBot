@@ -25,9 +25,41 @@
         </div>
     </div>
 
-    <!--<div class="item" id="stats">
-        Add stats here
-    </div>-->
+    <div class="item" id="stats">
+        <h3 class="title" id="stats-title">Some stats about me</h3>
+        <div class="stats-group">
+            <section>
+                <h5 class="title">Servers</h5>
+                <span>{{stats.guilds}}</span>
+            </section>
+
+            <span class="spacer"></span>
+            <section>
+                <h5 class="title">Channels</h5>
+                <span>{{stats.channels}}</span> <!--haha now laugh-->
+            </section>
+
+            <span class="spacer"></span>
+            <section>
+                <h5 class="title">Uptime</h5>
+                <span *ngIf="stats.uptime.days != 0">{{stats.uptime.days}} days, </span>
+                <span>{{stats.uptime.hours}} hours and {{stats.uptime.minutes}} minutes</span> <!--haha now laugh-->
+            </section>
+        </div>
+
+        <div class="stats-group">
+            <section>
+                <h5 class="title">Unique users</h5>
+                <span>{{stats.users}}</span> <!--haha now laugh-->
+            </section>
+
+            <span class="spacer"></span>
+            <section>
+                <h5 class="title">Commands</h5>
+                <span>{{stats.commands}}</span> <!--haha now laugh-->
+            </section>
+        </div>
+    </div>
 
     <div class="item" id="links">
         <div class="help-container">

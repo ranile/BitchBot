@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {User} from "../../models/User";
 import {Guild} from "../../models/Guild";
+import {Stats} from "../../models/Stats";
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,10 @@ export class UserService {
     async fetchMyAvatarUrl(size: number) {
         const resp = await this.httpClient.get(`/api/icon?size=${size}`).toPromise()
         return resp['url']
+    }
+
+    async fetchMyStats() {
+        return await this.httpClient.get<Stats>(`/api/stats`).toPromise()
     }
 
     async fetchCurrentUser() {
@@ -58,3 +63,4 @@ interface ModIn {
     id_from_session: string,
     guilds: Guild[],
 }
+

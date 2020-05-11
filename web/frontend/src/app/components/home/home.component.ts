@@ -3,6 +3,7 @@ import {AuthService} from "../../services/auth/auth.service";
 import {Router} from "@angular/router";
 import {DOCUMENT} from '@angular/common';
 import {UserService} from "../../services/user/user.service";
+import {Stats} from "../../models/Stats";
 
 @Component({
     selector: 'app-home',
@@ -19,18 +20,19 @@ export class HomeComponent implements OnInit {
     DBL_URL = "https://top.gg/bot/595363392886145046"
     LIST_MY_BOTS_URL = "https://listmybots.com/bot/595363392886145046"
 
+    stats: Stats;
+
     constructor(
         private authService: AuthService,
         private router: Router,
         @Inject(DOCUMENT) private document: Document,
         private userService: UserService
-    ) {
-    }
+    ) {}
 
     ngOnInit(): void {
-
-        this.userService.fetchMyAvatarUrl(1024).then(it => {
-            this.avatarUrl = it
+        Promise.all([this.userService.fetchMyAvatarUrl(1024), this.userService.fetchMyStats()]).then(resp => {
+            this.avatarUrl = resp[0]
+            this.stats = resp[1]
         })
     }
 
