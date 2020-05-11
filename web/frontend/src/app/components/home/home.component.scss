@@ -71,17 +71,32 @@
 
         text-align: center;
 
-        row-gap: 7rem;
-
         #stats-title {
-            padding-bottom: 2rem;
-            font-size: 2.5rem;
+            margin-bottom: 8rem;
+
+
+            @media (max-width: $query-max-width) {
+                margin-bottom: 4rem;
+                font-size: 2.2rem;
+                line-height: 2.2rem;
+                padding: 0.5rem;
+            }
         }
 
         .stats-group {
             display: grid;
             grid-template-columns: auto auto auto;
             grid-column-gap: 20rem;
+
+            margin-bottom: 6rem;
+
+            @media (max-width: $query-max-width) {
+                grid-template-columns: repeat(1, 4fr);
+                grid-column-gap: 0;
+                grid-row-gap: 1rem;
+
+                margin-bottom: 2.5rem;
+            }
 
             .title {
                 font-size: 1.8rem;
