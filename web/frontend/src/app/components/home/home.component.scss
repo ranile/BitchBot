@@ -3,110 +3,70 @@
 
 #home-container {
     scroll-snap-type: y mandatory;
-    overflow: scroll -moz-scrollbars-none;
-    background-size: cover;
-    -moz-background-size: cover;
-    height: 100vh;
-
-    ::-webkit-scrollbar {
-        width: 0 !important;
-        background: transparent;
-    }
 
     .item {
-        scroll-snap-align: start;
+        scroll-snap-align: center;
         height: 100vh;
         display: flex;
-
-    }
-
-    .text {
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
     }
 
     .title {
         font-weight: bold;
         font-size: 2rem;
-        margin-bottom: 0;
         text-align: center;
     }
 
-    #buttons {
-        align-self: center;
-    }
-
-    @media (max-width: $query-max-width) {
-        .title, .text, #buttons {
-            text-align: center;
-        }
-
-        #avatar {
-            margin-right: 0;
-            margin-top: 1.5rem;
-        }
-    }
-
     #info {
-        background: mat-color($dark-primary)
-    }
+        background: mat-color($dark-primary);
 
-    #info-content {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 4rem;
-        flex-wrap: wrap;
-        flex-direction: column;
-        gap: 0.5em;
+        #info-content {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4rem;
+            flex-direction: column;
+            gap: 0.5em;
 
-        transition: all 0.5s ease;
+            #avatar {
+                border-radius: 50%;
+                align-self: center;
+            }
 
-        #avatar {
-            margin-right: 2.5rem;
-            border-radius: 50%;
-            align-self: center;
+            .description-container {
+                display: flex;
+                flex-direction: column;
+                align-self: center;
 
-            @media (max-width: $query-max-width) {
-                margin-right: 0;
+                .description-text {
+                    font-size: 1.5rem;
+                    width: 100vh;
+                    line-height: 20pt;
+                    text-align: center;
+
+                    @media (max-width: $query-max-width) {
+                        width: auto;
+                        text-align: center;
+                    }
+                }
+
+                .buttons-container {
+                    align-self: center;
+
+                    .home-button {
+                        margin-right: 1rem
+                    }
+                }
             }
         }
-
-        .description-text {
-            margin-top: 1rem;
-            font-size: 1.5rem;
-            width: 100vh;
-            line-height: 20pt;
-            text-align: center;
-
-            @media (max-width: $query-max-width) {
-                width: auto;
-                text-align: center;
-            }
-        }
-
-        .home-button {
-            margin-right: 1rem
-        }
     }
 
-    #support {
+    #stats {
         background-color: mat-color(mat-palette($mat-blue), 700);
         display: flex;
-        flex-wrap: wrap;
         align-items: center;
         justify-content: center;
-
-
-        #widget-container {
-            text-align: center;
-
-
-        }
     }
 
     #links {
@@ -121,7 +81,6 @@
         .help-container {
             display: flex;
             align-items: center;
-            flex-direction: row;
 
             @media (max-width: $query-max-width) {
                 flex-direction: column;
@@ -130,12 +89,11 @@
             .help-text-container {
                 padding: 1rem;
 
-                .help-title {
+                .title {
                     font-weight: normal;
                     font-size: 1.5rem;
                     line-height: 1.7rem;
                     text-align: left;
-                    margin: 0;
 
                     @media (max-width: $query-max-width) {
                         font-size: 1.3rem;
@@ -158,7 +116,7 @@
             }
         }
 
-        #links-title {
+        .title {
             font-size: 1.5rem;
         }
 
