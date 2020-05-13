@@ -3,3 +3,5 @@ AUTHORIZATION_BASE_URL = API_BASE_URL + '/oauth2/authorize'
 TOKEN_URL = API_BASE_URL + '/oauth2/token'
 
 SUPPORT_SERVER_INVITE = 'https://discord.gg/ga9fNZq'
+
+ZWS = '\u200b'

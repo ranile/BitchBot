@@ -80,3 +80,7 @@ def make_oauth_session(token=None, state=None, scopes=None):
         auto_refresh_url=TOKEN_URL,
         token_updater=token_updater,
     )
+
+
+def space(count=4):
+    return f'{ZWS} ' * count

@@ -1,5 +1,8 @@
 import asyncio
 import logging
+import sys
+import traceback
+
 import aiohttp
 import discord
 from discord.ext import commands
@@ -41,7 +44,11 @@ class BitchBot(commands.Bot):
             help_command=util.BloodyHelpCommand(),
             owner_id=529535587728752644,
             case_insensitive=True,
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True)
         )
+        self.loop = self.loop or asyncio.get_event_loop()
+        self.clientSession = aiohttp.ClientSession()
+
         LocalProxy.bot = self
         self.quart_app = util.QuartWithBot(__name__, static_folder=None)
         self.quart_app.config['SECRET_KEY'] = keys.client_secret
@@ -58,6 +65,9 @@ class BitchBot(commands.Bot):
 
         self.blacklist = {}
         self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1.0, 15.0, commands.BucketType.user)
+
+        self.log_webhook = discord.Webhook.from_url(keys.logWebhook,
+                                                    adapter=discord.AsyncWebhookAdapter(self.clientSession))
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
@@ -84,7 +94,6 @@ class BitchBot(commands.Bot):
 
     # noinspection PyAttributeOutsideInit
     async def start(self, *args, **kwargs):
-        self.clientSession = aiohttp.ClientSession()
 
         await self.setup_logger()
 
@@ -145,9 +154,7 @@ class BitchBot(commands.Bot):
         embed.add_field(name='Author', value=f'{message.author.display_name} ({message.author}; {message.author.id})')
         embed.add_field(name='Link', value=f'[Jump to message]({message.jump_url})')
 
-        webhook = discord.Webhook.from_url(keys.logWebhook,
-                                           adapter=discord.AsyncWebhookAdapter(self.clientSession))
-        await webhook.send(embed=embed)
+        await self.log_webhook.send(embed=embed)
 
     async def on_message(self, message):
         if message.author.bot:  # don't do anything if the author is a bot
@@ -200,18 +207,53 @@ class BitchBot(commands.Bot):
             self.socket_stats[event] = 1
 
     async def on_command_error(self, ctx: commands.Context, exception):
-        exception = getattr(exception, 'original', exception)
+        if isinstance(exception, commands.CommandNotFound):
+            return
+
+        allowed_mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
+
+        async def send(msg):
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f'{str(msg)}\n'
+                                f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info or'
+                                f'join the [support server]({util.SUPPORT_SERVER_INVITE}) for help',
+                    color=discord.Color.red()),
+                allowed_mentions=allowed_mentions)
 
         if isinstance(exception, commands.CheckFailure):
-            await ctx.send(str(exception))
+            return await send(exception)
         elif isinstance(exception, commands.UserInputError):
-            msg = f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info'
-            await ctx.send('\n'.join([str(exception), msg]))
-        elif isinstance(exception, commands.CommandNotFound):
-            pass
+            return await send(exception)
+
+        exception = getattr(exception, 'original', exception)
+
+        if isinstance(exception, discord.Forbidden):
+            return await send(exception)
         else:
-            await ctx.send(f'{exception.__class__.__name__}: {str(exception)}')
-            bitch_bot_logger.exception(f'{exception}\nMessage:{ctx.message.jump_url}')
+            await send(f'{exception.__class__.__name__} : {str(exception)}')
+
+            tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__, 5))
+            sp = util.space
+            embed = discord.Embed(
+                title=f'{exception.__class__.__name__} : {str(exception)}',
+                description=f'**Message**:\n'
+                            f'{sp(2)}**Content**: {ctx.message.content}\n'
+                            f'{sp(2)}**ID**: {ctx.message.id}\n'
+                            f'{sp(2)}**Author**: {ctx.author}\n'
+                            f'{sp(2)}**Author\'s ID**: {ctx.author.id}\n'
+                            f'**Guild**:\n'
+                            f'{sp(2)}**Name**: {ctx.guild.name}\n'
+                            f'{sp(2)}**ID**: {ctx.guild.id}\n'
+                            f'{sp(2)}**Owner in guild**: {ctx.guild.get_member(self.owner_id) is not None}\n'
+                            f'**Traceback**: {tb}',
+                color=discord.Color.red()
+            )
+
+            await self.log_webhook.send(embed=embed)
+
+        print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
+        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     async def on_guild_join(self, guild):
 
