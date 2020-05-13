@@ -120,6 +120,8 @@ class Music(commands.Cog):
 
     async def stop_player(self, guild_id):
         player = self.bot.lavalink.player_manager.get(guild_id)
+        if player is None:
+            return  # it doesn't exist so....
 
         # Stop the current track so Lavalink consumes less resources.
         await player.stop()
