@@ -124,13 +124,18 @@ class Internet(commands.Cog):
                 return text
 
             for item in data:
+                print(item['word'])
+                print(item['definition'])
                 embed = discord.Embed(title=item['word'], description=replace_links(item['definition'], 2048, 2000),
                                       url=link, color=random_discord_color())
-
-                embed.add_field(name="Example", value=replace_links(item["example"], 1024, 1000), inline=False)
+                example = replace_links(item["example"], 1024, 1000)
+                embed.add_field(name="Example", value=example if example else 'No example available', inline=False)
                 embed.set_footer(text="From Urban Dictionary")
 
                 embeds.append(embed)
+
+            if len(embeds) == 0:
+                return await ctx.send('No data found')
 
             await BloodyMenuPages(EmbedPagesData(embeds)).start(ctx)
 
