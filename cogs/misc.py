@@ -293,24 +293,6 @@ class Miscellaneous(commands.Cog):
         sent = await ctx.send(owoized)
         await funs.log(ctx, message, sent, owoized)
 
-    # noinspection PyMethodMayBeStatic
-    def user_presentable_perms(self, permissmions):
-        allowed = []
-        denied = []
-        for perm in permissmions:
-            if perm[1]:
-                allowed.append(perm[0])
-            else:
-                denied.append(perm[0])
-
-        def make_user_presentable(perms):
-            return ', '.join(perms).replace('_', ' ') \
-                .replace('guild', 'server').title()
-
-        new_line = '\n'
-        return f"**Allowed**\n{make_user_presentable(allowed)}\n" \
-               f"{'' if len(denied) == 0 else f'**Denied**{new_line}{make_user_presentable(denied)}'}"
-
     @commands.command(aliases=['whois'])
     async def info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
         """
@@ -335,7 +317,7 @@ class Miscellaneous(commands.Cog):
         if user.premium_since is not None:
             embed.add_field(name='Last boosted on', value=user.premium_since)
         embed.add_field(name='Is on mobile', value=user.is_on_mobile())
-        embed.add_field(name='Permissions', value=self.user_presentable_perms(user.guild_permissions), inline=False)
+        embed.add_field(name='Permissions', value=funs.user_presentable_perms(user.guild_permissions), inline=False)
         sorted_roles = sorted(user.roles[1:], key=lambda x: x.position, reverse=True)
         embed.add_field(name='Roles', value=', '.join([r.mention for r in sorted_roles]), inline=False)
         await ctx.send(embed=embed)

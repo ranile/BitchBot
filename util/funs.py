@@ -84,3 +84,20 @@ def make_oauth_session(token=None, state=None, scopes=None):
 
 def space(count=4):
     return f'{ZWS} ' * count
+
+
+def user_presentable_perms(permissions):
+    allowed = []
+    denied = []
+    for perm in permissions:
+        if perm[1]:
+            allowed.append(perm[0])
+        else:
+            denied.append(perm[0])
+
+    def make_user_presentable(perms):
+        return ', '.join(perms).replace('_', ' ').replace('guild', 'server').title()
+
+    new_line = '\n'
+    return f"**Allowed**\n{make_user_presentable(allowed)}\n" \
+           f"{'' if len(denied) == 0 else f'**Denied**{new_line}{make_user_presentable(denied)}'}"
