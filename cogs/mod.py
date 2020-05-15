@@ -259,7 +259,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @bot_and_author_have_permissions(manage_messages=True)
-    async def purge(self, ctx, limit, messages_of: discord.Member = None):
+    async def purge(self, ctx, limit: int, messages_of: discord.Member = None):
         """
         Purges given amount of messages from a given member if named
 
@@ -268,12 +268,12 @@ class Moderation(commands.Cog):
             messages_of: The user whose messages you want to kick
         """
         if messages_of is None:
-            deleted = await ctx.channel.purge(limit=int(limit))
+            deleted = await ctx.channel.purge(limit=limit)
         else:
             def check(m):
                 return m.author == messages_of
 
-            deleted = await ctx.channel.purge(limit=int(limit), check=check)
+            deleted = await ctx.channel.purge(limit=limit, check=check)
 
         deleted_of = set()
         for message in deleted:
