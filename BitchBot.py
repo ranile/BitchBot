@@ -229,6 +229,8 @@ class BitchBot(commands.Bot):
         exception = getattr(exception, 'original', exception)
 
         if isinstance(exception, discord.Forbidden):
+            if not ctx.channel.permissions_for(ctx.author).send_messages:
+                return
             return await send(exception)
         else:
             await send(f'{exception.__class__.__name__} : {str(exception)}')
