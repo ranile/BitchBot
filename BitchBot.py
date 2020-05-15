@@ -256,25 +256,37 @@ class BitchBot(commands.Bot):
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     async def on_guild_join(self, guild):
+        sp = util.space
+        perms = util.user_presentable_perms(guild.me.guild_permissions).split('\n')
 
-        embed = discord.Embed(title=f"{self.user.name} just joined a server {'<:weebyay:676427364871307285> ' * 3}",
-                              color=util.random_discord_color())
+        embed = discord.Embed(
+            title=f"I just joined a server {'<:weebyay:676427364871307285> ' * 3}",
+            color=util.random_discord_color(),
+            description=f'**Name**: {guild}\n'
+                        f'**ID**: {guild.id}\n'
+                        f'**Owner**: {guild.owner} ({guild.owner.id})\n'
+                        f'**Members**:\n'
+                        f'{sp(2)}**Total**: {guild.member_count}\n'
+                        f'{sp(2)}**Bots**: {len([m for m in guild.members if m.bot])}\n'
+                        f'**Permissions**:\n'
+                        f'{sp(2)}**Allowed**: {perms[1]}\n'
+                        f'{sp(2)}**Denied**: {"None" if len(perms) == 3 else perms[3]}\n'
+                        f'**Current guild count**: {len(self.guilds)}'
+        )
         embed.set_thumbnail(url=guild.icon_url)
-        embed.add_field(name='Guild', value=f'{guild} ({guild.id})')
-        embed.add_field(name='Owner', value=f'{guild.owner} ({guild.owner.id})')
-        embed.add_field(name='Member count',
-                        value=f'{guild.member_count} ({len([m for m in guild.members if m.bot])} bots)')
-        embed.add_field(name='Current guild count', value=f'{len(self.guilds)}')
 
-        pg = WrappedPaginator(prefix='', suffix='', max_size=1024)
-        pg.add_line(' '.join(map(str, guild.emojis)))
-        first = True
-        for page in pg.pages:
-            if first:
-                embed.add_field(name='Emojis', value=f"{page}", inline=False)
-                first = False
-            else:
-                embed.add_field(name='\u200b', value=f"{page}", inline=False)
+        if len(guild.emojis) != 0:
+            pg = WrappedPaginator(prefix='', suffix='', max_size=1024)
+            pg.add_line(' '.join(map(str, guild.emojis)))
+            first = True
+            for page in pg.pages:
+                if first:
+                    embed.add_field(name='Emojis', value=f"{page}", inline=False)
+                    first = False
+                else:
+                    embed.add_field(name='\u200b', value=f"{page}", inline=False)
+        else:
+            embed.add_field(name='Emojis', value=f"None", inline=False)
 
         await self.get_channel(648069341341810688).send(embed=embed)
 
