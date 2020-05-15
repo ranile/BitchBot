@@ -125,6 +125,8 @@ class Music(commands.Cog):
         if before.channel is None or member.bot:
             return
         guild = member.guild
+        if guild.me not in before.channel.members:
+            return
         members = [m for m in before.channel.members if not m.bot]
         if len(members) == 0:
             await self.stop_player(guild.id)
