@@ -164,7 +164,7 @@ class BitchBot(commands.Bot):
 
         if not ctx.valid:
             if self.user.mentioned_in(message) \
-                    and (message.guild is not None and message.channel.permissions_for(message.guild.me)):
+                    and (message.guild is not None and message.channel.permissions_for(message.guild.me).send_messages):
 
                 await message.channel.send(random.choice(  # :pinng:
                     ["<a:ping:610784135627407370>", "<a:pinng:689843900889694314>"]))
