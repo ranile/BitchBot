@@ -27,8 +27,10 @@ def must_have_activity_enabled():
     return commands.check(pred)
 
 
-class Activity(commands.Cog, name='Activity Tracking'):
-    """Tracks your activity in the guild and give them activity points for being active."""
+# Tracks your activity in the guild and give them activity points for being active.
+# noinspection PyIncorrectDocstring
+class Stats(commands.Cog):
+    """Commands related to statistics about bot and you"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -56,6 +58,9 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @commands.Cog.listener()
     async def on_regular_human_message(self, message):
+        if message.guild is None:
+            return  # no activity tracking in DMs
+
         if message.guild.id in self.wants_activity_tracking:
             if not self.activity_bucket.update_rate_limit(message):  # been two minutes since last update
                 increment_by = 2
@@ -65,7 +70,7 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
     @commands.group()
     async def stats(self, ctx):
-        """Command group for stats related comamnds"""
+        """Command group for stats related commands"""
         pass
 
     @stats.command(name='websocket', aliases=['ws'])
@@ -143,10 +148,11 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
         await ctx.send('Activity tracking has been disabled')
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(minutes=60)
     async def stats_loop(self):
         if keys.debug:
             return
+
         log.info("Posting stats")
         await self.dbl_client.post_guild_count()
         session: aiohttp.ClientSession = self.bot.clientSession
@@ -174,4 +180,4 @@ class Activity(commands.Cog, name='Activity Tracking'):
 
 
 def setup(bot):
-    bot.add_cog(Activity(bot))
+    bot.add_cog(Stats(bot))
