@@ -28,8 +28,11 @@ class MustBeInVoiceException(commands.CheckFailure):
 
 
 def alone_or_has_perms():
-    def predicate(ctx):
-        m = [m for m in ctx.author.voice.channel.members if not m.id == ctx.me.id]
+    async def predicate(ctx):
+        if await ctx.bot.is_owner(ctx.author):
+            return True
+
+        m = [m for m in ctx.author.voice.channel.members if not m.bot]  # just checks for bot, i'm one after-all
         if len(m) == 1 and m[0].id == ctx.author.id:
             return True
         elif ctx.author.guild_permissions.manage_channels:
@@ -38,6 +41,16 @@ def alone_or_has_perms():
             raise CannotManageMusic
 
     return commands.check(predicate)
+
+
+def must_be_playing():
+    def pred(ctx):
+        player = ctx.bot.lavalink.player_manager.get(ctx.guild.id)
+        if player is not None and player.is_playing:
+            return True
+        raise commands.CheckFailure('Music must be playing in order to use this command')
+
+    return commands.check(pred)
 
 
 # noinspection PyIncorrectDocstring
@@ -67,12 +80,12 @@ class Music(commands.Cog):
             if len(event.player.queue) == 0 and event.player.current is None:
                 await self.stop_player(int(event.player.guild_id))
                 channel = self.bot.get_channel(int(event.player.fetch('channel')))
-                await channel.send(f'Nothing has been played for the past {to_sleep} seconds'
+                await channel.send(f'Nothing has been played for the past {to_sleep} seconds '
                                    f'so I have decided to leave the voice channel')
 
     # noinspection PyProtectedMember
     async def connect_to(self, guild_id: int, channel_id):
-        """ Connects to the given voicechannel ID. A channel_id of `None` means disconnect. """
+        """ Connects to the given voice channel ID. A channel_id of `None` means disconnect. """
 
         ws = self.bot._connection._get_websocket(guild_id)
         await ws.voice_state(str(guild_id), channel_id)
@@ -109,14 +122,14 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, _after):
-        if before.channel is None:
+        if before.channel is None or member.bot:
             return
         guild = member.guild
-        members = [m for m in before.channel.members if not m.id == guild.me.id]
+        members = [m for m in before.channel.members if not m.bot]
         if len(members) == 0:
-            pass
             await self.stop_player(guild.id)
-            # await ctx.send('Everyone has left the voice channel so I have decided to leave too')
+            channel = self.bot.get_channel(int(self.bot.lavalink.player_manager.get(guild.id).fetch('channel')))
+            await channel.send('All the humans has left the voice channel so I have decided to leave too')
 
     async def stop_player(self, guild_id):
         player = self.bot.lavalink.player_manager.get(guild_id)
@@ -198,6 +211,7 @@ class Music(commands.Cog):
 
     @commands.command()
     @alone_or_has_perms()
+    @must_be_playing()
     async def repeat(self, ctx):
         """Puts the player on repeat"""
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
@@ -229,6 +243,7 @@ class Music(commands.Cog):
 
     @commands.command()
     @alone_or_has_perms()
+    @must_be_playing()
     async def skip(self, ctx):
         """Skip the currently playing song."""
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
@@ -236,6 +251,7 @@ class Music(commands.Cog):
         await ctx.send("Skipped!")
 
     @commands.command(aliases=['np', 'current', 'nowplaying'])
+    @must_be_playing()
     async def now_playing(self, ctx):
         """Retrieve the currently playing song."""
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
@@ -244,6 +260,7 @@ class Music(commands.Cog):
                        f'{lavalink.format_time(player.position)} / {lavalink.format_time(current.duration)}')
 
     @commands.command(aliases=['q'])
+    @must_be_playing()
     async def queue(self, ctx):
         """Retrieve information on the next 5 songs from the queue."""
         player = self.bot.lavalink.player_manager.get(ctx.guild.id)
@@ -258,6 +275,7 @@ class Music(commands.Cog):
 
     @commands.command(aliases=['disconnect', 'dc'])
     @alone_or_has_perms()
+    @must_be_playing()
     async def stop(self, ctx):
         """Stop and disconnect the player"""
         await self.stop_player(ctx.guild.id)
