@@ -151,9 +151,22 @@ class Moderation(commands.Cog):
         reason = 'Unban from temp-ban timer expiring'
         await self.do_unban(guild, kwargs['banned_user_id'], reason=reason)
 
+    async def _get_muted_role(self, guild, prefix = None):
+        msg = f'See `{prefix if prefix is not None else "{prefix}"}help mute config` ' \
+              f'to learn how to configure the muted role.'
+        config = await self.config_service.get(guild.id)
+        if config is None:
+            raise commands.CommandError(f'There is no configuration stored for this server. {msg}')
+        if config.muted_role_id is None:
+            raise commands.CommandError(f'There is no muted role configured for this server. {msg}')
+        muted = guild.get_role(config.muted_role_id)
+        if muted is None:
+            raise commands.CommandError(f'The muted role configured for this server has been deleted '
+                                        f'and cannot be found. {msg.replace("configure", "reconfigure")}')
+        return muted
+
     async def do_mute(self, ctx, *, victim, reason=None, time=None):
-        config = await self.config_service.get(ctx.guild.id)
-        muted = ctx.guild.get_role(config.muted_role_id)
+        muted = await self._get_muted_role(ctx.guild, prefix=ctx.prefix)
 
         if muted in victim.roles:
             await ctx.send('User is already muted')
@@ -233,8 +246,7 @@ class Moderation(commands.Cog):
                 await self.bot.timers.create_timer(timer)
 
     async def do_unmute(self, guild, victim):
-        config = await self.config_service.get(guild.id)
-        muted = guild.get_role(config.muted_role_id)
+        muted = self._get_muted_role(guild)
         await victim.remove_roles(muted)
         await self.mute_service.delete(guild.id, victim.id)
 
