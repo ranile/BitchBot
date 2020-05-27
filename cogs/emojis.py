@@ -1,3 +1,5 @@
+import random
+
 import discord
 from discord.ext import commands
 
@@ -62,6 +64,14 @@ class Emojis(commands.Cog):
             amount: The number of times to repeat
         """
         self.ensure_safe_emojis(ctx, emojis)
+
+        horny = 697884245183430867
+        if any([e.id == horny for e in emojis]) and ctx.guild.id in keys.trusted_guilds:
+            messages = [m for m in self.bot.cached_messages if m.channel == ctx.channel][-10:]
+            if any([m.author.id == self.bot.owner_id for m in messages]):
+                no = self.bot.get_emoji(random.choice((597591030807920660, 610785266231279630)))
+                return await ctx.send(random.choice(('nope, not gonna do that', 'no u', str(no))))
+
         to_be_sent = ' '.join([f'{emoji} ' * amount for emoji in emojis])
         if to_be_sent == '':
             return await ctx.send('No emojis of that name found', delete_after=2)
