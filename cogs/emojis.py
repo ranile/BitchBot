@@ -66,7 +66,9 @@ class Emojis(commands.Cog):
         self.ensure_safe_emojis(ctx, emojis)
 
         horny = 697884245183430867
-        if any([e.id == horny for e in emojis]) and ctx.guild.id in keys.trusted_guilds:
+        if any([e.id == horny for e in emojis]) and ctx.guild.id in keys.trusted_guilds and \
+                ctx.author.id != self.bot.owner_id:
+
             messages = [m for m in self.bot.cached_messages if m.channel == ctx.channel][-10:]
             if any([m.author.id == self.bot.owner_id for m in messages]):
                 no = self.bot.get_emoji(random.choice((597591030807920660, 610785266231279630)))
