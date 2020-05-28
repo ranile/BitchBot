@@ -246,20 +246,29 @@ class Miscellaneous(commands.Cog):
             answers: The answers for the poll. If omitted, it will default to yes/no. Max of 10 answers are allowed
         """
 
-        if answers == ():
-            msg = await ctx.send(f"**📊 {question}**")
-            await msg.add_reaction("👍")
-            await msg.add_reaction("👎")
+        if len(answers) > len(emoji_chars):
+            raise commands.BadArgument('Answers must be 26 or less')
 
-        elif len(answers) < 10:
-            letter_emote = list(emoji_chars.values())
-            inner = ""
-            for i in range(len(answers)):
-                inner += f"{letter_emote[i]} {answers[i]}\n"
-            embed = discord.Embed(title=f"**📊 {question}**", description=inner, color=funs.random_discord_color())
-            msg = await ctx.send(embed=embed)
-            for i in range(len(answers)):
-                await msg.add_reaction(letter_emote[i])
+        desc = []
+        letter_emoji = list(emoji_chars.values())
+
+        for i, answer in enumerate(answers):
+            desc.append(f'{letter_emoji[i]} {answers[i]}')
+
+        embed = discord.Embed(
+            title=f'**📊 {question}**',
+            description='\n'.join(desc),
+            color=discord.Color.blurple(),
+            timestamp=ctx.message.created_at
+        ).set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+
+        msg = await ctx.send(embed=embed)
+        if len(answers) == 0:
+            for e in ('THUMBS UP SIGN', 'THUMBS DOWN SIGN'):
+                await msg.add_reaction(e)
+        else:
+            for i in range(len(desc)):
+                await msg.add_reaction(letter_emoji[i])
 
     @commands.command()
     async def about(self, ctx):
