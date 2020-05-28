@@ -264,7 +264,7 @@ class Miscellaneous(commands.Cog):
 
         msg = await ctx.send(embed=embed)
         if len(answers) == 0:
-            for e in ('THUMBS UP SIGN', 'THUMBS DOWN SIGN'):
+            for e in ('\N{THUMBS UP SIGN}', '\N{THUMBS DOWN SIGN}'):
                 await msg.add_reaction(e)
         else:
             for i in range(len(desc)):
