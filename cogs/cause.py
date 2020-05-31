@@ -12,7 +12,8 @@ import util
 THE_RABBIT = '<:rabbitman:593375171880943636>'
 THE_RABBIT_V2 = '<:rabbitV2:644894424865832970>'
 rabbits = [THE_RABBIT, THE_RABBIT_V2]
-rabbit_match = r"(kaylie'?s? ?(man)|([rw])( +)?([a@])( +)?b(( +)?b)?( +)?i( +)?t(man)?|\br ?word\b|(elizabeth|liz)'?s ?hoe)"
+# rabbit_match = r"(kaylie'?s? ?(man)|([rw])( +)?([a@])( +)?b(( +)?b)?( +)?i( +)?t(man)?|\br ?word\b|(elizabeth|liz)'?s ?hoe)"
+rabbit_match = r'(kaylie\'?s? ?(man)|(r)( +)?(a)( +)?b(( +)?b)( +)?i( +)?t ?(man)?|\br ?word\b)'
 THE_CAUSE = 505655510263922700
 RABBIT_WEBHOOK = 651333096829878272
 HAIKU_BOT = 372175794895585280
@@ -57,7 +58,7 @@ class Cause(commands.Cog, name="The Cause"):
                 f"{summoned_by.display_name} called the rabbit {rabbit}, "
                 f"Kaylie's man {rabbit}.\nRabbit count: {count}\n"
                 f"[Message](<{message.jump_url}>)", 'Rabbit', self.get_rabbit_pfp())
-            await message.add_reaction(rabbit)
+            # await message.add_reaction(rabbit)
 
         self.rabbitAlreadySummoned.append(message.id)
         await self.put_rabbit_on_cooldown()
@@ -78,10 +79,9 @@ class Cause(commands.Cog, name="The Cause"):
             return
 
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
-        if ((re.search(rabbit_match, normalized, re.IGNORECASE) or
-                (message.guild.owner in message.mentions and random.randint(0, 3) == 3)) and
-                message.webhook_id != RABBIT_WEBHOOK):
+        if re.search(rabbit_match, normalized, re.IGNORECASE) and message.webhook_id != RABBIT_WEBHOOK:
             await self.increment_rabbit(message)
+
         elif message.author.id == HAIKU_BOT:
 
             embed: discord.Embed = message.embeds[0]
