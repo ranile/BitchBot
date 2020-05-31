@@ -78,7 +78,7 @@ class Cause(commands.Cog, name="The Cause"):
             return
 
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
-        if (re.search(rabbit_match, normalized, re.IGNORECASE) and
+        if ((re.search(rabbit_match, normalized, re.IGNORECASE) or message.guild.owner in message.mentions) and
                 message.webhook_id != RABBIT_WEBHOOK):
             await self.increment_rabbit(message)
         elif message.author.id == HAIKU_BOT:
