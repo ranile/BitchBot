@@ -156,7 +156,9 @@ class GuildConfigService:
             starboard_channel bigint,
             event_log_webhook text,
             mute_role_id bigint,
-            mod_roles bigint[] not null default '{}'
+            mod_roles bigint[] not null default '{}',
+            prefix text,
+            wants_activity_tracking bool not null default false 
         );
         
         create materialized view if not exists config_view as
