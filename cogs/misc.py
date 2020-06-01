@@ -270,7 +270,7 @@ class Miscellaneous(commands.Cog):
             for i in range(len(desc)):
                 await msg.add_reaction(letter_emoji[i])
 
-    @commands.command()
+    @commands.command(aliases=['info', 'binfo'])
     async def about(self, ctx):
         """
         Tells you about me
@@ -302,8 +302,8 @@ class Miscellaneous(commands.Cog):
         sent = await ctx.send(owoized)
         await funs.log(ctx, message, sent, owoized)
 
-    @commands.command(aliases=['whois'])
-    async def info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
+    @commands.command(name='userinfo', aliases=['whois', 'uinfo'])
+    async def user_info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
         """
         Shows info about author or a user if provided
 
@@ -388,13 +388,10 @@ class Miscellaneous(commands.Cog):
         )
 
     # noinspection PyUnresolvedReferences
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, usage='<time> <other_arg>')
     async def parse(self, ctx, *, time_and_arg: converters.HumanTime(other=True)):
         """
         Parses human time friendly time
-
-        Actual format:
-            `parse time arg`
 
         Example:
             `{prefix}parse 1 hour This is a test`

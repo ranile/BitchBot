@@ -17,15 +17,15 @@ class Reminders(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(invoke_without_command=True)
+    # noinspection PyIncorrectDocstring
+    @commands.group(invoke_without_command=True, usage='<time> <text>')
     async def remind(self, ctx, *, time_and_text: HumanTime(other=True)):
         """
         Reminds you of something after a certain amount of time.
 
-        The format must be:
-            `remind time text`
-
-        `time` should be a relative time like 2h, 1d, etc
+        Args:
+            time: When you want to be reminded; should be a relative time like 2h, 1d, etc
+            text: What you want to be reminded of
         """
 
         time, text = time_and_text.time, time_and_text.other

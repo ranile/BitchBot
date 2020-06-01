@@ -94,7 +94,7 @@ class Moderation(commands.Cog):
 
         await self._do_ban(ctx, victim, reason)
 
-    @commands.command()
+    @commands.command(usage='<victim> <time> <reason>')
     @bot_and_author_have_permissions(ban_members=True)
     async def tempban(self, ctx: commands.Context, victim: discord.Member, *,
                       time_and_reason: converters.HumanTime(other=True) = None):
@@ -184,7 +184,7 @@ class Moderation(commands.Cog):
         async with ctx.typing():
             await self.do_mute(ctx, victim=victim, reason=reason)
 
-    @mute.command(name='temp')
+    @mute.command(name='temp', usage='<victim> <time> <reason>')
     @bot_and_author_have_permissions(manage_roles=True)
     async def temp_mute(self, ctx: commands.Context, victim: discord.Member, *,
                         time_and_reason: converters.HumanTime(other=True)):
