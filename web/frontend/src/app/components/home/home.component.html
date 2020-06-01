@@ -27,25 +27,25 @@
 
     <div class="item" id="stats">
         <h3 class="title" id="stats-title">Some stats about me</h3>
+
         <div class="stats-group">
             <section>
                 <h5 class="title">Servers</h5>
                 <span>{{stats.guilds}}</span>
             </section>
 
-            <span class="spacer"></span>
             <section>
                 <h5 class="title">Channels</h5>
                 <span>{{stats.channels}}</span>
             </section>
 
-            <span class="spacer"></span>
-            <section>
-                <h5 class="title">Uptime</h5>
-                <span *ngIf="stats.uptime.days != 0">{{stats.uptime.days}} days, </span>
-                <span>{{stats.uptime.hours}} hours and {{stats.uptime.minutes}} minutes</span>
-            </section>
         </div>
+
+        <section>
+            <h5 class="title">Uptime</h5>
+            <span *ngIf="stats.uptime.days != 0">{{stats.uptime.days}} days, </span>
+            <span>{{stats.uptime.hours}} hours and {{stats.uptime.minutes}} minutes</span>
+        </section>
 
         <div class="stats-group">
             <section>
@@ -53,7 +53,6 @@
                 <span>{{stats.users}}</span>
             </section>
 
-            <span class="spacer"></span>
             <section>
                 <h5 class="title">Commands</h5>
                 <span>{{stats.commands}}</span>

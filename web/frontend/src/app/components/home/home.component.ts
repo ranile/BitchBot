@@ -19,7 +19,13 @@ export class HomeComponent implements OnInit {
     DBL_URL = "https://top.gg/bot/595363392886145046"
     LIST_MY_BOTS_URL = "https://listmybots.com/bot/595363392886145046"
 
-    stats: Stats;
+    stats: Stats =  {
+        uptime: {minutes: 0, seconds: 0, hours: 0, days: 0, human_friendly: '', total_seconds: '0'},
+        commands: 0,
+        users: 0,
+        channels: 0,
+        guilds: 0,
+    };
 
     constructor(
         private router: Router,
