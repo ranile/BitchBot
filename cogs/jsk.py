@@ -11,6 +11,8 @@ import psutil
 import humanize
 import sys
 
+from BitchBot import BitchBot
+
 
 def stats_embed(bot):
     sp = util.space
@@ -50,6 +52,9 @@ async def sudo(self, ctx):
 
 
 class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=sudo, name='Jishaku'):
+    def __init__(self, bot: BitchBot):
+        super().__init__(bot)
+        self.bot: BitchBot = bot
 
     @commands.command(name="py", aliases=["python"])
     async def jsk_python(self, ctx: commands.Context, *, argument: codeblock_converter):
@@ -71,6 +76,49 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=sudo, name='
 
         await ctx.send("Exiting...")
         await self.bot.close()
+
+    @commands.command()
+    async def delete(self, ctx, message: discord.Message):
+        await message.delete()
+
+    @commands.group(invoke_without_command=True)
+    async def reload(self, ctx, *, cog):
+        """
+        Reloads a cog
+
+        Args:
+            cog: The cog to reload
+        """
+
+        try:
+            actual_cog = self.bot.get_cog(cog)
+            name = actual_cog.__class__.__module__
+            self.bot.reload_extension(name)
+        except:
+            self.bot.reload_extension(f'cogs.{cog}')
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded cog {cog}')
+
+    @reload.command(name='timers')
+    async def reload_timers(self, ctx):
+        # noinspection PyUnresolvedReferences
+        # loaded with util.timers
+        self.bot.timers.restart()
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} Reloaded Timers')
+
+    @reload.command(name='prefix')
+    async def reload_prefixes(self, ctx):
+        await self.bot.refresh_prefixes()
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
+
+    @commands.command(aliases=['blacklist'])
+    async def block(self, ctx, user: discord.User, *, reason=None):
+        await self.bot.blacklist_user(user, reason=reason)
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
+
+    @commands.command()
+    async def unblock(self, ctx, user: discord.User):
+        await self.bot.remove_from_blacklist(user)
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 
 
 def setup(bot):
