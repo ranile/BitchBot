@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 from datetime import datetime
-from resources import Ban, Warn, Mute, Timer
-from services import MuteService, WarningsService, BanService, ConfigService
+from resources import Warn, Timer
+from services import WarningsService, ConfigService
 from util import funs, checks, BloodyMenuPages, TextPagesData, converters
 
 
@@ -22,8 +22,6 @@ class Moderation(commands.Cog):
         self.bot = bot
         pool = bot.db
         self.warnings_service = WarningsService(pool)
-        self.mute_service = MuteService(pool)
-        self.ban_service = BanService(pool)
         self.config_service = ConfigService(pool)
 
     def cog_check(self, ctx):
@@ -60,30 +58,20 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.send("I can't dm that user. Kicked without notice")
 
-    async def do_ban(self, ctx, victim, reason, time=None):
+    async def _do_ban(self, ctx, victim, reason):
         if victim.id == ctx.author.id:
             await ctx.send("Why do want to ban yourself?\nI'm not gonna let you do it")
             return
 
-        ban = Ban(
-            reason=reason if reason else None,
-            banned_by_id=ctx.author.id,
-            banned_user_id=victim.id,
-            guild_id=ctx.guild.id,
-            unban_time=time
-        )
-
-        saved = await self.ban_service.insert(ban)
-
         embed = discord.Embed(title=f"User was banned from {ctx.guild.name}", color=funs.random_discord_color(),
-                              timestamp=saved.banned_at)
+                              timestamp=ctx.message.created_at)
         embed.add_field(name='Banned By', value=ctx.author.mention, inline=True)
         embed.add_field(name='Banned user', value=victim.mention, inline=True)
         if reason:
             embed.add_field(name='Reason', value=reason, inline=False)
         embed.set_thumbnail(url=victim.avatar_url)
 
-        await ctx.send(f'ID: {saved.id}', embed=embed)
+        await ctx.send(embed=embed)
 
         try:
             embed.title = f"You have been banned from {ctx.guild.name}"
@@ -104,7 +92,7 @@ class Moderation(commands.Cog):
             reason: Reason for ban - Optional
         """
 
-        await self.do_ban(ctx, victim, reason)
+        await self._do_ban(ctx, victim, reason)
 
     @commands.command()
     @bot_and_author_have_permissions(ban_members=True)
@@ -124,7 +112,7 @@ class Moderation(commands.Cog):
         else:
             time = time_and_reason.time
             reason = time_and_reason.other if time_and_reason.other is not None else ''
-        await self.do_ban(ctx, victim, reason, time)
+        await self._do_ban(ctx, victim, reason)
 
         if time:
             extras = {
@@ -140,16 +128,12 @@ class Moderation(commands.Cog):
             )
             await self.bot.timers.create_timer(timer)
 
-    async def do_unban(self, guild, user_id, reason):
-        await self.ban_service.delete(guild.id, user_id)
-        await guild.unban(discord.Object(id=user_id), reason=reason)
-
     @commands.Cog.listener()
     async def on_tempban_timer_complete(self, timer):
         kwargs = timer.kwargs
         guild = self.bot.get_guild(kwargs['guild_id'])
         reason = 'Unban from temp-ban timer expiring'
-        await self.do_unban(guild, kwargs['banned_user_id'], reason=reason)
+        await guild.unban(discord.Object(id=kwargs['banned_user_id']), reason=reason)
 
     async def _get_muted_role(self, guild, prefix = None):
         msg = f'See `{prefix if prefix is not None else "{prefix}"}help mute config` ' \
@@ -172,17 +156,8 @@ class Moderation(commands.Cog):
             await ctx.send('User is already muted')
             return
 
-        mute = Mute(
-            reason=reason,
-            muted_by_id=ctx.author.id,
-            muted_user_id=victim.id,
-            guild_id=ctx.guild.id,
-            unmute_time=time
-        )
-        inserted = await self.mute_service.insert(mute)
-
         await victim.add_roles(muted, reason=f'{reason}\n(Operation performed by {ctx.author})')
-        await ctx.send(f"**User {victim.mention} has been muted by {ctx.author.mention}**\nID: {inserted.id}")
+        await ctx.send(f"**User {victim.mention} has been muted by {ctx.author.mention}**")
 
         try:
             msg = f"You have been muted in {ctx.guild.name} {f'for {time}' if time else ''}" \
@@ -248,7 +223,6 @@ class Moderation(commands.Cog):
     async def do_unmute(self, guild, victim):
         muted = self._get_muted_role(guild)
         await victim.remove_roles(muted)
-        await self.mute_service.delete(guild.id, victim.id)
 
     @commands.command()
     @bot_and_author_have_permissions(manage_roles=True)

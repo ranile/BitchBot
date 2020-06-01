@@ -2,8 +2,6 @@ from services.rabbit_service import CounterService
 from services.activity_service import ActivityService
 from services.starboard_service import StarboardService
 from services.config_service import GuildConfigService as ConfigService
-from services.ban_service import BanService
-from services.mute_service import MuteService
 from services.warning_service import WarningsService
 from services.timers_service import TimersService
 from services.emoji_service import EmojiService
