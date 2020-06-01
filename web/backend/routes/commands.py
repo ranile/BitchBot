@@ -1,5 +1,5 @@
 import util
-from cogs import jsk, admin, cause
+from cogs import jsk, cause
 from quart import jsonify
 from discord.ext import commands
 
@@ -9,7 +9,7 @@ blueprint = util.BlueprintWithBot('command_rouetes', __name__, url_prefix='/api/
 def filter_commands(commands_):
     print('whaaat')
     for command in commands_:
-        if isinstance(command.cog, (jsk.MyJishaku, admin.Admin, cause.Cause)):
+        if isinstance(command.cog, (jsk.MyJishaku, cause.Cause)):
             continue
         elif command.hidden:
             print('hidden', command.name)
