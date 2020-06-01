@@ -12,6 +12,7 @@ import { UserService } from "./services/user/user.service";
 export class AppComponent implements OnInit {
     avatarUrl: string = '';
     navbarColor: ThemePalette = 'primary';
+    hideToolbar = false;
 
     constructor(
         private userService: UserService,
@@ -20,7 +21,9 @@ export class AppComponent implements OnInit {
     ) {
         this.router.events.subscribe(value => {
             if (value instanceof RouterEvent) {
-                this.navbarColor = value.url === '/home'? 'primary' : undefined;
+                this.hideToolbar = value.url.toLowerCase().includes('hidetoolbar')
+                this.navbarColor = value.url && !value.url.includes('/home')? undefined : 'primary';
+
             }
         })
     }
