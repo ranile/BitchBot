@@ -309,7 +309,7 @@ class BitchBot(commands.Bot):
         all_files = list(self._get_all_files())
         lines_count = 0
         for file in all_files:
-            with open(file) as f:
+            with open(file, encoding='utf-8') as f:
                 read_file = f.read().split('\n')
                 lines = [x for x in read_file if x != '']
                 lines_count += len(lines)
