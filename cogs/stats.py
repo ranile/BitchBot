@@ -1,15 +1,14 @@
 import re
-
 import aiohttp
 import discord
 from discord.ext import commands, tasks
-import dbl
 import keys
 from services import ActivityService
 import util
 from util import checks
 from database import errors
 import logging
+import traceback
 
 log = logging.getLogger('BitchBot' + __name__)
 
@@ -47,7 +46,6 @@ class Stats(commands.Cog):
             adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
 
         if not keys.debug:
-            self.dbl_client = dbl.DBLClient(self.bot, keys.dbl_token, autopost=False)
             self.stats_loop.start()
 
     async def load_guilds(self):
@@ -154,22 +152,35 @@ class Stats(commands.Cog):
             return
 
         log.info("Posting stats")
-        await self.dbl_client.post_guild_count()
         session: aiohttp.ClientSession = self.bot.clientSession
-        await session.post(
-            'https://listmybots.com/api/public/bot/stats',
-            json={'server_count': len(self.bot.guilds)},
-            headers={'Authorization': keys.list_my_bots_token})
+        try:
+            await session.post(
+                f'https://top.gg/api/bots/{self.bot.user.id}/stats',
+                json={'server_count': len(self.bot.guilds)},
+                headers={'Authorization': keys.dbl_token}
+            )
 
-        await session.post(
-            f'https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats',
-            json={'guildCount': len(self.bot.guilds)},
-            headers={'Authorization': keys.dbots_token})
+            await session.post(
+                'https://listmybots.com/api/public/bot/stats',
+                json={'server_count': len(self.bot.guilds)},
+                headers={'Authorization': keys.list_my_bots_token})
 
-        await session.post(
-            f'https://api.discordapps.dev/api/v2/bots/{self.bot.user.id}',
-            json={"bot": {"count": len(self.bot.guilds)}},
-            headers={'Authorization': keys.discordapps_token})
+            await session.post(
+                f'https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats',
+                json={'guildCount': len(self.bot.guilds)},
+                headers={'Authorization': keys.dbots_token})
+
+            await session.post(
+                f'https://api.discordapps.dev/api/v2/bots/{self.bot.user.id}',
+                json={"bot": {"count": len(self.bot.guilds)}},
+                headers={'Authorization': keys.discordapps_token})
+        except BaseException as exception:
+            tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__, 5))
+            return await self.log_webhook.send(embed=discord.Embed(
+                title='An error occurred while posting stats',
+                description=tb,
+                color=discord.Color.red(),
+            ))
 
         await self.log_webhook.send('Posted stats')
         log.info("Successfully posted stats")

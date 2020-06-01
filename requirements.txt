@@ -10,4 +10,3 @@ dateparser
 pendulum
 pyjwt
 lavalink
-dblpy
