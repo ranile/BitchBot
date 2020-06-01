@@ -6,8 +6,6 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 import {HttpClientModule} from "@angular/common/http";
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { ShowWarnsComponent } from './components/show-warns/show-warns.component';
-import { ModDashboardComponent } from './dashboard/components/mod-dashboard/mod-dashboard.component';
 import {FormsModule} from "@angular/forms";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatButtonModule} from "@angular/material/button";
@@ -17,12 +15,7 @@ import {MatListModule} from "@angular/material/list";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatOptionModule} from "@angular/material/core";
 import {MatSelectModule} from "@angular/material/select";
-import { ShowWarnComponent } from './components/show-warn/show-warn.component';
 import {MatCardModule} from "@angular/material/card";
-import { RelativeTimePipe } from './pipes/relative-time.pipe';
-import { DiscordUserPipe } from './pipes/discord-user.pipe';
-import { DashboardComponent } from './dashboard/components/dashboard/dashboard.component';
-import {DashboardModule} from "./dashboard/dashboard.module";
 import { CommandsComponent } from './components/commands/commands.component';
 import {MatTableModule} from "@angular/material/table";
 import {MatFormFieldModule} from "@angular/material/form-field";
@@ -36,12 +29,6 @@ import {MatDialogModule} from "@angular/material/dialog";
         AppComponent,
         HomeComponent,
         NavbarComponent,
-        ShowWarnsComponent,
-        ModDashboardComponent,
-        DashboardComponent,
-        ShowWarnComponent,
-        RelativeTimePipe,
-        DiscordUserPipe,
         CommandsComponent,
         ShowCommandComponent,
     ],
@@ -59,7 +46,6 @@ import {MatDialogModule} from "@angular/material/dialog";
         MatOptionModule,
         MatSelectModule,
         MatCardModule,
-        DashboardModule,
         MatTableModule,
         MatFormFieldModule,
         MatPaginatorModule,

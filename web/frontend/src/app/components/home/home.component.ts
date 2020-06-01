@@ -1,5 +1,4 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import {AuthService} from "../../services/auth/auth.service";
 import {Router} from "@angular/router";
 import {DOCUMENT} from '@angular/common';
 import {UserService} from "../../services/user/user.service";
@@ -23,7 +22,6 @@ export class HomeComponent implements OnInit {
     stats: Stats;
 
     constructor(
-        private authService: AuthService,
         private router: Router,
         @Inject(DOCUMENT) private document: Document,
         private userService: UserService
@@ -36,27 +34,7 @@ export class HomeComponent implements OnInit {
         })
     }
 
-    login() {
-        this.authService.login().then(it => {
-            this.document.location.href = it['url']
-        })
-    }
-
     setHrefTo(url) {
         window.location.href = url
     }
-
-    /*lastTopValue = 0
-
-    @HostListener('window:scroll', [])
-    onScroll() {
-        const rect = this.document.getElementById('links').getBoundingClientRect().top
-        console.log(window.innerHeight, rect, this.lastTopValue)
-        if (this.lastTopValue >= (window.innerHeight / 3)) {
-            this.document.getElementById('main-toolbar').style.background = '';
-        } else {
-            this.document.getElementById('main-toolbar').style.background = '#3f51b5';
-        }
-        this.lastTopValue = rect
-    }*/
 }

@@ -1,8 +1,8 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { HttpClient } from "@angular/common/http";
 import { DOCUMENT } from "@angular/common";
 import { Router, RouterEvent } from "@angular/router";
 import {ThemePalette} from "@angular/material/core";
+import {UserService} from "./services/user/user.service";
 
 @Component({
     selector: 'app-root',
@@ -14,13 +14,12 @@ export class AppComponent implements OnInit {
     navbarColor: ThemePalette = 'primary';
 
     constructor(
-        private httpClient: HttpClient,
+        private userService: UserService,
         @Inject(DOCUMENT) private _document: HTMLDocument,
         private router: Router) {}
 
     ngOnInit(): void {
-        this.httpClient.get('/api/icon').toPromise().then(resp => {
-            const url = resp['url']
+        this.userService.fetchMyAvatarUrl(1024).then(url => {
             this.avatarUrl = url
             this._document.getElementById('appFavicon').setAttribute('href', url);
         })
