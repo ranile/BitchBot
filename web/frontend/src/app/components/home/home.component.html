@@ -49,7 +49,7 @@
 
     </div>
 
-    <div class="item features">
+    <div class="item features features-top-padding">
         <app-feature-card
             class="feature-card"
             direction="left"
@@ -67,6 +67,7 @@
         </app-feature-card>
 
         <app-feature-card
+            *ngIf="false"
             class="feature-card"
             direction="left"
             title="Set whatever prefix you want to"
@@ -78,7 +79,7 @@
     <div class="item features features-top-padding">
         <app-feature-card
             class="feature-card"
-            direction="right"
+            direction="left"
             title="Showcase bruh moments in your server"
             [lines]="['With my starboard, you can archive the bruh moments in a specific channel in your server.',
                                 'With the custom star count, you can let the people star a message and have it archived.',
@@ -87,17 +88,17 @@
 
         <app-feature-card
             class="feature-card"
-            direction="left"
+            direction="right"
             title="Moderate your server with great moderation tools"
             [lines]="['Need to yeet someone? Ban someone? Stop someone from being able to talk? I got you covered there',
                     'You can even add roles as Mod roles which lets people with those roles do even more stuff like warn members']">
         </app-feature-card>
 
-        <section>
+        <!--<section>
             Do you like me <br>
             Yes? Nice. Invite me <br>
             No? Haha get fucked
-        </section>
+        </section>-->
     </div>
 
     <div class="item" id="stats">

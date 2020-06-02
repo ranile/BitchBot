@@ -13,14 +13,17 @@ export class FeatureCardComponent implements OnInit {
     @Input() title: string;
     @Input() lines: string[];
     @Input() direction: ImageDirection;
-    yes = this.direction === "right"
+    imageDirection: {'right': boolean, left: boolean}
 
     constructor() {
     }
 
     ngOnInit(): void {
-        this.yes = this.direction === "right"
-        console.log(this.direction, this.yes)
+        this.imageDirection = {
+            right: this.direction === "right",
+            left: this.direction === "left"
+        }
+        console.log(this.direction, this.imageDirection)
     }
 
 }

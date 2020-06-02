@@ -75,6 +75,12 @@
             grid-row-gap: 0;
         }
 
+        .title {
+            @media (max-width: $query-max-width) {
+                padding: 3rem;
+            }
+        }
+
         .feature-card {
             justify-self: center;
         }
@@ -82,6 +88,9 @@
 
     .features-top-padding {
         padding-top: 6em;
+        @media (max-width: $query-max-width) {
+            padding: 0;
+        }
     }
 
     #stats {
