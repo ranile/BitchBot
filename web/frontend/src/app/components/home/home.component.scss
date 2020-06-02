@@ -68,35 +68,15 @@
 
     .features {
         background-color: mat-color($mat-deep-purple, A700);
-        display: flex;
-        flex-direction: column;
+        display: grid;
         align-items: center;
-        row-gap: 8em;
-
-
-        img {
-            border-radius: 1rem;
+        grid-row-gap: 8em;
+        @media (max-width: $query-max-width) {
+            grid-row-gap: 0;
         }
 
-        section {
-            display: flex;
-            align-items: center;
-            gap: 2em;
-
-            div {
-                display: flex;
-                flex-direction: column;
-                align-content: flex-start;
-
-                .title {
-                    text-align: start;
-                    font-size: 1.8rem;
-                }
-
-                span {
-                    font-size: 1.2em;
-                }
-            }
+        .feature-card {
+            justify-self: center;
         }
     }
 

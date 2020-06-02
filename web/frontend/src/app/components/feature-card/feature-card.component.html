@@ -1,0 +1,8 @@
+<section [ngClass]="{'right': yes}">
+    <img src="{{imgSource}}"
+         alt="Emojis demo" class="mat-elevation-z6"/>
+    <div>
+        <h6 class="title">{{title}}</h6>
+        <span *ngFor="let line of lines">{{line}}</span>
+    </div>
+</section>

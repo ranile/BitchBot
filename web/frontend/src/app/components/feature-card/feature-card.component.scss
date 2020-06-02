@@ -1,0 +1,33 @@
+section {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+
+    img {
+        border-radius: 1rem;
+    }
+
+
+    div {
+        display: flex;
+        flex-direction: column;
+        align-content: flex-start;
+
+        .title {
+            text-align: start;
+            font-size: 1.8rem;
+        }
+
+        span {
+            font-size: 1.2em;
+        }
+    }
+}
+
+.left {
+    flex-direction: row;
+}
+
+.right {
+    flex-direction: row-reverse;
+}

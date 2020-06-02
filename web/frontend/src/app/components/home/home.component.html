@@ -29,87 +29,74 @@
         <h3 class="title">Features</h3>
 
 
-        <section>
-            <img src="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-                 alt="Emojis demo" class="mat-elevation-z6"/>
-            <div>
-                <h6 class="title">Use any emoji from any server I am in</h6>
-                <span>I let you use any emoji, animated or not, that I can see, no need to have nitro or be in a specific server</span>
-                <span>Even have me delete your command message.</span>
-                <span>I will tell even you send it so you don't end up wondering which ghost bruhed you</span>
-            </div>
-        </section>
+        <app-feature-card
+            class="feature-card"
+            [direction]="'left'"
+            imgSource="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
+            title="Use any emoji from any server I am in"
+            [lines]="['I let you use any emoji, animated or not, that I can see, no need to have nitro or be in a specific server',
+                    'Even have me delete your command message.',
+                    'I will tell even you send it so you don\'t end up wondering which ghost bruhed you']">
+        </app-feature-card>
 
-        <section>
-            <div>
-                <h6 class="title">Have fun, lots of fun</h6>
-                <span>Get top posts from any subreddit you like, roast people, get jokes, facts and much more</span>
-                <span>Even fetch <i>information</i> from the one and only Urban Dictionary</span>
-            </div>
-            <img src="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-                 alt="Activity tracking demo" class="mat-elevation-z6"/>
-
-        </section>
-
+        <app-feature-card
+            class="feature-card"
+            direction="right"
+            title="Have fun, lots of fun"
+            [lines]="['Get top posts from any subreddit you like, roast people, get jokes, facts and much more',
+                'Even fetch information from the one and only Urban Dictionary']">
+        </app-feature-card>
 
     </div>
 
     <div class="item features">
-        <section>
-            <img src="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-                 alt="Activity tracking demo" class="mat-elevation-z6"/>
+        <app-feature-card
+            class="feature-card"
+            direction="left"
+            title="Track activity of your server members"
+            [lines]="['I allow you to keep track of how much people in your server are active and give them activity points.',
+                'Give active people and excuse to flex with their posision activity leaderboard']">
+        </app-feature-card>
 
-            <div>
-                <h6 class="title">Track activity of your server members</h6>
-                <span>I allow you to keep track of how much people in your server are active.</span>
-                <span>Active people will get more activity points.</span>
-                <span>Give active people and excuse to flex with their posision activity leaderboard</span>
-            </div>
-        </section>
+        <app-feature-card
+            class="feature-card"
+            direction="right"
+            title="Play music right in your server"
+            [lines]="['Listen from whatever source you like including Youtube, SoundCloud, Vimeo, Twitch and more',
+                'while having access to all the features you enjoy']">
+        </app-feature-card>
 
-        <section>
-            <div>
-                <!--Oh hey, look, yet another music bot thanks lavalink-->
-                <h6 class="title">Play music right in your server</h6>
-                <span>Listen from whatever source you like including Youtube, SoundCloud, Vimeo, Twitch and more</span>
-                <span>while having access to all the features you enjoy</span>
-            </div>
-            <img src="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-                 alt="Emojis demo" class="mat-elevation-z6"/>
-        </section>
-
-        <section>
-            <img src="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-                 alt="Emojis demo" class="mat-elevation-z6"/>
-
-            <div>
-                <h6 class="title">Set whatever prefix you want to</h6>
-                <span>Don't like my default prefix of <code>&gt;</code>?</span>
-                <span>No need to worry. You can completely replace it with whatever you want</span>
-            </div>
-
-        </section>
+        <app-feature-card
+            class="feature-card"
+            direction="left"
+            title="Set whatever prefix you want to"
+            [lines]="['Don\'t like my default prefix of > ?',
+                'No need to worry. You can completely replace it with whatever you want']">
+        </app-feature-card>
     </div>
+
     <div class="item features features-top-padding">
-        <section>
-            <div>
-                <h6 class="title">Showcase bruh moments in your server</h6>
-                <span>With my starboard, you can archive the bruh moments in a specific channel in your server.</span>
-                <span>With the custom star count, you can let the people star a message and have it archived.</span>
-                <span>Let the members pick what needs to be showcased.</span>
-            </div>
-            <img src="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-                 alt="Emojis demo" class="mat-elevation-z6"/>
-        </section>
+        <app-feature-card
+            class="feature-card"
+            direction="right"
+            title="Showcase bruh moments in your server"
+            [lines]="['With my starboard, you can archive the bruh moments in a specific channel in your server.',
+                                'With the custom star count, you can let the people star a message and have it archived.',
+                                'Let the members pick what needs to be showcased.']">
+        </app-feature-card>
+
+        <app-feature-card
+            class="feature-card"
+            direction="left"
+            title="Moderate your server with great moderation tools"
+            [lines]="['Need to yeet someone? Ban someone? Stop someone from being able to talk? I got you covered there',
+                    'You can even add roles as Mod roles which lets people with those roles do even more stuff like warn members']">
+        </app-feature-card>
 
         <section>
-            <img src="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-                 alt="Emojis demo" class="mat-elevation-z6"/>
-            <div>
-                <h6 class="title">Moderate your server with great moderation tools</h6>
-                <span>Need to yeet someone? Ban someone? Stop someone from being able to talk? I got you covered there</span>
-                <span>You can even add roles as Mod roles which lets people with those roles do even more stuff like warn members</span>
-            </div>
+            Do you like me <br>
+            Yes? Nice. Invite me <br>
+            No? Haha get fucked
         </section>
     </div>
 
