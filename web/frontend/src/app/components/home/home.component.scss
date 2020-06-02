@@ -90,7 +90,7 @@
         .stats-group {
             display: grid;
             grid-template-columns: repeat(2, 2fr);
-            grid-column-gap: 20rem;
+            grid-column-gap: 30rem;
             grid-row-gap: 3em;
 
             @media (max-width: $query-max-width) {
@@ -172,7 +172,7 @@
 
         #links-grid {
             display: grid;
-            grid-template-columns: repeat(4, 4fr);
+            grid-template-columns: repeat(5, 4fr);
             grid-gap: 2rem;
 
             @media (max-width: $query-max-width) {
