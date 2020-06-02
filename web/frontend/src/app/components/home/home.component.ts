@@ -18,6 +18,7 @@ export class HomeComponent implements OnInit {
     DISCORDAPPS_URL = "https://discordapps.dev/en-GB/bots/595363392886145046"
     DBL_URL = "https://top.gg/bot/595363392886145046"
     LIST_MY_BOTS_URL = "https://listmybots.com/bot/595363392886145046"
+    BOTLIST_SPACE_URL = 'https://botlist.space/bot/595363392886145046';
 
     stats: Stats =  {
         uptime: {minutes: 0, seconds: 0, hours: 0, days: 0, human_friendly: '', total_seconds: '0'},
