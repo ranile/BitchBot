@@ -27,6 +27,9 @@ class Starboard(commands.Cog):
     def cog_check(self, ctx):
         if ctx.guild is None:
             raise commands.NoPrivateMessage("Starboard can't be used in DMs")
+        config = await self.config_service.get(ctx.guild.id)
+        if config is None or config.starboard_channel is None:
+            raise commands.CommandError('You need starboard enabled')
         return True
 
     @commands.Cog.listener()
@@ -123,7 +126,10 @@ class Starboard(commands.Cog):
         paginator.add_line()
         paginator.add_line('-' * length)
         me = await self.starboard_service.my_stats(ctx)
-        paginator.add_line(f'You: {me["count"]}')
+        if me is not None:
+            paginator.add_line(f'You: {me["count"]}')
+        else:
+            paginator.add_line(f'You: None')
 
         for page in paginator.pages:
             await ctx.send(page)
