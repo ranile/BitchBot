@@ -221,7 +221,7 @@ class Moderation(commands.Cog):
                 await self.bot.timers.create_timer(timer)
 
     async def do_unmute(self, guild, victim):
-        muted = self._get_muted_role(guild)
+        muted = await self._get_muted_role(guild)
         await victim.remove_roles(muted)
 
     @commands.command()
