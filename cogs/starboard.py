@@ -24,7 +24,7 @@ class Starboard(commands.Cog):
         self.already_starred = []
         self.starboard_service = StarboardService(bot.db)
 
-    def cog_check(self, ctx):
+    async def cog_check(self, ctx):
         if ctx.guild is None:
             raise commands.NoPrivateMessage("Starboard can't be used in DMs")
         config = await self.config_service.get(ctx.guild.id)
