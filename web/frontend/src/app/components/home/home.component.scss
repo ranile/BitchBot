@@ -204,7 +204,7 @@
 
         #links-grid {
             display: grid;
-            grid-template-columns: repeat(5, 4fr);
+            grid-template-columns: repeat(6, 4fr);
             grid-gap: 2rem;
 
             @media (max-width: $query-max-width) {
