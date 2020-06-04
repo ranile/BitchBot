@@ -11,10 +11,13 @@ section {
 
     img {
         border-radius: 1rem;
+        max-width: 100%;
         @media (max-width: $query-max-width) {
             max-width: 90%;
             max-height: 90%;
         }
+
+        filter: drop-shadow(10px 7px 10px rgba(0, 0, 0, 0.2))
     }
 
     div {
@@ -26,10 +29,12 @@ section {
             text-align: start;
             font-size: 1.8rem;
             font-weight: bold;
+            line-height: 1.9rem;
 
             @media (max-width: $query-max-width) {
                 text-align: center;
                 font-size: 1.3rem;
+                line-height: 1.4rem;
             }
         }
 

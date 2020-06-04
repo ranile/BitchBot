@@ -23,7 +23,6 @@ export class FeatureCardComponent implements OnInit {
             right: this.direction === "right",
             left: this.direction === "left"
         }
-        console.log(this.direction, this.imageDirection)
     }
 
     get isSmallScreen() {
