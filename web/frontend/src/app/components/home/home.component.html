@@ -25,81 +25,70 @@
         </div>
     </div>
 
-    <div class="item features features-top-padding">
+    <div class="item features">
         <h3 class="title">Features</h3>
 
+        <div class="features-grid">
 
-        <app-feature-card
-            class="feature-card"
-            [direction]="'left'"
-            imgSource="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
-            title="Use any emoji from any server I am in"
-            [lines]="['I let you use any emoji, animated or not, that I can see, no need to have nitro or be in a specific server',
+            <app-feature-card
+                class="feature-card"
+                [direction]="'left'"
+                imgSource="https://cdn.discordapp.com/attachments/701815317046755459/717381198975860756/unknown.png"
+                title="Use any emoji from any server I am in"
+                [lines]="['I let you use any emoji, animated or not, that I can see, no need to have nitro or be in a specific server',
                     'Even have me delete your command message.',
                     'I will tell even you send it so you don\'t end up wondering which ghost bruhed you']">
-        </app-feature-card>
+            </app-feature-card>
 
-        <app-feature-card
-            class="feature-card"
-            direction="right"
-            title="Have fun, lots of fun"
-            [lines]="['Get top posts from any subreddit you like, roast people, get jokes, facts and much more',
+            <app-feature-card
+                class="feature-card"
+                direction="right"
+                title="Have fun, lots of fun"
+                [lines]="['Get top posts from any subreddit you like, roast people, get jokes, facts and much more',
                 'Even fetch information from the one and only Urban Dictionary']">
-        </app-feature-card>
+            </app-feature-card>
 
-    </div>
-
-    <div class="item features features-top-padding">
-        <app-feature-card
-            class="feature-card"
-            style="padding-top: 1.7rem"
-            direction="left"
-            title="Track activity of your server members"
-            [lines]="['I allow you to keep track of how much people in your server are active and give them activity points.',
+            <app-feature-card
+                class="feature-card"
+                direction="left"
+                title="Track activity of your server members"
+                [lines]="['I allow you to keep track of how much people in your server are active and give them activity points.',
                 'Give active people and excuse to flex with their posision activity leaderboard']">
-        </app-feature-card>
+            </app-feature-card>
 
-        <app-feature-card
-            class="feature-card"
-            direction="right"
-            title="Play music right in your server"
-            [lines]="['Listen from whatever source you like including Youtube, SoundCloud, Vimeo, Twitch and more',
+            <app-feature-card
+                class="feature-card"
+                direction="right"
+                title="Play music right in your server"
+                [lines]="['Listen from whatever source you like including Youtube, SoundCloud, Vimeo, Twitch and more',
                 'while having access to all the features you enjoy']">
-        </app-feature-card>
+            </app-feature-card>
 
-        <app-feature-card
-            *ngIf="false"
-            class="feature-card"
-            direction="left"
-            title="Set whatever prefix you want to"
-            [lines]="['Don\'t like my default prefix of > ?',
-                'No need to worry. You can completely replace it with whatever you want']">
-        </app-feature-card>
-    </div>
+            <app-feature-card
+                class="feature-card"
+                direction="left"
+                title="Set whatever prefix you want to"
+                [lines]="['Don\'t like my default prefix of > ? No need to worry.',
+                'With my customizable prefix, you can completely replace it with whatever you want, something completely unique to you']">
+            </app-feature-card>
 
-    <div class="item features features-top-padding">
-        <app-feature-card
-            class="feature-card"
-            direction="left"
-            title="Showcase bruh moments in your server"
-            [lines]="['With my starboard, you can archive the bruh moments in a specific channel in your server.',
+            <app-feature-card
+                class="feature-card"
+                direction="right"
+                title="Showcase bruh moments in your server"
+                [lines]="['With my starboard, you can archive the bruh moments in a specific channel in your server.',
                                 'With the custom star count, you can let the people star a message and have it archived.',
                                 'Let the members pick what needs to be showcased.']">
-        </app-feature-card>
+            </app-feature-card>
 
-        <app-feature-card
-            class="feature-card"
-            direction="right"
-            title="Moderate your server with great moderation tools"
-            [lines]="['Need to yeet someone? Ban someone? Stop someone from being able to talk? I got you covered there',
+            <app-feature-card
+                class="feature-card"
+                direction="left"
+                title="Moderate your server with great moderation tools"
+                [lines]="['Need to yeet someone? Ban someone? Stop someone from being able to talk? I got you covered there',
                     'You can even add roles as Mod roles which lets people with those roles do even more stuff like warn members']">
-        </app-feature-card>
-
-        <!--<section>
-            Do you like me <br>
-            Yes? Nice. Invite me <br>
-            No? Haha get fucked
-        </section>-->
+            </app-feature-card>
+        </div>
     </div>
 
     <div class="item" id="stats">

@@ -1,5 +1,5 @@
-import {Component, Input, OnInit} from '@angular/core';
-
+import { Component, Input, OnInit } from '@angular/core';
+import { BreakpointObserver } from '@angular/cdk/layout'
 type ImageDirection = 'left' | 'right'
 
 @Component({
@@ -15,7 +15,7 @@ export class FeatureCardComponent implements OnInit {
     @Input() direction: ImageDirection;
     imageDirection: {'right': boolean, left: boolean}
 
-    constructor() {
+    constructor(private breakpointObserver: BreakpointObserver) {
     }
 
     ngOnInit(): void {
@@ -24,6 +24,10 @@ export class FeatureCardComponent implements OnInit {
             left: this.direction === "left"
         }
         console.log(this.direction, this.imageDirection)
+    }
+
+    get isSmallScreen() {
+        return this.breakpointObserver.isMatched('(max-width: 600px)')
     }
 
 }

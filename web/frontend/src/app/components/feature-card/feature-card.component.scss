@@ -11,7 +11,10 @@ section {
 
     img {
         border-radius: 1rem;
-        height: 10rem;
+        @media (max-width: $query-max-width) {
+            max-width: 90%;
+            max-height: 90%;
+        }
     }
 
     div {
@@ -32,6 +35,9 @@ section {
 
         span {
             font-size: 1.2em;
+            @media (max-width: $query-max-width) {
+                padding: 0 0.5rem
+            }
         }
     }
 }

@@ -6,8 +6,6 @@
 
     .item {
         scroll-snap-align: center;
-        height: 100vh;
-        display: flex;
     }
 
     .title {
@@ -18,6 +16,8 @@
 
     #info {
         background: mat-color($dark-primary);
+        height: 100vh;
+        display: flex;
 
         #info-content {
             display: flex;
@@ -68,32 +68,36 @@
 
     .features {
         background-color: mat-color($mat-deep-purple, A700);
-        display: grid;
-        align-items: center;
-        grid-row-gap: 8em;
+        padding: 6em 10em 6em;
         @media (max-width: $query-max-width) {
-            grid-row-gap: 0;
+            padding: 4em 0 4em;
         }
 
-        .title {
+        .features-grid {
+            display: grid;
+            align-items: center;
+            grid-row-gap: 8em;
+            margin-top: 3em;
+
             @media (max-width: $query-max-width) {
-                padding: 3rem;
+                grid-row-gap: 3em;
             }
-        }
 
-        .feature-card {
-            justify-self: center;
-        }
-    }
+            .title {
+                @media (max-width: $query-max-width) {
+                    padding: 3rem;
+                }
+            }
 
-    .features-top-padding {
-        padding-top: 6em;
-        @media (max-width: $query-max-width) {
-            padding: 0;
+            .feature-card {
+                justify-self: center;
+                width: 100%;
+            }
         }
     }
 
     #stats {
+        height: 100vh;
         background-color: mat-color(mat-palette($mat-blue), 700);
         display: flex;
         align-items: center;
@@ -143,6 +147,7 @@
     }
 
     #links {
+        height: 100vh;
         $pink-palette: mat-palette($mat-pink);
         background-color: mat-color($pink-palette, 800);
         display: flex;
