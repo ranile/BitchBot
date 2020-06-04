@@ -1,5 +1,5 @@
 import {Component, Inject, OnInit} from '@angular/core';
-import {Router} from "@angular/router";
+import {Router, RouterEvent} from "@angular/router";
 import {DOCUMENT} from '@angular/common';
 import {UserService} from "../../services/user/user.service";
 import {Stats} from "../../models/Stats";
@@ -21,6 +21,8 @@ export class HomeComponent implements OnInit {
     BOD_URL           = 'https://bots.ondiscord.xyz/bots/595363392886145046'
     INVITE_URL = HomeComponent.INVITE_URL // So it can be used in template
 
+    isIframe = false
+
     stats: Stats =  {
         uptime: {minutes: 0, seconds: 0, hours: 0, days: 0, human_friendly: '', total_seconds: '0'},
         commands: 0,
@@ -32,8 +34,14 @@ export class HomeComponent implements OnInit {
     constructor(
         private router: Router,
         @Inject(DOCUMENT) private document: Document,
-        private userService: UserService
-    ) {}
+        private userService: UserService,
+    ) {
+        this.router.events.subscribe(value => {
+            if (value instanceof RouterEvent) {
+                this.isIframe = value.url.toLowerCase().includes('iframe')
+            }
+        })
+    }
 
     ngOnInit(): void {
         Promise.all([this.userService.fetchMyAvatarUrl(1024), this.userService.fetchMyStats()]).then(resp => {

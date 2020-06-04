@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
     ) {
         this.router.events.subscribe(value => {
             if (value instanceof RouterEvent) {
-                this.hideToolbar = value.url.toLowerCase().includes('hidetoolbar')
+                this.hideToolbar = value.url.toLowerCase().includes('iframe')
                 this.navbarColor = value.url && value.url != '/' ? undefined : 'primary';
             }
         })

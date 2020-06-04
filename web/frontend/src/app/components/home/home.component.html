@@ -1,5 +1,5 @@
 <div id="home-container" dir="ltr">
-    <div class="item" id="info">
+    <div class="item" id="info" *ngIf="!isIframe">
         <div id="info-content" class="mat-accent">
 
             <img id="avatar" [src]="avatarUrl" alt="icon">
