@@ -143,8 +143,8 @@
                     allowtransparency="true"></iframe>
         </div>
 
-        <h3 class="title">Find me on:</h3>
-        <div id="links-grid">
+        <h3 class="title" *ngIf="!isIframe">Find me on:</h3>
+        <div id="links-grid" *ngIf="!isIframe">
             <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DBL_URL)">
                 Discord Bot List
             </button>
