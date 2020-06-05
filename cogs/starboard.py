@@ -27,6 +27,8 @@ class Starboard(commands.Cog):
     async def cog_check(self, ctx):
         if ctx.guild is None:
             raise commands.NoPrivateMessage("Starboard can't be used in DMs")
+        if ctx.command.name == self.setup.name:
+            return True
         config = await self.config_service.get(ctx.guild.id)
         if config is None or config.starboard_channel is None:
             raise commands.CommandError('You need starboard enabled')
