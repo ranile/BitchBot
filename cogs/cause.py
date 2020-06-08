@@ -75,11 +75,17 @@ class Cause(commands.Cog, name="The Cause"):
     @commands.Cog.listener()
     async def on_message(self, message):
 
-        if message.author == self.bot.user or message.guild is None or message.guild.id != THE_CAUSE:
+        if (message.author == self.bot.user
+                or message.guild is None
+                or message.guild.id != THE_CAUSE
+                or (message.author.id == self.bot.owner_id and
+                    (message.content.endswith(('-nr', '-r', 'r')) or message.content.startswith('>jsk')))):
             return
 
         normalized = unicodedata.normalize('NFKD', message.content).encode('ascii', 'ignore').decode('ascii')
-        if re.search(rabbit_match, normalized, re.IGNORECASE) and message.webhook_id != RABBIT_WEBHOOK:
+        if (re.search(rabbit_match, normalized, re.IGNORECASE) and
+                message.webhook_id != RABBIT_WEBHOOK and
+                not message.author.bot):
             await self.increment_rabbit(message)
 
         elif message.author.id == HAIKU_BOT:
