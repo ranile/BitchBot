@@ -23,6 +23,7 @@ import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatSortModule} from "@angular/material/sort";
 import { ShowCommandComponent } from './components/commands/show-command/show-command.component';
 import {MatDialogModule} from "@angular/material/dialog";
+import { FeatureCardComponent } from './components/feature-card/feature-card.component';
 
 @NgModule({
     declarations: [
@@ -31,6 +32,7 @@ import {MatDialogModule} from "@angular/material/dialog";
         NavbarComponent,
         CommandsComponent,
         ShowCommandComponent,
+        FeatureCardComponent,
     ],
     imports: [
         BrowserModule,

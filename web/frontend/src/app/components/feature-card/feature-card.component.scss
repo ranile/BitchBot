@@ -1,0 +1,63 @@
+@import "~src/queries";
+
+section {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+
+    @media (max-width: $query-max-width) {
+        padding: 0.5rem;
+    }
+
+    img {
+        border-radius: 1rem;
+        max-width: 100%;
+        @media (max-width: $query-max-width) {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        filter: drop-shadow(10px 7px 10px rgba(0, 0, 0, 0.2))
+    }
+
+    div {
+        display: flex;
+        flex-direction: column;
+        align-content: flex-start;
+
+        .title {
+            text-align: start;
+            font-size: 1.8rem;
+            font-weight: bold;
+            line-height: 1.9rem;
+
+            @media (max-width: $query-max-width) {
+                text-align: center;
+                font-size: 1.3rem;
+                line-height: 1.4rem;
+            }
+        }
+
+        span {
+            font-size: 1.2em;
+            @media (max-width: $query-max-width) {
+                padding: 0 0.5rem
+            }
+        }
+    }
+}
+
+.left {
+    flex-direction: row;
+    @media (max-width: $query-max-width) {
+        flex-direction: column-reverse;
+    }
+}
+
+.right {
+    flex-direction: row-reverse;
+
+    @media (max-width: $query-max-width) {
+        flex-direction: column-reverse;
+    }
+}

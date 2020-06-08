@@ -7,7 +7,7 @@ export interface Stats {
 }
 
 interface Uptime {
-    total_seconds: bigint
+    total_seconds: string
     human_friendly: string
     days: number
     hours: number

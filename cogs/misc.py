@@ -139,7 +139,6 @@ class Miscellaneous(commands.Cog):
         await ctx.message.delete()
 
     @commands.command(aliases=["wide"], hidden=True)
-    @checks.owner_only_in_non_trusted_guilds()
     async def addspaces(self, ctx, msg: str, spaces: int = 3):
         """
         Adds spaces in between every character.
@@ -153,12 +152,11 @@ class Miscellaneous(commands.Cog):
 
         between = spaces * ' '
         out = between.join(list(str(msg)))
-        sentMessage = await ctx.send(out)
+        sentMessage = await ctx.send(out, embed=discord.Embed().set_author(name=f'- {ctx.author.display_name}'))
         await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
     @commands.command(hidden=True)
-    @checks.owner_only_in_non_trusted_guilds()
     async def flip(self, ctx, *, msg):
         """
         Converts given text to flipped unicode characters
@@ -189,7 +187,7 @@ class Miscellaneous(commands.Cog):
                     continue
 
         out = ' '.join(msgBack.split())
-        sentMessage = await ctx.send(out)
+        sentMessage = await ctx.send(out, embed=discord.Embed().set_author(name=f'- {ctx.author.display_name}'))
         await funs.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 

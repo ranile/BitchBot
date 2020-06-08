@@ -1,5 +1,5 @@
 <div id="home-container" dir="ltr">
-    <div class="item" id="info">
+    <div class="item" id="info" *ngIf="!isIframe">
         <div id="info-content" class="mat-accent">
 
             <img id="avatar" [src]="avatarUrl" alt="icon">
@@ -25,27 +25,99 @@
         </div>
     </div>
 
+    <div class="item features">
+        <h3 class="title">Features</h3>
+
+        <div class="features-grid">
+
+            <app-feature-card
+                class="feature-card"
+                [direction]="'left'"
+                imgSource="assets/emojis.png"
+                title="Use any emoji from any server I am in"
+                [lines]="['I let you use any emoji, animated or not, that I can see, no need to have nitro or be in a specific server',
+                    'Even have me delete your command message.',
+                    'I will tell even you send it so you don\'t end up wondering which ghost bruhed you']">
+            </app-feature-card>
+
+            <app-feature-card
+                class="feature-card"
+                direction="right"
+                imgSource="assets/fun.png"
+                title="Have fun, lots of fun"
+                [lines]="['Get top posts from any subreddit you like, roast people, get jokes, facts and much more',
+                'Even fetch information from the one and only Urban Dictionary']">
+            </app-feature-card>
+
+            <app-feature-card
+                class="feature-card"
+                direction="left"
+                imgSource="assets/activity.png"
+                title="Track activity of your server members"
+                [lines]="['I allow you to keep track of how much people in your server are active and give them activity points.',
+                'Give active people and excuse to flex with their position activity leaderboard']">
+            </app-feature-card>
+
+            <app-feature-card
+                class="feature-card"
+                direction="right"
+                imgSource="assets/music.png"
+                title="Play music right in your server"
+                [lines]="['Listen from whatever source you like including Youtube, SoundCloud, Vimeo, Twitch and more, while having access to all the features you enjoy.',
+                'With queues, pause/play, and more!']">
+            </app-feature-card>
+
+            <app-feature-card
+                class="feature-card"
+                direction="left"
+                imgSource="assets/prefix.png"
+                title="Set whatever prefix you want to"
+                [lines]="['Don\'t like my default prefix of > ? No need to worry.',
+                'With my customizable prefix, you can completely replace it with whatever you want, something completely unique to you']">
+            </app-feature-card>
+
+            <app-feature-card
+                class="feature-card"
+                direction="right"
+                imgSource="assets/starboard.png"
+                title="Showcase bruh moments in your server"
+                [lines]="['With my starboard, you can archive the bruh moments in a specific channel in your server.',
+                                'With the custom star count, you can let the people star a message and have it archived.',
+                                'Let the members pick what needs to be showcased.']">
+            </app-feature-card>
+
+            <app-feature-card
+                class="feature-card"
+                direction="left"
+                imgSource="assets/mod.png"
+                title="Moderate your server with great moderation tools"
+                [lines]="['Need to yeet someone? Ban someone? Stop someone from being able to talk? I got you covered there',
+                    'You can even add roles as Mod roles which lets people with those roles do even more stuff like warn members']">
+            </app-feature-card>
+        </div>
+    </div>
+
     <div class="item" id="stats">
         <h3 class="title" id="stats-title">Some stats about me</h3>
+
         <div class="stats-group">
             <section>
                 <h5 class="title">Servers</h5>
                 <span>{{stats.guilds}}</span>
             </section>
 
-            <span class="spacer"></span>
             <section>
                 <h5 class="title">Channels</h5>
                 <span>{{stats.channels}}</span>
             </section>
 
-            <span class="spacer"></span>
-            <section>
-                <h5 class="title">Uptime</h5>
-                <span *ngIf="stats.uptime.days != 0">{{stats.uptime.days}} days, </span>
-                <span>{{stats.uptime.hours}} hours and {{stats.uptime.minutes}} minutes</span>
-            </section>
         </div>
+
+        <section>
+            <h5 class="title">Uptime</h5>
+            <span *ngIf="stats.uptime.days != 0">{{stats.uptime.days}} days, </span>
+            <span>{{stats.uptime.hours}} hours and {{stats.uptime.minutes}} minutes</span>
+        </section>
 
         <div class="stats-group">
             <section>
@@ -53,7 +125,6 @@
                 <span>{{stats.users}}</span>
             </section>
 
-            <span class="spacer"></span>
             <section>
                 <h5 class="title">Commands</h5>
                 <span>{{stats.commands}}</span>
@@ -68,12 +139,12 @@
                 <p class="title"><a href="https://discord.gg/k2ysVzd">Join our support server</a></p>
             </div>
             <!--<a href="https://discord.gg/k2ysVzd"><img src="https://discordapp.com/api/v7/guilds/693765408787922994/widget.png?style=banner2"/></a>-->
-            <iframe id="widget" src="https://canary.discordapp.com/widget?id=693765408787922994&theme=dark"
+            <iframe id="widget" src="https://discord.com/widget?id=693765408787922994&theme=dark"
                     allowtransparency="true"></iframe>
         </div>
 
-        <h3 class="title">Find me on:</h3>
-        <div id="links-grid">
+        <h3 class="title" *ngIf="!isIframe">Find me on:</h3>
+        <div id="links-grid" *ngIf="!isIframe">
             <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(DBL_URL)">
                 Discord Bot List
             </button>
@@ -86,7 +157,10 @@
             <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(LIST_MY_BOTS_URL)">
                 List My Bot
             </button>
-            <!--<button mat-raised-button color="primary" class="link-button">Bots for Discord</button>-->
+            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(BOTLIST_SPACE_URL)">
+                botlist.space
+            </button>
+            <button mat-raised-button color="primary" class="link-button" (click)="setHrefTo(BOD_URL)">Bots for Discord</button>
         </div>
     </div>
 </div>

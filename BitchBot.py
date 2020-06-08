@@ -6,7 +6,7 @@ import traceback
 import aiohttp
 import discord
 from discord.ext import commands
-
+import keys
 from jishaku.paginators import WrappedPaginator
 from database import database
 import util
@@ -15,8 +15,6 @@ import hypercorn
 import os
 
 from services import ActivityService, ConfigService
-from util.monkeypatches import *
-from quart.local import LocalProxy
 
 bitch_bot_logger = logging.getLogger('BitchBot')
 bitch_bot_logger.setLevel(logging.INFO)
@@ -49,9 +47,7 @@ class BitchBot(commands.Bot):
         self.loop = self.loop or asyncio.get_event_loop()
         self.clientSession = aiohttp.ClientSession()
 
-        LocalProxy.bot = self
         self.quart_app = util.QuartWithBot(__name__, static_folder=None)
-        self.quart_app.config['SECRET_KEY'] = keys.client_secret
         self.quart_app.debug = keys.debug
         # Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')

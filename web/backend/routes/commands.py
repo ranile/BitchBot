@@ -3,16 +3,14 @@ from cogs import jsk, cause
 from quart import jsonify
 from discord.ext import commands
 
-blueprint = util.BlueprintWithBot('command_rouetes', __name__, url_prefix='/api/commands')
+blueprint = util.BlueprintWithBot('command_routes', __name__, url_prefix='/api/commands')
 
 
 def filter_commands(commands_):
-    print('whaaat')
     for command in commands_:
-        if isinstance(command.cog, (jsk.MyJishaku, cause.Cause)):
+        if isinstance(command.cog, jsk.MyJishaku) or isinstance(command.cog, cause.Cause):
             continue
         elif command.hidden:
-            print('hidden', command.name)
             continue
         else:
             yield command
