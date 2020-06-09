@@ -6,6 +6,7 @@ import traceback
 import aiohttp
 import discord
 from discord.ext import commands
+from util import commands as bloody_commands
 import keys
 from jishaku.paginators import WrappedPaginator
 from database import database
@@ -156,7 +157,7 @@ class BitchBot(commands.Bot):
         if message.author.bot:  # don't do anything if the author is a bot
             return
 
-        ctx = await self.get_context(message)
+        ctx = await self.get_context(message, cls=bloody_commands.BloodyContext)
 
         if not ctx.valid:
             if self.user.mentioned_in(message) \
@@ -183,7 +184,12 @@ class BitchBot(commands.Bot):
 
                 return
 
-        await self.invoke(ctx)
+        if hasattr(ctx.command, 'wants_db') and ctx.command.wants_db:
+            async with self.db.acquire() as con:
+                ctx.db = con
+                await self.invoke(ctx)
+        else:
+            await self.invoke(ctx)
 
     async def on_ready(self):
         print(f"{self.user.name} is running")
