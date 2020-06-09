@@ -77,16 +77,16 @@ class BitchBot(commands.Bot):
 
         bitch_bot_logger.addHandler(discord_handler)
 
-    async def set_prefix(self, prefix, *, should_insert=True):
+    async def set_prefix(self, db, prefix, *, should_insert=True):
         if should_insert:
-            prefix = await self.config_service.insert_prefix(prefix)
+            prefix = await ConfigService.insert_prefix(db, prefix)
 
         self.prefixes[prefix.guild_id] = str(prefix)
 
         return prefix
 
-    async def clear_custom_prefix(self, guild_id):
-        await self.config_service.delete_prefix(guild_id)
+    async def clear_custom_prefix(self, db, guild_id):
+        await ConfigService.delete_prefix(db, guild_id)
         del self.prefixes[guild_id]
 
     # noinspection PyAttributeOutsideInit
@@ -99,7 +99,6 @@ class BitchBot(commands.Bot):
         self.load_extension('util.timers')
 
         self.activity_service = ActivityService(self.db)
-        self.config_service = ConfigService(self.db)
 
         for cog_name in self.initial_cogs:
             try:
@@ -111,11 +110,13 @@ class BitchBot(commands.Bot):
         for i in ('spa_serve', 'routes', 'commands', 'webhooks'):
             self.load_extension(f'web.backend.routes.{i}')
 
-        prefixes = await self.config_service.get_all_prefixes()
+        async with self.db.acquire() as db:
+            prefixes = await ConfigService.get_all_prefixes(db)
         for i in prefixes:
             await self.set_prefix(i, should_insert=False)
 
-        blacklist = await self.config_service.get_blacklisted_users()
+        async with self.db.acquire() as db:
+            blacklist = await ConfigService.get_blacklisted_users(db)
         for blocked_user in blacklist:
             self.blacklist[blocked_user.user_id] = blocked_user
 
@@ -157,7 +158,7 @@ class BitchBot(commands.Bot):
         if message.author.bot:  # don't do anything if the author is a bot
             return
 
-        ctx = await self.get_context(message, cls=bloody_commands.BloodyContext)
+        ctx = await self.get_context(message, cls=bloody_commands.Context)
 
         if not ctx.valid:
             if self.user.mentioned_in(message) \
@@ -321,16 +322,16 @@ class BitchBot(commands.Bot):
     def refresh_loc_count(self):
         self.lines_of_code_count = self._count_lines_of_code()
 
-    async def refresh_prefixes(self):
+    async def refresh_prefixes(self, db):
         self.prefixes.clear()
-        prefixes = await self.config_service.get_all_prefixes()
+        prefixes = await ConfigService.get_all_prefixes(db)
         for i in prefixes:
-            await self.set_prefix(i, should_insert=False)
+            await self.set_prefix(db=None, prefix=i, should_insert=False)
 
-    async def blacklist_user(self, user, *, reason=None):
-        blacklisted = await self.config_service.blacklist_user(user.id, reason=reason)
+    async def blacklist_user(self, db, user, *, reason=None):
+        blacklisted = await ConfigService.blacklist_user(db, user.id, reason=reason)
         self.blacklist[blacklisted.user_id] = blacklisted
 
-    async def remove_from_blacklist(self, user):
-        await self.config_service.remove_user_from_blacklist(user.id)
+    async def remove_from_blacklist(self, db, user):
+        await ConfigService.remove_user_from_blacklist(db, user.id)
         del self.blacklist[user.id]

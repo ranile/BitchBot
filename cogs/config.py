@@ -22,7 +22,7 @@ class Config(commands.Cog):
 
         await ctx.send(f"Current prefixes are : {self._get_all_prefixes_presentable(ctx)}")
 
-    @prefix.command(name='set')
+    @prefix.command(name='set', wants_db=True)
     @checks.can_config()
     @commands.guild_only()
     async def set_prefix(self, ctx, prefix):
@@ -39,7 +39,7 @@ class Config(commands.Cog):
 
         if len(prefix) > 6:
             raise commands.BadArgument(f"Prefix length must be less than 6, not {len(prefix)}")
-        added = await self.bot.set_prefix(Prefix(guild_id=ctx.guild.id, prefix=prefix))
+        added = await self.bot.set_prefix(ctx.db, Prefix(guild_id=ctx.guild.id, prefix=prefix))
         await ctx.send(f'Set prefix: `{added}`\n'
                        f'Current prefixes are : {self._get_all_prefixes_presentable(ctx)}')
 
@@ -54,7 +54,7 @@ class Config(commands.Cog):
         You need `Manage Server` permissions to run this command
         """
 
-        await self.bot.clear_custom_prefix(ctx.guild.id)
+        await self.bot.clear_custom_prefix(ctx.db, ctx.guild.id)
         await ctx.send(f'Successfully cleared custom prefix\n'
                        f'Current prefixes are : {self._get_all_prefixes_presentable(ctx)}')
 

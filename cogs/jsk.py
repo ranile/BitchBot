@@ -107,17 +107,17 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=sudo, name='
 
     @reload.command(name='prefix')
     async def reload_prefixes(self, ctx):
-        await self.bot.refresh_prefixes()
+        await self.bot.refresh_prefixes(ctx.db)
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 
     @commands.command(aliases=['blacklist'])
     async def block(self, ctx, user: discord.User, *, reason=None):
-        await self.bot.blacklist_user(user, reason=reason)
+        await self.bot.blacklist_user(ctx.db, user, reason=reason)
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 
     @commands.command()
     async def unblock(self, ctx, user: discord.User):
-        await self.bot.remove_from_blacklist(user)
+        await self.bot.remove_from_blacklist(ctx.db, user)
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 
 

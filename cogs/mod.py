@@ -1,28 +1,27 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 from datetime import datetime
 from resources import Warn, Timer
 from services import WarningsService, ConfigService
-from util import funs, checks, BloodyMenuPages, TextPagesData, converters
+from util import funs, checks, BloodyMenuPages, TextPagesData, converters, commands
 
 
 def bot_and_author_have_permissions(**perms):
     async def pred(ctx):
-        res = await commands.has_permissions(**perms).predicate(ctx)
+        res = await dpy_commands.has_permissions(**perms).predicate(ctx)
         if res:
-            res = await commands.bot_has_permissions(**perms).predicate(ctx)
+            res = await dpy_commands.bot_has_permissions(**perms).predicate(ctx)
         return res
 
-    return commands.check(pred)
+    return dpy_commands.check(pred)
 
 
 # noinspection PyIncorrectDocstring,PyUnresolvedReferences
-class Moderation(commands.Cog):
+class Moderation(dpy_commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         pool = bot.db
         self.warnings_service = WarningsService(pool)
-        self.config_service = ConfigService(pool)
 
     def cog_check(self, ctx):
         if ctx.guild is None:
@@ -128,17 +127,17 @@ class Moderation(commands.Cog):
             )
             await self.bot.timers.create_timer(timer)
 
-    @commands.Cog.listener()
+    @dpy_commands.Cog.listener()
     async def on_tempban_timer_complete(self, timer):
         kwargs = timer.kwargs
         guild = self.bot.get_guild(kwargs['guild_id'])
         reason = 'Unban from temp-ban timer expiring'
         await guild.unban(discord.Object(id=kwargs['banned_user_id']), reason=reason)
 
-    async def _get_muted_role(self, guild, prefix = None):
+    async def _get_muted_role(self, db, guild, prefix=None):
         msg = f'See `{prefix if prefix is not None else "{prefix}"}help mute config` ' \
               f'to learn how to configure the muted role.'
-        config = await self.config_service.get(guild.id)
+        config = await ConfigService.get(db, guild.id)
         if config is None:
             raise commands.CommandError(f'There is no configuration stored for this server. {msg}')
         if config.muted_role_id is None:
@@ -150,7 +149,7 @@ class Moderation(commands.Cog):
         return muted
 
     async def do_mute(self, ctx, *, victim, reason=None, time=None):
-        muted = await self._get_muted_role(ctx.guild, prefix=ctx.prefix)
+        muted = await self._get_muted_role(db=ctx.db, guild=ctx.guild, prefix=ctx.prefix)
 
         if muted in victim.roles:
             await ctx.send('User is already muted')
@@ -167,7 +166,7 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Muted without notice")
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(invoke_without_command=True, wants_db=True)
     @bot_and_author_have_permissions(manage_roles=True)
     async def mute(self, ctx, victim: discord.Member, reason=None):
         """
@@ -184,7 +183,7 @@ class Moderation(commands.Cog):
         async with ctx.typing():
             await self.do_mute(ctx, victim=victim, reason=reason)
 
-    @mute.command(name='temp', usage='<victim> <time> <reason>')
+    @mute.command(name='temp', usage='<victim> <time> <reason>', wants_db=True)
     @bot_and_author_have_permissions(manage_roles=True)
     async def temp_mute(self, ctx: commands.Context, victim: discord.Member, *,
                         time_and_reason: converters.HumanTime(other=True)):
@@ -221,7 +220,8 @@ class Moderation(commands.Cog):
                 await self.bot.timers.create_timer(timer)
 
     async def do_unmute(self, guild, victim):
-        muted = await self._get_muted_role(guild)
+        async with self.bot.db.acquire() as db:
+            muted = await self._get_muted_role(db, guild)
         await victim.remove_roles(muted)
 
     @commands.command()
@@ -238,7 +238,7 @@ class Moderation(commands.Cog):
         await self.do_unmute(ctx.guild, victim)
         await ctx.send(f"**User {victim.mention} has been unmuted by {ctx.author.mention}**")
 
-    @commands.Cog.listener()
+    @dpy_commands.Cog.listener()
     async def on_tempmute_timer_complete(self, timer):
         guild = self.bot.get_guild(timer.kwargs['guild_id'])
         await self.do_unmute(guild, guild.get_member(timer.kwargs['muted_user_id']))
@@ -268,7 +268,7 @@ class Moderation(commands.Cog):
         await ctx.send(f'Deleted {len(deleted)} message(s) by {deleted_of}', delete_after=5)
         await ctx.message.delete(delay=2)
 
-    @commands.command()
+    @commands.command(wants_db=True)
     @checks.is_mod()
     async def warn(self, ctx: commands.Context, victim: discord.Member, *, reason: str):
         """
@@ -304,7 +304,7 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.send("I can't DM that user. Warned without notice")
 
-    @commands.command(aliases=['warnings'])
+    @commands.command(aliases=['warnings'], wants_db=True)
     @checks.is_mod()
     async def warns(self, ctx: commands.Context, warnings_for: discord.Member = None):
         """
@@ -334,7 +334,7 @@ class Moderation(commands.Cog):
         react_paginator = BloodyMenuPages(TextPagesData(pages))
         await react_paginator.start(ctx)
 
-    @mute.command(name='config')
+    @mute.command(name='config', wants_db=True)
     @checks.can_config()
     async def mute_config(self, ctx, role: discord.Role):
         """
@@ -344,7 +344,7 @@ class Moderation(commands.Cog):
              role: the role you want to be used as the muted role
         """
 
-        await self.config_service.set_mute_role(ctx.guild.id, role.id)
+        await ConfigService.set_mute_role(ctx.db, ctx.guild.id, role.id)
         await ctx.send(f'Inserted {role.mention} as mute role')
 
     @commands.group()
@@ -355,7 +355,7 @@ class Moderation(commands.Cog):
     async def mod_roles(self, ctx):
         pass
 
-    @mod_roles.command(name='add')
+    @mod_roles.command(name='add', wants_db=True)
     @checks.can_config()
     async def mod_role_add(self, ctx, role: discord.Role):
         """
@@ -364,11 +364,11 @@ class Moderation(commands.Cog):
         Args:
             role: The role you want to add
         """
-        inserted = await self.config_service.add_mod_role(role.id, ctx.guild.id)
+        inserted = await ConfigService.add_mod_role(ctx.db, role.id, ctx.guild.id)
         await ctx.send(
             f"Current mod roles are: {', '.join([ctx.guild.get_role(r).name for r in set(inserted.mod_roles)])}")
 
-    @mod_roles.command(name='remove')
+    @mod_roles.command(name='remove', wants_db=True)
     @checks.can_config()
     async def mod_role_remove(self, ctx, role: discord.Role):
         """
@@ -378,7 +378,7 @@ class Moderation(commands.Cog):
             role: The role to remove
         """
 
-        new_config = await self.config_service.remove_mute_role(ctx.guild.id, role.id)
+        new_config = await ConfigService.remove_mute_role(ctx.db, ctx.guild.id, role.id)
         if new_config is None:
             return await ctx.send('This server was never confirmed')
 

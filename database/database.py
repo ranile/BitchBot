@@ -33,7 +33,7 @@ async def createTables(connection):
 
     await connection.execute(services.ActivityService.sql.createTable)
     await connection.execute(services.StarboardService.sql().createTable)
-    await connection.execute(services.ConfigService.sql().createTable)
+    await connection.execute(services.ConfigService.initial_sql)
     await connection.execute(services.WarningsService.sql().createTable)
     await connection.execute(services.TimersService.sql().createTable)
     await connection.execute(services.EmojiService.sql().createTable)
