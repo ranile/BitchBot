@@ -1,18 +1,19 @@
 import logging
 
 import discord
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 
 from services import StarboardService
 from services import ConfigService
-from util import funs, checks
+from util import funs, checks, commands
 
 log = logging.getLogger('BitchBot' + __name__)
 STAR = '\N{WHITE MEDIUM STAR}'
+# TODO: Redo everything
 
 
 # noinspection PyIncorrectDocstring
-class Starboard(commands.Cog):
+class Starboard(dpy_commands.Cog):
     """A starboard.
     Allow users to star a message.
     Once a message reaches a certain number of stars, it is sent to the starboard channel and saved into the database
@@ -21,19 +22,18 @@ class Starboard(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.already_starred = []
-        self.starboard_service = StarboardService(bot.db)
 
     async def cog_check(self, ctx):
         if ctx.guild is None:
-            raise commands.NoPrivateMessage("Starboard can't be used in DMs")
+            raise dpy_commands.NoPrivateMessage("Starboard can't be used in DMs")
         if ctx.command.name == self.setup.name:
             return True
         config = await ConfigService.get(ctx.db, ctx.guild.id)
         if config is None or config.starboard_channel is None:
-            raise commands.CommandError('You need starboard enabled')
+            raise dpy_commands.CommandError('You need starboard enabled')
         return True
 
-    @commands.Cog.listener()
+    @dpy_commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         if str(reaction) != STAR:
             return
@@ -45,10 +45,10 @@ class Starboard(commands.Cog):
 
         async with self.bot.db.acquire() as db:
             config = await ConfigService.get(db, msg.guild.id)
-        if config is None or config.starboard_channel is None:
-            return
+            if config is None or config.starboard_channel is None:
+                return
 
-        above_limit, starred = await self.starboard_service.star(reaction)
+            above_limit, starred = await StarboardService.star(db, reaction)
 
         if above_limit and msg.id not in self.already_starred:
             author = msg.author
@@ -68,7 +68,7 @@ class Starboard(commands.Cog):
 
             await msg.guild.get_channel(config.starboard_channel).send(embed=embed)
 
-    @commands.Cog.listener()
+    @dpy_commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
         if str(reaction) != STAR:
             return
@@ -77,11 +77,11 @@ class Starboard(commands.Cog):
             return
         async with self.bot.db.acquire() as db:
             config = await ConfigService.get(db, reaction.message.guild.id)
-        if config is None or config.starboard_channel is None:
-            log.debug(f'Skipping starboard star remove for {reaction.message.id} in {reaction.message.guild.id}')
-            return
+            if config is None or config.starboard_channel is None:
+                log.debug(f'Skipping starboard star remove for {reaction.message.id} in {reaction.message.guild.id}')
+                return
 
-        await self.starboard_service.unstar(reaction)
+            await StarboardService.unstar(db, reaction)
 
     @commands.group(invoke_without_command=True, wants_db=True)
     async def starboard(self, ctx, message):
@@ -91,7 +91,7 @@ class Starboard(commands.Cog):
         Args:
              message: The message ID of the message you wanna pull from starboard
         """
-        star = await self.starboard_service.get(message, ctx.guild.id)
+        star = await StarboardService.get(ctx.db, message, ctx.guild.id)
 
         if star is None:
             return await ctx.send('Not found')
@@ -112,8 +112,8 @@ class Starboard(commands.Cog):
     async def stats(self, ctx):
         """Top 10 people whose messages are starred in a server"""
 
-        top = await self.starboard_service.guild_top_stats(ctx.guild)
-        paginator = commands.Paginator(prefix='```md')
+        top = await StarboardService.guild_top_stats(ctx.db, ctx.guild)
+        paginator = dpy_commands.Paginator(prefix='```md')
         length = 0
         for starred in top:
             member = starred["author"]
@@ -127,7 +127,7 @@ class Starboard(commands.Cog):
 
         paginator.add_line()
         paginator.add_line('-' * length)
-        me = await self.starboard_service.my_stats(ctx)
+        me = await StarboardService.members_stats(ctx.db, ctx.guild.id, ctx.author.id)
         if me is not None:
             paginator.add_line(f'You: {me["count"]}')
         else:

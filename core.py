@@ -6,7 +6,7 @@ cogs = [
     "cause",
     "emojis",
     "internet",
-    # "starboard",
+    "starboard",
     'stats',
     'mod',
     'misc',
