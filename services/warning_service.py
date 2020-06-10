@@ -1,4 +1,5 @@
 import asyncpg
+import typing
 
 from resources import Warn
 
@@ -16,7 +17,7 @@ class WarningsService:
         return Warn.convert(inserted)
 
     @staticmethod
-    async def get_all(db: asyncpg.Connection, guild_id: int, user_id: int = None) -> list[Warn]:
+    async def get_all(db: asyncpg.Connection, guild_id: int, user_id: int = None) -> typing.List[Warn]:
 
         if not isinstance(user_id, int):
             raise TypeError(f'user_id must be an int')

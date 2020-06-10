@@ -43,7 +43,7 @@ class Config(dpy_commands.Cog):
         await ctx.send(f'Set prefix: `{added}`\n'
                        f'Current prefixes are : {self._get_all_prefixes_presentable(ctx)}')
 
-    @prefix.command(name='remove', aliases=['clear'])
+    @prefix.command(name='remove', aliases=['clear'], wants_db=True)
     @checks.can_config()
     @dpy_commands.guild_only()
     async def remove_prefix(self, ctx):

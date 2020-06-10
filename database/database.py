@@ -24,9 +24,9 @@ async def create_tables(connection):
     await connection.execute(services.ActivityService.initial_sql)
     await connection.execute(services.StarboardService.initial_sql)
     await connection.execute(services.ConfigService.initial_sql)
-    await connection.execute(services.WarningsService.sql().createTable)
+    await connection.execute(services.WarningsService.initial_sql)
     await connection.execute(services.TimersService.sql().createTable)
-    await connection.execute(services.EmojiService.sql().createTable)
+    await connection.execute(services.EmojiService.initial_sql)
 
 
 async def init(loop):
