@@ -25,7 +25,7 @@ def can_config():
 
 def is_mod():
     async def predicate(ctx):
-        config = await ConfigService(ctx.bot.db).get(ctx.guild.id)
+        config = await ConfigService.get(ctx.bot.db, ctx.guild.id)
         if config is None:
             return False
         if set(x.id for x in ctx.author.roles) & set(config.mod_roles):
