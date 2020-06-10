@@ -1,9 +1,10 @@
-import util
 from cogs import jsk, cause
 from quart import jsonify
 from discord.ext import commands
 
-blueprint = util.BlueprintWithBot('command_routes', __name__, url_prefix='/api/commands')
+from web.backend.utils.blueprint_with_bot import BlueprintWithBot
+
+blueprint = BlueprintWithBot('command_routes', __name__, url_prefix='/api/commands')
 
 
 def filter_commands(commands_):

@@ -18,5 +18,3 @@ class BlueprintWithBot(quart.Blueprint):
         if guild is None:
             return abort(400, 'Bot is not in the provided guild')
         return guild
-
-

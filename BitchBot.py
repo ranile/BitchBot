@@ -15,6 +15,7 @@ import hypercorn
 import os
 
 from services import ConfigService
+from web.backend.utils.quart_with_bot import QuartWithBot
 
 bitch_bot_logger = logging.getLogger('BitchBot')
 bitch_bot_logger.setLevel(logging.INFO)
@@ -57,7 +58,7 @@ class BitchBot(commands.Bot):
         self.loop = self.loop or asyncio.get_event_loop()
         self.clientSession = aiohttp.ClientSession()
 
-        self.quart_app = util.QuartWithBot(__name__, static_folder=None)
+        self.quart_app = QuartWithBot(__name__, static_folder=None)
         self.quart_app.debug = keys.debug
         # Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')
