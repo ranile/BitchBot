@@ -20,8 +20,8 @@ async def connect(loop):
     return pool
 
 
-async def createTables(connection):
-    await connection.execute(services.ActivityService.sql.createTable)
+async def create_tables(connection):
+    await connection.execute(services.ActivityService.initial_sql)
     await connection.execute(services.StarboardService.initial_sql)
     await connection.execute(services.ConfigService.initial_sql)
     await connection.execute(services.WarningsService.sql().createTable)
@@ -32,6 +32,6 @@ async def createTables(connection):
 async def init(loop):
     pool = await connect(loop)
     async with pool.acquire() as conn:
-        await createTables(conn)
+        await create_tables(conn)
 
     return pool

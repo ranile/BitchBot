@@ -1,12 +1,11 @@
 import re
 import aiohttp
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands as dpy_commands, tasks
 import keys
 from services import ActivityService
 import util
-from util import checks
-from database import errors
+from util import checks, commands
 import logging
 import traceback
 
@@ -16,26 +15,25 @@ log = logging.getLogger('BitchBot' + __name__)
 def must_have_activity_enabled():
     def pred(ctx):
         if ctx.guild is None:
-            raise commands.NoPrivateMessage
+            raise dpy_commands.NoPrivateMessage
 
         if ctx.guild.id in ctx.cog.wants_activity_tracking:
             return True
 
-        raise commands.CheckFailure('Activity tracking must be enabled to use this command')
+        raise dpy_commands.CheckFailure('Activity tracking must be enabled to use this command')
 
-    return commands.check(pred)
+    return dpy_commands.check(pred)
 
 
 # Tracks your activity in the guild and give them activity points for being active.
 # noinspection PyIncorrectDocstring
-class Stats(commands.Cog):
+class Stats(dpy_commands.Cog):
     """Commands related to statistics about bot and you"""
 
     def __init__(self, bot):
         self.bot = bot
         self.command_pattern = re.compile(rf'>[a-z]+')
-        self.activity_service = ActivityService(self.bot.db)
-        self.activity_bucket = commands.CooldownMapping.from_cooldown(1.0, 120.0, commands.BucketType.member)
+        self.activity_bucket = dpy_commands.CooldownMapping.from_cooldown(1.0, 120.0, dpy_commands.BucketType.member)
 
         self.wants_activity_tracking = set()
 
@@ -49,12 +47,13 @@ class Stats(commands.Cog):
             self.stats_loop.start()
 
     async def load_guilds(self):
-        self.wants_activity_tracking = set(await self.activity_service.get_guilds_with_tracking_enabled())
+        async with self.bot.db.acquire() as db:
+            self.wants_activity_tracking = set(await ActivityService.get_guilds_with_tracking_enabled(db))
 
     def cog_unload(self):
         self.stats_loop.cancel()
 
-    @commands.Cog.listener()
+    @dpy_commands.Cog.listener()
     async def on_regular_human_message(self, message):
         if message.guild is None:
             return  # no activity tracking in DMs
@@ -62,7 +61,8 @@ class Stats(commands.Cog):
         if message.guild.id in self.wants_activity_tracking:
             if not self.activity_bucket.update_rate_limit(message):  # been two minutes since last update
                 increment_by = 2
-                await self.activity_service.increment(message.author.id, message.guild.id, increment_by)
+                async with self.bot.db.acquire() as db:
+                    await ActivityService.increment(db, message.author.id, message.guild.id, increment_by)
                 log.debug(f'Incremented activity of {message.author} ({message.author.id}) '
                           f'in {message.guild} ({message.guild.id}) by {increment_by}')
 
@@ -82,7 +82,7 @@ class Stats(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(invoke_without_command=True, wants_db=True)
     @must_have_activity_enabled()
     async def activity(self, ctx, target: discord.Member = None):
         """
@@ -93,24 +93,26 @@ class Stats(commands.Cog):
         """
         if target is None:
             target = ctx.author
-        try:
-            fetched = await self.activity_service.get(target)
-            member = ctx.guild.get_member(fetched.user_id)
-            embed = discord.Embed(color=util.random_discord_color())
-            embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-            embed.add_field(name='Activity Points', value=fetched.points)
-            embed.add_field(name='Position', value=fetched.position)
-            embed.set_footer(text='Last updated at')
-            embed.timestamp = fetched.last_updated_time
-            await ctx.send(embed=embed)
-        except errors.NotFound:
+
+        fetched = await ActivityService.get(ctx.db, target)
+
+        if fetched is None:
             await ctx.send(f'Activity for user `{util.format_human_readable_user(target)}` not found')
 
-    @activity.command(name='top')
+        member = ctx.guild.get_member(fetched.user_id)
+        embed = discord.Embed(color=util.random_discord_color())
+        embed.set_author(name=member.display_name, icon_url=member.avatar_url)
+        embed.add_field(name='Activity Points', value=fetched.points)
+        embed.add_field(name='Position', value=fetched.position)
+        embed.set_footer(text='Last updated at')
+        embed.timestamp = fetched.last_updated_time
+        await ctx.send(embed=embed)
+
+    @activity.command(name='top', wants_db=True)
     @must_have_activity_enabled()
     async def top_users(self, ctx, amount=10):
         """Shows top users in server's activity leaderboard"""
-        fetched = await self.activity_service.get_top(guild=ctx.guild, limit=amount)
+        fetched = await ActivityService.get_top(ctx.db, guild=ctx.guild, limit=amount)
         data = []
         length = 0
         for activity in fetched:
@@ -123,25 +125,25 @@ class Stats(commands.Cog):
         data.append('\n')
         data.append('-' * length)
         # I probably should use one query but I don't know how to do it so we just gonna go with two
-        me = await self.activity_service.get(ctx.author)
+        me = await ActivityService.get(ctx.db, ctx.author)
         data.append(f'You have {me.points} points')
 
         await util.BloodyMenuPages(util.TextPagesData(data)).start(ctx)
 
-    @activity.command(name='enable')
-    @commands.guild_only()
+    @activity.command(name='enable', wants_db=True)
+    @dpy_commands.guild_only()
     @checks.can_config()
     async def activity_enable(self, ctx):
-        await self.activity_service.set_tracking_state(ctx.guild.id, True)
+        await ActivityService.set_tracking_state(ctx.db, ctx.guild.id, True)
         self.wants_activity_tracking.add(ctx.guild.id)
 
         await ctx.send('Activity tracking has been enabled')
 
-    @activity.command(name='disable')
-    @commands.guild_only()
+    @activity.command(name='disable', wants_db=True)
+    @dpy_commands.guild_only()
     @checks.can_config()
     async def activity_disable(self, ctx):
-        await self.activity_service.set_tracking_state(ctx.guild.id, False)
+        await ActivityService.set_tracking_state(ctx.db, ctx.guild.id, False)
         self.wants_activity_tracking.remove(ctx.guild.id)
 
         await ctx.send('Activity tracking has been disabled')

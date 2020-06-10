@@ -15,7 +15,7 @@ import random
 import hypercorn
 import os
 
-from services import ActivityService, ConfigService
+from services import ConfigService
 
 bitch_bot_logger = logging.getLogger('BitchBot')
 bitch_bot_logger.setLevel(logging.INFO)
@@ -110,8 +110,6 @@ class BitchBot(commands.Bot):
         self.db = await database.init(self.loop)
 
         self.load_extension('util.timers')
-
-        self.activity_service = ActivityService(self.db)
 
         for cog_name in self.initial_cogs:
             try:
