@@ -4,7 +4,6 @@ git+https://github.com/Gorialis/jishaku@master#egg=jishaku
 psutil
 git+https://github.com/Rapptz/discord-ext-menus
 Quart
-requests_oauthlib
 dateparser
 pendulum
 pyjwt
