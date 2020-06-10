@@ -11,22 +11,22 @@ log = logging.getLogger('BitchBot' + __name__)
 class Timers:
     def __init__(self, bot):
         self.bot = bot
-        self.timers_service = TimersService(bot.db)
         self.current_timers = None
         self.refresh_timer.start()
 
     async def create_timer(self, timer):
-        inserted = await self.timers_service.insert(timer)
+        async with self.bot.db.acquire() as db:
+            inserted = await TimersService.insert(db, timer)
         self.current_timers.append(inserted)
 
     async def delete_timer(self, timer):
         log.debug(f'Deleting timer {timer.id}')
-        await self.timers_service.delete(timer)
+        async with self.bot.db.acquire() as db:
+            await TimersService.delete(db, timer)
         self.current_timers.remove(timer)
 
     def stop(self):
         self.current_timers = None
-        task = self.refresh_timer.get_task()
         self.refresh_timer.cancel()
 
     def restart(self):
@@ -37,7 +37,8 @@ class Timers:
     async def refresh_timer(self):
         if self.current_timers is None:
             log.info('Fetching timers from db')
-            self.current_timers = await self.timers_service.fetch_all_timers()
+            async with self.bot.db.acquire() as db:
+                self.current_timers = await TimersService.fetch_all_timers(db)
 
         timers = [x for x in self.current_timers if datetime.utcnow() > x.expires_at]
 
