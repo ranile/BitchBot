@@ -2,7 +2,7 @@ from resources import Prefix, GuildConfig, Blacklist
 import asyncpg
 
 
-class GuildConfigService:
+class ConfigService:
 
     @staticmethod
     async def get(db: asyncpg.Connection, guild_id: int):

@@ -21,16 +21,6 @@ async def connect(loop):
 
 
 async def createTables(connection):
-    await connection.execute('''
-    create table if not exists Counters
-    (
-        count serial not null primary key,
-        name text not null,
-        summoned_by bigint not null,
-        summoned_at int not null
-    );
-    ''')
-
     await connection.execute(services.ActivityService.sql.createTable)
     await connection.execute(services.StarboardService.initial_sql)
     await connection.execute(services.ConfigService.initial_sql)
