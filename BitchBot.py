@@ -56,7 +56,7 @@ class BitchBot(commands.Bot):
             owner_id=529535587728752644,
             case_insensitive=True,
             allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
-            status=discord.Status(discord.Status.online),
+            status=discord.Status.online,
             activity=discord.Game(f"use >help or @mention me")
         )
         self.loop = self.loop or asyncio.get_event_loop()
