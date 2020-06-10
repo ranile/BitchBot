@@ -4,10 +4,11 @@ from datetime import datetime
 from resources import Warn, Timer
 from services import WarningsService, ConfigService
 from util import funs, checks, BloodyMenuPages, TextPagesData, converters, commands
+from BitchBot import BitchBot
 
 
 def bot_and_author_have_permissions(**perms):
-    async def pred(ctx):
+    async def pred(ctx: commands.Context):
         res = await dpy_commands.has_permissions(**perms).predicate(ctx)
         if res:
             res = await dpy_commands.bot_has_permissions(**perms).predicate(ctx)
@@ -16,14 +17,14 @@ def bot_and_author_have_permissions(**perms):
     return dpy_commands.check(pred)
 
 
-# noinspection PyIncorrectDocstring,PyUnresolvedReferences
+# noinspection PyIncorrectDocstring,PyUnresolvedReferences,PyMethodMayBeStatic
 class Moderation(dpy_commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
 
     def cog_check(self, ctx):
         if ctx.guild is None:
-            raise commands.NoPrivateMessage("Moderation commands can't be used in DMs")
+            raise dpy_commands.NoPrivateMessage("Moderation commands can't be used in DMs")
         return True
 
     @commands.command()
@@ -113,9 +114,8 @@ class Moderation(dpy_commands.Cog):
 
         if time:
             extras = {
-                'ban_id': saved.id,
-                'guild_id': saved.guild_id,
-                'banned_user_id': saved.banned_user_id,
+                'guild_id': ctx.guild.id,
+                'banned_user_id': victim.id,
             }
             timer = Timer(
                 event='tempban',

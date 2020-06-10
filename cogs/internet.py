@@ -3,18 +3,19 @@ import re
 from urllib.parse import quote
 from discord.ext import commands
 
+from BitchBot import BitchBot
 from util.funs import random_discord_color
 from util import BloodyMenuPages, EmbedPagesData, checks
 
 
 # noinspection PyIncorrectDocstring
 class Internet(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
         self.is_image_regex = re.compile(r".*\.(jpg|png|gif)$")
 
     @commands.command()
-    async def joke(self, ctx):
+    async def joke(self, ctx: commands.Context):
         """
         They are horrible. Seriously
         """
@@ -26,7 +27,7 @@ class Internet(commands.Cog):
             await ctx.send(content['joke'])
 
     @commands.command()
-    async def reddit(self, ctx, *, search):
+    async def reddit(self, ctx: commands.Context, *, search: str):
         """
         Get a random reddit post
 
@@ -71,7 +72,7 @@ class Internet(commands.Cog):
         await BloodyMenuPages(EmbedPagesData(embeds)).start(ctx)
 
     @commands.command()
-    async def fact(self, ctx):
+    async def fact(self, ctx: commands.Context):
         """
         Fun fact. U gey
         """
@@ -80,8 +81,8 @@ class Internet(commands.Cog):
         async with self.bot.clientSession.get("https://useless-facts.sameerkumar.website/api") as res:
             await ctx.send(((await res.json())['data']))
 
-    @commands.command(aliases=["belikebill"])
-    async def bill(self, ctx, *, name="Bill"):
+    @commands.command(aliases=('belikebill',))
+    async def bill(self, ctx: commands.Context, *, name: str = 'Bill'):
         """
         Be like bill
         """
@@ -93,7 +94,7 @@ class Internet(commands.Cog):
 
     @commands.command()
     @checks.nsfw_only_in_non_trusted_guilds()
-    async def urban(self, ctx, *, query):
+    async def urban(self, ctx: commands.Context, *, query: str):
         """
         Gets top definition from urban dictionary
         
@@ -140,7 +141,7 @@ class Internet(commands.Cog):
             await BloodyMenuPages(EmbedPagesData(embeds)).start(ctx)
 
     @commands.command(aliases=["insult"])
-    async def roast(self, ctx, *, member: discord.Member = None):
+    async def roast(self, ctx: commands.Context, *, member: discord.Member = None):
         """
         Insult that guy
 

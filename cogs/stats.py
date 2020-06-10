@@ -3,6 +3,7 @@ import aiohttp
 import discord
 from discord.ext import commands as dpy_commands, tasks
 import keys
+from BitchBot import BitchBot
 from services import ActivityService
 import util
 from util import checks, commands
@@ -30,10 +31,11 @@ def must_have_activity_enabled():
 class Stats(dpy_commands.Cog):
     """Commands related to statistics about bot and you"""
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
         self.command_pattern = re.compile(rf'>[a-z]+')
-        self.activity_bucket = dpy_commands.CooldownMapping.from_cooldown(1.0, 120.0, dpy_commands.BucketType.member)
+        # noinspection PyTypeChecker
+        self.activity_bucket = dpy_commands.CooldownMapping.from_cooldown(1, 120.0, dpy_commands.BucketType.member)
 
         self.wants_activity_tracking = set()
 
@@ -54,7 +56,7 @@ class Stats(dpy_commands.Cog):
         self.stats_loop.cancel()
 
     @dpy_commands.Cog.listener()
-    async def on_regular_human_message(self, message):
+    async def on_regular_human_message(self, message: discord.Message):
         if message.guild is None:
             return  # no activity tracking in DMs
 
@@ -67,12 +69,12 @@ class Stats(dpy_commands.Cog):
                           f'in {message.guild} ({message.guild.id}) by {increment_by}')
 
     @commands.group()
-    async def stats(self, ctx):
+    async def stats(self, ctx: commands.Context):
         """Command group for stats related commands"""
         pass
 
     @stats.command(name='websocket', aliases=['ws'])
-    async def ws_stats(self, ctx):
+    async def ws_stats(self, ctx: commands.Context):
         """Gives stats about bot's received websocket events"""
 
         embed = discord.Embed(title='Websocket events received by the bot', color=util.random_discord_color())
@@ -84,7 +86,7 @@ class Stats(dpy_commands.Cog):
 
     @commands.group(invoke_without_command=True, wants_db=True)
     @must_have_activity_enabled()
-    async def activity(self, ctx, target: discord.Member = None):
+    async def activity(self, ctx: commands.Context, target: discord.Member = None):
         """
         Shows activity on the server's leaderboard
 
@@ -110,7 +112,7 @@ class Stats(dpy_commands.Cog):
 
     @activity.command(name='top', wants_db=True)
     @must_have_activity_enabled()
-    async def top_users(self, ctx, amount=10):
+    async def top_users(self, ctx: commands.Context, amount: int = 10):
         """Shows top users in server's activity leaderboard"""
         fetched = await ActivityService.get_top(ctx.db, guild=ctx.guild, limit=amount)
         data = []
@@ -133,7 +135,7 @@ class Stats(dpy_commands.Cog):
     @activity.command(name='enable', wants_db=True)
     @dpy_commands.guild_only()
     @checks.can_config()
-    async def activity_enable(self, ctx):
+    async def activity_enable(self, ctx: commands.Context):
         await ActivityService.set_tracking_state(ctx.db, ctx.guild.id, True)
         self.wants_activity_tracking.add(ctx.guild.id)
 
@@ -142,7 +144,7 @@ class Stats(dpy_commands.Cog):
     @activity.command(name='disable', wants_db=True)
     @dpy_commands.guild_only()
     @checks.can_config()
-    async def activity_disable(self, ctx):
+    async def activity_disable(self, ctx: commands.Context):
         await ActivityService.set_tracking_state(ctx.db, ctx.guild.id, False)
         self.wants_activity_tracking.remove(ctx.guild.id)
 
@@ -189,7 +191,7 @@ class Stats(dpy_commands.Cog):
 
     @stats_loop.before_loop
     async def before_stats_loop(self):
-        self.bot.wait_until_ready()
+        await self.bot.wait_until_ready()
 
 
 def setup(bot):

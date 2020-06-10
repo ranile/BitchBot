@@ -1,8 +1,10 @@
 import logging
 
 import discord
+import typing
 from discord.ext import commands as dpy_commands
 
+from BitchBot import BitchBot
 from services import StarboardService
 from services import ConfigService
 from util import funs, checks, commands
@@ -19,11 +21,11 @@ class Starboard(dpy_commands.Cog):
     Once a message reaches a certain number of stars, it is sent to the starboard channel and saved into the database
     """
 
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
         self.already_starred = []
 
-    async def cog_check(self, ctx):
+    async def cog_check(self, ctx: commands.Context):
         if ctx.guild is None:
             raise dpy_commands.NoPrivateMessage("Starboard can't be used in DMs")
         if ctx.command.name == self.setup.name:
@@ -34,7 +36,7 @@ class Starboard(dpy_commands.Cog):
         return True
 
     @dpy_commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: typing.Union[discord.Member, discord.User]):
         if str(reaction) != STAR:
             return
 
@@ -58,7 +60,7 @@ class Starboard(dpy_commands.Cog):
                 description=f'**Channel**:{msg.channel.mention}\n\n'
                             f'{starred.message_content}')
 
-            embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+            embed.set_author(name=author.display_name, icon_url=str(author.avatar_url))
             embed.description = starred.message_content
             embed.add_field(name='Original', value=f'[Link]({reaction.message.jump_url})')
             if starred.attachment:
@@ -69,7 +71,7 @@ class Starboard(dpy_commands.Cog):
             await msg.guild.get_channel(config.starboard_channel).send(embed=embed)
 
     @dpy_commands.Cog.listener()
-    async def on_reaction_remove(self, reaction, user):
+    async def on_reaction_remove(self, reaction: discord.Reaction, user: typing.Union[discord.Member, discord.User]):
         if str(reaction) != STAR:
             return
 
@@ -84,7 +86,7 @@ class Starboard(dpy_commands.Cog):
             await StarboardService.unstar(db, reaction)
 
     @commands.group(invoke_without_command=True, wants_db=True)
-    async def starboard(self, ctx, message):
+    async def starboard(self, ctx: commands.Context, message: int):
         """
         Shows a message from starboard
 
@@ -98,7 +100,7 @@ class Starboard(dpy_commands.Cog):
 
         message = await ctx.guild.get_channel(star.channel).fetch_message(star.message_id)
         embed = discord.Embed(color=funs.random_discord_color())
-        embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+        embed.set_author(name=message.author.display_name, icon_url=str(message.author.avatar_url))
         embed.description = star.message_content
         embed.add_field(name='Original', value=f'[Link]({message.jump_url})')
         if star.attachment:
@@ -109,7 +111,7 @@ class Starboard(dpy_commands.Cog):
         await ctx.send(embed=embed)
 
     @starboard.group(invoke_without_command=True, wants_db=True)
-    async def stats(self, ctx):
+    async def stats(self, ctx: commands.Context):
         """Top 10 people whose messages are starred in a server"""
 
         top = await StarboardService.guild_top_stats(ctx.db, ctx.guild)
@@ -138,7 +140,7 @@ class Starboard(dpy_commands.Cog):
 
     @starboard.command(wants_db=True)
     @checks.can_config()
-    async def setup(self, ctx, channel: discord.TextChannel, limit=2):
+    async def setup(self, ctx: commands.Context, channel: discord.TextChannel, limit: int = 2):
         """
         Setup starboard
 
@@ -152,7 +154,7 @@ class Starboard(dpy_commands.Cog):
 
     @starboard.command(wants_db=True)
     @checks.can_config()
-    async def delete(self, ctx):
+    async def delete(self, ctx: commands.Context):
         """Deletes the current starboard config
         The starboard channel along with all of its messages is **not** deleted
         """

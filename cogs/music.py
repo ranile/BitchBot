@@ -10,6 +10,7 @@ import util
 
 URL_EXP = re.compile('https?://(?:www.)?.+')
 ZWS = '\u200b'
+# TODO: type this
 
 
 class CannotManageMusic(commands.CheckFailure):
@@ -112,7 +113,7 @@ class Music(commands.Cog):
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect or not permissions.speak:  # Check user limit too?
-                raise commands.BotMissingPermissions('connect', 'speak')
+                raise commands.BotMissingPermissions(['connect', 'speak'])
 
             player.store('channel', ctx.channel.id)
             await self.connect_to(ctx.guild.id, str(ctx.author.voice.channel.id))

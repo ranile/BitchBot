@@ -2,8 +2,13 @@ import asyncio
 import random
 import re
 import unicodedata
+
+import asyncpg
 import discord
+import typing
 from discord.ext import commands as dpy_commands
+
+from BitchBot import BitchBot
 from keys import rabbitWebhook
 from resources import Counter
 import util
@@ -98,9 +103,10 @@ async def create_counters_table(pool):
         ''')
 
 
+# noinspection PyIncorrectDocstring
 class Cause(dpy_commands.Cog, name="The Cause"):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
 
         # Rabbit stuff
         self.isRabbitOnCooldown = False
@@ -109,7 +115,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
 
         self.bot.loop.create_task(create_counters_table(bot.db))
 
-    def cog_check(self, ctx):
+    def cog_check(self, ctx: commands.Context):
         return ctx.guild is not None and True  # ctx.guild.id == THE_CAUSE
 
     async def put_rabbit_on_cooldown(self):
@@ -122,11 +128,12 @@ class Cause(dpy_commands.Cog, name="The Cause"):
         return f'https://firebasestorage.googleapis.com/v0/b/bitchbot-discordbot.appspot.com/o/' \
                f'images%2Frabbit%2Frabbitman{random.randint(1, 9)}.jpg?alt=media'
 
-    async def send_counter_update(self, msg, username, pfp):
+    async def send_counter_update(self, msg: str, username: str, pfp: typing.Optional[str]):
         webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
         await webhook.send(msg, username=username, avatar_url=pfp)
 
-    async def increment_rabbit(self, db, message, summoned_by=None, rabbit=random.choice(rabbits)):
+    async def increment_rabbit(self, db: asyncpg.Connection, message: discord.Message,
+                               summoned_by: discord.Member = None, rabbit: str = random.choice(rabbits)):
         if summoned_by is None:
             summoned_by = message.author
 
@@ -142,7 +149,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
         self.rabbitAlreadySummoned.append(message.id)
         await self.put_rabbit_on_cooldown()
 
-    async def increment_haiku(self, db, author, text):
+    async def increment_haiku(self, db: asyncpg.Connection, author: discord.Member, text: str):
         await insert_counter(db, Counter(summonedBy=author.id, name=Counter.HAIKU))
         count = await get_count(db, Counter.HAIKU)
         split = text.split('\n')
@@ -152,7 +159,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
             'HaikuBot Counter', None)
 
     @dpy_commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
 
         if message.author == self.bot.user or message.guild is None or message.guild.id != THE_CAUSE:
             return
@@ -171,7 +178,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
                 await self.increment_haiku(db, author, text)
 
     @dpy_commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: typing.Union[discord.Member, discord.User]):
         message = reaction.message
         if user.id == self.bot.user.id or message.guild is None or message.guild.id != THE_CAUSE:
             return
@@ -190,7 +197,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
         await ctx.channel.send(embed=discord.Embed().set_image(url=self.get_rabbit_pfp()))
 
     @rabbit.group(name='stats', invoke_without_command=True, wants_db=True)
-    async def stats(self, ctx, member: discord.Member = None):
+    async def stats(self, ctx: commands.Context, member: discord.Member = None):
         if member is not None:
             of = member.id
         else:
@@ -198,11 +205,11 @@ class Cause(dpy_commands.Cog, name="The Cause"):
         print(ctx.db, ctx.command.wants_db)
         count = await get_members_counted_count(ctx.db, of)
 
-        await ctx.send(f'{"You have" if of == ctx.author.id else f"{member.display_name} has" } '
+        await ctx.send(f'{"You have" if of == ctx.author.id else f"{member.display_name} has"} '
                        f'called rabbit {count} times')
 
     @stats.command(wants_db=True)
-    async def top(self, ctx, limit=10):
+    async def top(self, ctx: commands.Context, limit: int = 10):
         fetched = await get_top_counts(ctx.db, limit, ctx.guild.members)
 
         length = 0
@@ -226,7 +233,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
             await ctx.send(page)
 
     @rabbit.command(name='show', wants_db=True)
-    async def rabbit_show(self, ctx, count: int):
+    async def rabbit_show(self, ctx: commands.Context, count: int):
         """
         Shows details about given rabbit count
 
@@ -249,11 +256,11 @@ class Cause(dpy_commands.Cog, name="The Cause"):
             author_name = str(author)
 
         embed = discord.Embed(timestamp=rabbit.summonedAt, color=util.random_discord_color())
-        embed.set_author(name=author_name, icon_url=author.avatar_url)
+        embed.set_author(name=author_name, icon_url=str(author.avatar_url))
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def baby(self, ctx):
+    async def baby(self, ctx: commands.Context):
         """Sends a Baby picture"""
         url = 'https://firebasestorage.googleapis.com/v0/b/bitchbot-discordbot.appspot.com/o/' \
               f'images%2Fbaby%2Fbaby{random.randint(1, 9)}.jpg?alt=media'

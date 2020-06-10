@@ -1,14 +1,15 @@
 import random
 from typing import Union
 
-import aiohttp
 import asyncio
 import discord
 import re
 import string
 
+import typing
 from discord.ext import commands as dpy_commands
-from keys import logWebhook
+
+from BitchBot import BitchBot
 import util
 from util import converters, checks, commands
 from util.consts import EMOJI_CHARS, SOMEONE_EMOJIS, SUPPORT_SERVER_INVITE
@@ -24,12 +25,12 @@ def f_to_c(f: float) -> float:
 
 # noinspection SpellCheckingInspection,PyPep8Naming,PyIncorrectDocstring
 class Miscellaneous(dpy_commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
 
     @commands.command(aliases=["send"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
-    async def say(self, ctx, *, message):
+    async def say(self, ctx: commands.Context, *, message: str):
         """Have the bot say something.
 
         This command can only be used bot admins
@@ -43,47 +44,9 @@ class Miscellaneous(dpy_commands.Cog):
         await util.log(ctx, message, sentMessage)
         await ctx.message.delete(delay=5)
 
-    @commands.command(aliases=["sendembed"], hidden=True)
-    @checks.owner_only_in_non_trusted_guilds()
-    async def sayembed(self, ctx, *, message):
-        """
-        Have the bot say something in embeds.
-
-        This command can only be used bot admins
-
-        Args:
-            message: The message you wamt to say in embed
-        """
-        await ctx.channel.trigger_typing()
-
-        embed = discord.Embed()
-        splitedMessage = message.split('\n')
-        for i in splitedMessage:
-            if i.startswith('t'):
-                embed.title = i[2:]
-            elif i.startswith('d'):
-                embed.description = i[2:]
-            elif i.startswith('f'):
-                embed.set_footer(text=i[2:])
-            elif i.startswith('c'):
-                embed.colour = discord.Colour(int(f'0x{i[2:].strip()}', 16))
-
-        fields = [j.strip('?').split(',') for j in splitedMessage if j.startswith("?")]
-        for f in fields:
-            embed.add_field(name=f[0], value=f[1], inline=f[2].strip() != 'false')
-        sentMessage = await ctx.send(embed=embed)
-
-        embed.timestamp = ctx.message.created_at
-        embed.set_author(name=f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.avatar_url)
-        embed.add_field(name='Message', value=f'[Jump To Message]({sentMessage.jump_url})', inline=False)
-
-        async with aiohttp.ClientSession() as session:
-            webhook = discord.Webhook.from_url(logWebhook, adapter=discord.AsyncWebhookAdapter(session))
-            await webhook.send(embed=embed, username='sayembed')
-
     @commands.command(aliases=["addreaction"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
-    async def react(self, ctx, msg: discord.Message, text):
+    async def react(self, ctx: commands.Context, msg: discord.Message, text: str):
         """
         Add the given reactions to a message
 
@@ -104,7 +67,7 @@ class Miscellaneous(dpy_commands.Cog):
 
     @commands.command(hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
-    async def totogglecase(self, ctx, *, msg):
+    async def totogglecase(self, ctx: commands.Context, *, msg: str):
         """
         Convert string to toggle case
 
@@ -124,7 +87,7 @@ class Miscellaneous(dpy_commands.Cog):
 
     @commands.command(aliases=["yell"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
-    async def touppercase(self, ctx, *, msg):
+    async def touppercase(self, ctx: commands.Context, *, msg: str):
         """
         Convert string to upper case
 
@@ -139,7 +102,7 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.message.delete()
 
     @commands.command(aliases=["wide"], hidden=True)
-    async def addspaces(self, ctx, msg: str, spaces: int = 3):
+    async def addspaces(self, ctx: commands.Context, msg: str, spaces: int = 3):
         """
         Adds spaces in between every character.
 
@@ -157,7 +120,7 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.message.delete(delay=5)
 
     @commands.command(hidden=True)
-    async def flip(self, ctx, *, msg):
+    async def flip(self, ctx: commands.Context, *, msg: str):
         """
         Converts given text to flipped unicode characters
 
@@ -192,7 +155,7 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["rick", "rickroll"])
-    async def rickroulette(self, ctx):
+    async def rickroulette(self, ctx: commands.Context):
         """
         Rickroll bot. Lose/win
         """
@@ -202,37 +165,31 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.send(f"Get rick rolled\n {rick}")
 
     @commands.command(aliases=["to_c"])
-    async def toc(self, ctx, message):
+    async def toc(self, ctx: commands.Context, *, temp: float):
         """
         Convert fahrenheit to celsius.
         Example: '>toc 69'.
 
         Args:
-            message: temperature in celsius
+            temp: temperature in celsius
         """
 
-        try:
-            await ctx.send(f'{int(f_to_c(float(message)))}°C')
-        except Exception as identifier:
-            await ctx.send(f"Bruh...\nDon't you know how to follow instructions\nError: {identifier}")
+        await ctx.send(f'{int(f_to_c(temp))}°C')
 
     @commands.command(aliases=["to_f"])
-    async def tof(self, ctx, message):
+    async def tof(self, ctx: commands.Context, temp: float):
         """
         Convert celsius to fahrenheit.
         Example: '>tof 20.5'.
 
         Args:
-            message: temperature in fahrenheit
+            temp: temperature in fahrenheit
         """
 
-        try:
-            await ctx.send(f'{int(c_to_f(float(message)))}°F')
-        except Exception as identifier:
-            await ctx.send(f"Bruh...\nDon't you know how to follow instructions\nError: {identifier}")
+        await ctx.send(f'{int(c_to_f(temp))}°F')
 
     @commands.command()
-    async def poll(self, ctx, question, *answers):
+    async def poll(self, ctx: commands.Context, question: str, *answers: typing.Tuple[str]):
         """
         Start a poll.
         If answers/questions contain spaces put it in quotes
@@ -258,7 +215,7 @@ class Miscellaneous(dpy_commands.Cog):
             description='\n'.join(desc),
             color=discord.Color.blurple(),
             timestamp=ctx.message.created_at
-        ).set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+        ).set_author(name=str(ctx.author), icon_url=str(ctx.author.avatar_url))
 
         msg = await ctx.send(embed=embed)
         if len(answers) == 0:
@@ -269,15 +226,19 @@ class Miscellaneous(dpy_commands.Cog):
                 await msg.add_reaction(letter_emoji[i])
 
     @commands.command(aliases=['info', 'binfo'])
-    async def about(self, ctx):
+    async def about(self, ctx: commands.Context):
         """
         Tells you about me
         """
+
+        # this exists but in a way that ij can't pick it up
+        # TODO move it to Bot
+        # noinspection PyUnresolvedReferences
         embed = discord.Embed(color=util.random_discord_color(),
                               timestamp=self.bot.get_cog('Jishaku').load_time)
         owner = self.bot.get_user(self.bot.owner_id)
-        embed.set_author(name=f"{owner.name}#{owner.discriminator}", icon_url=owner.avatar_url)
-        embed.set_thumbnail(url=self.bot.user.avatar_url)
+        embed.set_author(name=f"{owner.name}#{owner.discriminator}", icon_url=str(owner.avatar_url))
+        embed.set_thumbnail(url=str(self.bot.user.avatar_url))
         embed.add_field(name="Source", value=f"[GitHub Respositiory](https://github.com/hamza1311/BitchBot)")
         embed.add_field(name='Comamnds', value=f"{len(self.bot.cogs)} Cogs loaded\n{len(self.bot.commands)} commands")
         members = list(self.bot.get_all_members())
@@ -289,48 +250,50 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def owoize(self, ctx, *, message):
+    async def owoize(self, ctx: commands.Context, *, text: str):
         """
         Owoizes the given text
 
         Args:
-            message: A message you want to owoize
+            text: A message you want to owoize
         """
-        async with self.bot.clientSession.get('https://nekos.life/api/v2/owoify', params={'text': message}) as resp:
+
+        async with self.bot.clientSession.get('https://nekos.life/api/v2/owoify', params={'text': text}) as resp:
             json = await resp.json()
             await ctx.send(json['owo'])
 
     @commands.command(name='userinfo', aliases=['whois', 'uinfo'])
-    async def user_info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
+    async def user_info(self, ctx: commands.Context, member: Union[discord.Member, converters.FetchedUser] = None):
         """
         Shows info about author or a user if provided
 
         Args:
             member: The user who's info you wanna see
         """
+        # TODO Rewrite this command
         user = member or ctx.author
 
         embed = discord.Embed(color=user.color)
-        embed.set_author(name=user, icon_url=user.avatar_url)
+        embed.set_author(name=str(user), icon_url=user.avatar_url)
         embed.set_thumbnail(url=user.avatar_url)
-        embed.add_field(name='ID', value=user.id)
-        embed.add_field(name='Created At', value=user.created_at)
+        embed.add_field(name='ID', value=str(user.id))
+        embed.add_field(name='Created At', value=str(user.created_at))  # TODO: format time
 
         # access of member specific props ahead so send the message and return if `user` is not a `Member`
         if not isinstance(user, discord.Member):
             return await ctx.send(embed=embed)
 
-        embed.add_field(name='Joined At', value=user.joined_at)
+        embed.add_field(name='Joined At', value=str(user.joined_at))  # TODO: format time
         if user.premium_since is not None:
-            embed.add_field(name='Last boosted on', value=user.premium_since)
-        embed.add_field(name='Is on mobile', value=user.is_on_mobile())
+            embed.add_field(name='Last boosted on', value=str(user.premium_since))  # TODO: format time
+        # embed.add_field(name='Is on mobile', value=user.is_on_mobile()) TODO think about it
         embed.add_field(name='Permissions', value=util.user_presentable_perms(user.guild_permissions), inline=False)
         sorted_roles = sorted(user.roles[1:], key=lambda x: x.position, reverse=True)
         embed.add_field(name='Roles', value=', '.join([r.mention for r in sorted_roles]), inline=False)
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def swear(self, ctx, *, sentence):
+    async def swear(self, ctx: commands.Context, *, sentence: str):
         """
         Swear too much
         Or more like fuck a sentence
@@ -361,7 +324,7 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.send(new)
 
     @commands.command()
-    async def source(self, ctx):
+    async def source(self, ctx: commands.Context):
         """Gives you a link to the source code"""
         await ctx.send(embed=discord.Embed(
             description=f"The {self.bot.lines_of_code_count} lines of actual Python 3 code that "
@@ -370,7 +333,7 @@ class Miscellaneous(dpy_commands.Cog):
         ))
 
     @commands.command()
-    async def invite(self, ctx):
+    async def invite(self, ctx: commands.Context):
         """Invite me to your server"""
 
         await ctx.send(
@@ -380,14 +343,14 @@ class Miscellaneous(dpy_commands.Cog):
                 color=util.random_discord_color()
             ).add_field(name="Need help? Have any ideas for the bot? Want to report a bug?",
                         value=f"[Join our support server]({SUPPORT_SERVER_INVITE})")
-            .set_author(name=ctx.me, icon_url=ctx.me.avatar_url_as(format='png'))
+            .set_author(name=str(ctx.me), icon_url=ctx.me.avatar_url_as(format='png'))
             .set_footer(text=f'Rquested by {ctx.author.display_name}',
                         icon_url=ctx.author.avatar_url_as(format='png'))
         )
 
     # noinspection PyUnresolvedReferences
     @commands.command(hidden=True, usage='<time> <other_arg>')
-    async def parse(self, ctx, *, time_and_arg: converters.HumanTime(other=True)):
+    async def parse(self, ctx: commands.Context, *, time_and_arg: converters.HumanTime(other=True)):
         """
         Parses human time friendly time
 
@@ -407,7 +370,7 @@ class Miscellaneous(dpy_commands.Cog):
                            f'Delta: {(time - pendulum.instance(ctx.message.created_at)).in_words()}')
 
     @commands.command(hidden=True)
-    async def someone(self, ctx, *, msg):
+    async def someone(self, ctx: commands.Context, *, text: str):
         """
         Repeats msg but with a random member's name after {prefix}someone
 
@@ -415,12 +378,12 @@ class Miscellaneous(dpy_commands.Cog):
             `{prefix}someone isn't cool
 
         Args:
-            msg: The message to be repeated
+            text: The text to be repeated
         """
 
         emote = random.choice(SOMEONE_EMOJIS)
         user = random.choice(ctx.guild.members).display_name
-        response = f'@someone {emote} ***({user})*** {msg}'
+        response = f'@someone {emote} ***({user})*** {text}'
         await ctx.send(response)
 
 

@@ -37,6 +37,8 @@ async def _prefix_pred(bot, message):
 
 async def before_invoke(ctx: bloody_commands.Context):
     if getattr(ctx.command, 'wants_db', False):
+        # Thanks to circular imports
+        # noinspection PyUnresolvedReferences
         ctx.db = await ctx.bot.db.acquire()
 
 
@@ -53,7 +55,9 @@ class BitchBot(commands.Bot):
             help_command=util.BloodyHelpCommand(),
             owner_id=529535587728752644,
             case_insensitive=True,
-            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True)
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
+            status=discord.Status(discord.Status.online),
+            activity=discord.Game(f"use >help or @mention me")
         )
         self.loop = self.loop or asyncio.get_event_loop()
         self.clientSession = aiohttp.ClientSession()
@@ -71,7 +75,7 @@ class BitchBot(commands.Bot):
         self.prefixes = {}
 
         self.blacklist = {}
-        self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1.0, 15.0, commands.BucketType.user)
+        self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1, 15.0, commands.BucketType.user)
 
         self.log_webhook = discord.Webhook.from_url(keys.logWebhook,
                                                     adapter=discord.AsyncWebhookAdapter(self.clientSession))
@@ -201,10 +205,6 @@ class BitchBot(commands.Bot):
     async def on_ready(self):
         print(f"{self.user.name} is running")
         print("-" * len(self.user.name + " is running"))
-        await self.change_presence(
-            status=discord.Status.online,
-            activity=discord.Game(f"use >help or @mention me")
-        )
 
     async def on_socket_response(self, msg):
         event = msg['t']
