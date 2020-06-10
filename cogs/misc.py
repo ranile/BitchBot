@@ -10,8 +10,9 @@ import string
 from discord.ext import commands
 from TextToOwO.owo import text_to_owo
 from keys import logWebhook
-from util import funs, converters, checks, SUPPORT_SERVER_INVITE  # pylint: disable=no-name-in-module
-from util.emoji_chars import emoji_chars, someone_emotes
+import util
+from util import converters, checks
+from util.consts import EMOJI_CHARS, SOMEONE_EMOJIS, SUPPORT_SERVER_INVITE
 
 
 def c_to_f(c: float) -> float:
@@ -40,7 +41,7 @@ class Miscellaneous(commands.Cog):
 
         await ctx.channel.trigger_typing()
         sentMessage = await ctx.send(message)
-        await funs.log(ctx, message, sentMessage)
+        await util.log(ctx, message, sentMessage)
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["sendembed"], hidden=True)
@@ -97,10 +98,10 @@ class Miscellaneous(commands.Cog):
         sent = []
         for i in text:
             if re.fullmatch(r'[a-z]', i, re.IGNORECASE):
-                await msg.add_reaction(emoji_chars[str(i).lower()])
+                await msg.add_reaction(EMOJI_CHARS[str(i).lower()])
                 sent.append(i)
 
-        await funs.log(ctx, text, ctx.message, ''.join(sent))
+        await util.log(ctx, text, ctx.message, ''.join(sent))
 
     @commands.command(hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
@@ -119,7 +120,7 @@ class Miscellaneous(commands.Cog):
             out += message[i].lower() if (i % 2 == 0) else message[i].upper()
 
         sentMessage = await ctx.send(out)
-        await funs.log(ctx, msg, sentMessage, out)
+        await util.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["yell"], hidden=True)
@@ -135,7 +136,7 @@ class Miscellaneous(commands.Cog):
         """
         out = str(msg).upper()
         sentMessage = await ctx.send(out)
-        await funs.log(ctx, msg, sentMessage, out)
+        await util.log(ctx, msg, sentMessage, out)
         await ctx.message.delete()
 
     @commands.command(aliases=["wide"], hidden=True)
@@ -153,7 +154,7 @@ class Miscellaneous(commands.Cog):
         between = spaces * ' '
         out = between.join(list(str(msg)))
         sentMessage = await ctx.send(out, embed=discord.Embed().set_author(name=f'- {ctx.author.display_name}'))
-        await funs.log(ctx, msg, sentMessage, out)
+        await util.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
     @commands.command(hidden=True)
@@ -188,7 +189,7 @@ class Miscellaneous(commands.Cog):
 
         out = ' '.join(msgBack.split())
         sentMessage = await ctx.send(out, embed=discord.Embed().set_author(name=f'- {ctx.author.display_name}'))
-        await funs.log(ctx, msg, sentMessage, out)
+        await util.log(ctx, msg, sentMessage, out)
         await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["rick", "rickroll"])
@@ -244,11 +245,11 @@ class Miscellaneous(commands.Cog):
             answers: The answers for the poll. If omitted, it will default to yes/no. Max of 10 answers are allowed
         """
 
-        if len(answers) > len(emoji_chars):
+        if len(answers) > len(EMOJI_CHARS):
             raise commands.BadArgument('Answers must be 26 or less')
 
         desc = []
-        letter_emoji = list(emoji_chars.values())
+        letter_emoji = list(EMOJI_CHARS.values())
 
         for i, answer in enumerate(answers):
             desc.append(f'{letter_emoji[i]} {answers[i]}')
@@ -273,7 +274,7 @@ class Miscellaneous(commands.Cog):
         """
         Tells you about me
         """
-        embed = discord.Embed(color=funs.random_discord_color(),
+        embed = discord.Embed(color=util.random_discord_color(),
                               timestamp=self.bot.get_cog('Jishaku').load_time)
         owner = self.bot.get_user(self.bot.owner_id)
         embed.set_author(name=f"{owner.name}#{owner.discriminator}", icon_url=owner.avatar_url)
@@ -298,7 +299,7 @@ class Miscellaneous(commands.Cog):
         """
         owoized = text_to_owo(message)
         sent = await ctx.send(owoized)
-        await funs.log(ctx, message, sent, owoized)
+        await util.log(ctx, message, sent, owoized)
 
     @commands.command(name='userinfo', aliases=['whois', 'uinfo'])
     async def user_info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
@@ -324,7 +325,7 @@ class Miscellaneous(commands.Cog):
         if user.premium_since is not None:
             embed.add_field(name='Last boosted on', value=user.premium_since)
         embed.add_field(name='Is on mobile', value=user.is_on_mobile())
-        embed.add_field(name='Permissions', value=funs.user_presentable_perms(user.guild_permissions), inline=False)
+        embed.add_field(name='Permissions', value=util.user_presentable_perms(user.guild_permissions), inline=False)
         sorted_roles = sorted(user.roles[1:], key=lambda x: x.position, reverse=True)
         embed.add_field(name='Roles', value=', '.join([r.mention for r in sorted_roles]), inline=False)
         await ctx.send(embed=embed)
@@ -366,7 +367,7 @@ class Miscellaneous(commands.Cog):
         await ctx.send(embed=discord.Embed(
             description=f"The {self.bot.lines_of_code_count} lines of actual Python 3 code that "
                         f"I'm made of can be found [here](https://github.com/hamza1311/BitchBot)",
-            color=funs.random_discord_color()
+            color=util.random_discord_color()
         ))
 
     @commands.command()
@@ -377,12 +378,12 @@ class Miscellaneous(commands.Cog):
             embed=discord.Embed(
                 title='Invite Link',
                 url='https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160',
-                color=funs.random_discord_color()
-            ).add_field(name="Need more help? Have any ideas for the bot? Want to report a bug?",
+                color=util.random_discord_color()
+            ).add_field(name="Need help? Have any ideas for the bot? Want to report a bug?",
                         value=f"[Join our support server]({SUPPORT_SERVER_INVITE})")
-            .set_author(name=ctx.me, icon_url=ctx.me.avatar_url_as(format='png'))
-            .set_footer(text=f'Rquested by {ctx.author.display_name}',
-                        icon_url=ctx.author.avatar_url_as(format='png'))
+                .set_author(name=ctx.me, icon_url=ctx.me.avatar_url_as(format='png'))
+                .set_footer(text=f'Rquested by {ctx.author.display_name}',
+                            icon_url=ctx.author.avatar_url_as(format='png'))
         )
 
     # noinspection PyUnresolvedReferences
@@ -406,7 +407,7 @@ class Miscellaneous(commands.Cog):
                            f'Other argument: {time_and_arg.other}\n'
                            f'Delta: {(time - pendulum.instance(ctx.message.created_at)).in_words()}')
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def someone(self, ctx, *, msg):
         """
         Repeats msg but with a random member's name after {prefix}someone
@@ -418,10 +419,11 @@ class Miscellaneous(commands.Cog):
             msg: The message to be repeated
         """
 
-        emote = random.choice(someone_emotes)
+        emote = random.choice(SOMEONE_EMOJIS)
         user = random.choice(ctx.guild.members).display_name
         response = f'@someone {emote} ***({user})*** {msg}'
         await ctx.send(response)
+
 
 def setup(bot):
     bot.add_cog(Miscellaneous(bot))

@@ -4,7 +4,7 @@ from .timers import Timers
 from .discord_logging_handler import DiscordLoggingHandler
 from .funs import *
 from .quart_fix import *
-from .consts import *
+from . import consts
 from .backend_helpers import *
 from . import commands
 from .converters import *
