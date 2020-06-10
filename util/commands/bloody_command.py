@@ -9,6 +9,7 @@ def command(name=None, **attrs):
 
 
 def group(name=None, **attrs):
+    print('yes')
     attrs['cls'] = Group
     return dpy_commands.group(name=name, **attrs)
 
@@ -29,8 +30,14 @@ class Group(dpy_commands.Group):
         kwargs['cls'] = Command
         return super().command(*args, **kwargs)
 
+    def group(self, *args, **kwargs):
+        print('yesg', kwargs)
+        kwargs['cls'] = Group
 
+        def decorator(func):
+            kwargs.setdefault('parent', self)
+            result = group(*args, **kwargs)(func)
+            self.add_command(result)
+            return result
 
-
-
-
+        return decorator
