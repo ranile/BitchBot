@@ -6,10 +6,9 @@ import traceback
 import aiohttp
 import discord
 from discord.ext import commands
-from util import commands as bloody_commands
+from util import commands as bloody_commands, database
 import keys
 from jishaku.paginators import WrappedPaginator
-from database import database
 import util
 import random
 import hypercorn
