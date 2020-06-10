@@ -1,19 +1,19 @@
 import logging
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 
 from resources import Prefix
-from util import checks
+from util import checks, commands
 
 logger = logging.getLogger('BitchBot' + __name__)
 
 
 # noinspection PyIncorrectDocstring
-class Config(commands.Cog):
+class Config(dpy_commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
+    @dpy_commands.guild_only()
     async def prefix(self, ctx):
         """
         Command group for prefix related command
@@ -24,7 +24,7 @@ class Config(commands.Cog):
 
     @prefix.command(name='set', wants_db=True)
     @checks.can_config()
-    @commands.guild_only()
+    @dpy_commands.guild_only()
     async def set_prefix(self, ctx, prefix):
         """
         Add a prefix for this server
@@ -38,14 +38,14 @@ class Config(commands.Cog):
         """
 
         if len(prefix) > 6:
-            raise commands.BadArgument(f"Prefix length must be less than 6, not {len(prefix)}")
+            raise dpy_commands.BadArgument(f"Prefix length must be less than 6, not {len(prefix)}")
         added = await self.bot.set_prefix(ctx.db, Prefix(guild_id=ctx.guild.id, prefix=prefix))
         await ctx.send(f'Set prefix: `{added}`\n'
                        f'Current prefixes are : {self._get_all_prefixes_presentable(ctx)}')
 
     @prefix.command(name='remove', aliases=['clear'])
     @checks.can_config()
-    @commands.guild_only()
+    @dpy_commands.guild_only()
     async def remove_prefix(self, ctx):
         """
         Removes the server's custom prefix.
