@@ -35,6 +35,16 @@ async def _prefix_pred(bot, message):
     return commands.when_mentioned_or(*prefixes)(bot, message)
 
 
+async def before_invoke(ctx: bloody_commands.Context):
+    if getattr(ctx.command, 'wants_db', False):
+        ctx.db = await ctx.bot.db.acquire()
+
+
+async def after_invoke(ctx: bloody_commands.Context):
+    if ctx.db is not None:
+        await ctx.db.close()
+
+
 # noinspection PyMethodMayBeStatic
 class BitchBot(commands.Bot):
     def __init__(self, **kwargs):
@@ -66,6 +76,9 @@ class BitchBot(commands.Bot):
         self.log_webhook = discord.Webhook.from_url(keys.logWebhook,
                                                     adapter=discord.AsyncWebhookAdapter(self.clientSession))
 
+        self._before_invoke = before_invoke
+        self._after_invoke = after_invoke
+
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
         discord_handler = util.DiscordLoggingHandler(self.loop, self.clientSession)
@@ -73,7 +86,7 @@ class BitchBot(commands.Bot):
         dpy_logger = logging.getLogger('discord')
         dpy_logger.setLevel(logging.INFO)
         dpy_logger.addHandler(file_handler)
-        dpy_logger.addHandler(discord_handler)
+        # dpy_logger.addHandler(discord_handler)
 
         bitch_bot_logger.addHandler(discord_handler)
 
@@ -113,7 +126,7 @@ class BitchBot(commands.Bot):
         async with self.db.acquire() as db:
             prefixes = await ConfigService.get_all_prefixes(db)
         for i in prefixes:
-            await self.set_prefix(i, should_insert=False)
+            await self.set_prefix(db=None, prefix=i, should_insert=False)
 
         async with self.db.acquire() as db:
             blacklist = await ConfigService.get_blacklisted_users(db)
@@ -185,12 +198,7 @@ class BitchBot(commands.Bot):
 
                 return
 
-        if hasattr(ctx.command, 'wants_db') and ctx.command.wants_db:
-            async with self.db.acquire() as con:
-                ctx.db = con
-                await self.invoke(ctx)
-        else:
-            await self.invoke(ctx)
+        await self.invoke(ctx)
 
     async def on_ready(self):
         print(f"{self.user.name} is running")
