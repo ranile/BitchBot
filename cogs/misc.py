@@ -8,7 +8,6 @@ import re
 import string
 
 from discord.ext import commands as dpy_commands
-from TextToOwO.owo import text_to_owo
 from keys import logWebhook
 import util
 from util import converters, checks, commands
@@ -297,9 +296,9 @@ class Miscellaneous(dpy_commands.Cog):
         Args:
             message: A message you want to owoize
         """
-        owoized = text_to_owo(message)
-        sent = await ctx.send(owoized)
-        await util.log(ctx, message, sent, owoized)
+        async with self.bot.clientSession.get('https://nekos.life/api/v2/owoify', params={'text': message}) as resp:
+            json = await resp.json()
+            await ctx.send(json['owo'])
 
     @commands.command(name='userinfo', aliases=['whois', 'uinfo'])
     async def user_info(self, ctx, member: Union[discord.Member, converters.FetchedUser] = None):
