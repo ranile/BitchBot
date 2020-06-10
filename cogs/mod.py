@@ -20,8 +20,6 @@ def bot_and_author_have_permissions(**perms):
 class Moderation(dpy_commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        pool = bot.db
-        self.warnings_service = WarningsService(pool)
 
     def cog_check(self, ctx):
         if ctx.guild is None:
@@ -286,7 +284,7 @@ class Moderation(dpy_commands.Cog):
             guild_id=ctx.guild.id
         )
 
-        inserted = await self.warnings_service.insert(warning)
+        inserted = await WarningsService.insert(ctx.db, warning)
 
         embed = discord.Embed(title=f"User was warned from {ctx.guild.name}", color=funs.random_discord_color(),
                               timestamp=inserted.warned_at)
@@ -315,7 +313,7 @@ class Moderation(dpy_commands.Cog):
         """
         if warnings_for is not None:
             warnings_for = warnings_for.id
-        warnings = await self.warnings_service.get_all(ctx.guild.id, warnings_for)
+        warnings = await WarningsService.get_all(ctx.db, ctx.guild.id, warnings_for)
         pages = commands.Paginator(prefix='```md', max_size=1980)
         index = 1
         sorted_warnings = sorted(warnings, key=lambda x: x.id)
