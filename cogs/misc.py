@@ -7,11 +7,11 @@ import discord
 import re
 import string
 
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 from TextToOwO.owo import text_to_owo
 from keys import logWebhook
 import util
-from util import converters, checks
+from util import converters, checks, commands
 from util.consts import EMOJI_CHARS, SOMEONE_EMOJIS, SUPPORT_SERVER_INVITE
 
 
@@ -24,7 +24,7 @@ def f_to_c(f: float) -> float:
 
 
 # noinspection SpellCheckingInspection,PyPep8Naming,PyIncorrectDocstring
-class Miscellaneous(commands.Cog):
+class Miscellaneous(dpy_commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -246,7 +246,7 @@ class Miscellaneous(commands.Cog):
         """
 
         if len(answers) > len(EMOJI_CHARS):
-            raise commands.BadArgument('Answers must be 26 or less')
+            raise dpy_commands.BadArgument('Answers must be 26 or less')
 
         desc = []
         letter_emoji = list(EMOJI_CHARS.values())
@@ -381,9 +381,9 @@ class Miscellaneous(commands.Cog):
                 color=util.random_discord_color()
             ).add_field(name="Need help? Have any ideas for the bot? Want to report a bug?",
                         value=f"[Join our support server]({SUPPORT_SERVER_INVITE})")
-                .set_author(name=ctx.me, icon_url=ctx.me.avatar_url_as(format='png'))
-                .set_footer(text=f'Rquested by {ctx.author.display_name}',
-                            icon_url=ctx.author.avatar_url_as(format='png'))
+            .set_author(name=ctx.me, icon_url=ctx.me.avatar_url_as(format='png'))
+            .set_footer(text=f'Rquested by {ctx.author.display_name}',
+                        icon_url=ctx.author.avatar_url_as(format='png'))
         )
 
     # noinspection PyUnresolvedReferences
