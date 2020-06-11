@@ -6,7 +6,7 @@ import traceback
 import aiohttp
 import discord
 from discord.ext import commands
-from util import commands as bloody_commands, database
+from util import commands as bloody_commands, database, lavalink
 import keys
 from jishaku.paginators import WrappedPaginator
 import util
@@ -81,7 +81,8 @@ class BitchBot(commands.Bot):
         # socket stats props
         self.socket_stats = {}
 
-        self.lines_of_code_count = self._count_lines_of_code()
+        # self.lines_of_code_count = self._count_lines_of_code()
+        self.lines_of_code_count = 0
 
         self.prefixes = {}
 
@@ -146,6 +147,10 @@ class BitchBot(commands.Bot):
             blacklist = await ConfigService.get_blacklisted_users(db)
         for blocked_user in blacklist:
             self.blacklist[blocked_user.user_id] = blocked_user
+
+        self.lavalink = lavalink.Client(keys.client_id)
+        self.lavalink.add_node('127.0.0.1', 2333, keys.lavalink_pass, 'eu', 'debug-node')
+        self.add_listener(self.lavalink.voice_update_handler, 'on_socket_response')
 
         await super().start(*args, **kwargs)
 

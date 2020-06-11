@@ -6,5 +6,5 @@ git+https://github.com/Rapptz/discord-ext-menus
 Quart
 dateparser
 pendulum
-pyjwt
-lavalink
+pyjwt/tree/dev/tree/dev
+git+https://github.com/Devoxin/Lavalink.py.git@dev#egg=lavalink
