@@ -53,7 +53,7 @@ class BlacklistedUserInvoked(commands.CheckFailure):
 
 async def global_check(ctx: bloody_commands.Context):
     # noinspection PyUnresolvedReferences
-    if ctx.message.author.id in ctx.bot.blacklist or (await ctx.bot.is_owner(ctx.author)):
+    if ctx.message.author.id in ctx.bot.blacklist:
         raise BlacklistedUserInvoked()
     return True
 

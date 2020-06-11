@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 import jishaku
 from jishaku.codeblocks import codeblock_converter
 from jishaku.cog import JishakuBase
@@ -12,6 +12,7 @@ import humanize
 import sys
 
 from BitchBot import BitchBot
+from util import commands
 
 
 def stats_embed(bot):
@@ -65,7 +66,7 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=sudo, name='
         if '.delete(' in ctx.message.content:
             msg = "Bruh... You don't trust yourself with `.delete(` in an eval"
             await ctx.send(msg)
-            raise commands.BadArgument(msg)
+            raise dpy_commands.BadArgument(msg)
         await super().jsk_python.callback(self, ctx, argument=argument)
 
     @commands.command(name="shutdown", aliases=["logout", "exit"])
@@ -110,12 +111,12 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=sudo, name='
         await self.bot.refresh_prefixes(ctx.db)
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 
-    @commands.command(aliases=['blacklist'])
+    @commands.command(aliases=['blacklist'], wants_db=True)
     async def block(self, ctx, user: discord.User, *, reason=None):
         await self.bot.blacklist_user(ctx.db, user, reason=reason)
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 
-    @commands.command()
+    @commands.command(wants_db=True)
     async def unblock(self, ctx, user: discord.User):
         await self.bot.remove_from_blacklist(ctx.db, user)
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
