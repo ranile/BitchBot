@@ -47,6 +47,17 @@ async def after_invoke(ctx: bloody_commands.Context):
         await ctx.db.close()
 
 
+class BlacklistedUserInvoked(commands.CheckFailure):
+    pass
+
+
+async def global_check(ctx: bloody_commands.Context):
+    # noinspection PyUnresolvedReferences
+    if ctx.message.author.id in ctx.bot.blacklist or (await ctx.bot.is_owner(ctx.author)):
+        raise BlacklistedUserInvoked()
+    return True
+
+
 # noinspection PyMethodMayBeStatic
 class BitchBot(commands.Bot):
     def __init__(self, **kwargs):
@@ -60,7 +71,7 @@ class BitchBot(commands.Bot):
             activity=discord.Game(f"use >help or @mention me")
         )
         self.loop = self.loop or asyncio.get_event_loop()
-        self.clientSession = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession()
 
         self.quart_app = QuartWithBot(__name__, static_folder=None)
         self.quart_app.debug = keys.debug
@@ -78,14 +89,15 @@ class BitchBot(commands.Bot):
         self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1, 15.0, commands.BucketType.user)
 
         self.log_webhook = discord.Webhook.from_url(keys.logWebhook,
-                                                    adapter=discord.AsyncWebhookAdapter(self.clientSession))
+                                                    adapter=discord.AsyncWebhookAdapter(self.session))
 
         self._before_invoke = before_invoke
         self._after_invoke = after_invoke
+        self.add_check(global_check)
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
-        discord_handler = util.DiscordLoggingHandler(self.loop, self.clientSession)
+        discord_handler = util.DiscordLoggingHandler(self.loop, self.session)
 
         dpy_logger = logging.getLogger('discord')
         dpy_logger.setLevel(logging.INFO)
@@ -152,7 +164,7 @@ class BitchBot(commands.Bot):
         super().run(*args, **kwargs)
 
     async def close(self):
-        await self.clientSession.close()
+        await self.session.close()
         await self.db.close()
         await super().close()
 
@@ -185,20 +197,6 @@ class BitchBot(commands.Bot):
                     await self.send_ping_log_embed(message)  # and log the message
 
             self.dispatch('regular_human_message', message)
-        else:
-            if message.author.id in self.blacklist:  # handle blacklist
-                if message.channel.permissions_for(message.guild.me).send_messages and \
-                        not self.blacklist_message_bucket.update_rate_limit(message):
-                    blacklist = self.blacklist[message.author.id]
-                    reason = blacklist.reason if blacklist.reason is not None else "No reason provided"
-                    embed = discord.Embed(title='You have been blocked from using this bot by the bot owner',
-                                          description=f'**Reason**: {reason}',
-                                          timestamp=blacklist.blacklisted_at)
-                    embed.set_footer(text='Blocked at')
-
-                    await message.channel.send(embed=embed)
-
-                return
 
         await self.invoke(ctx)
 
@@ -218,6 +216,23 @@ class BitchBot(commands.Bot):
     async def on_command_error(self, ctx: commands.Context, exception):
         if isinstance(exception, commands.CommandNotFound):
             return
+
+        if isinstance(exception, BlacklistedUserInvoked):
+            if (ctx.message.channel.permissions_for(ctx.message.guild.me).send_messages and
+                    not self.blacklist_message_bucket.update_rate_limit(ctx.message)):
+
+                blacklist = self.blacklist[ctx.message.author.id]
+
+                embed = discord.Embed(
+                    title='You have been blocked from using this bot by the bot owner',
+                    timestamp=blacklist.blacklisted_at,
+                    color=discord.Color.red()
+                ).set_footer(text='Blocked at')
+
+                if blacklist.reason:
+                    embed.description = f'**Reason**: {blacklist.reason}'
+
+                return await ctx.send(embed=embed)
 
         allowed_mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
 

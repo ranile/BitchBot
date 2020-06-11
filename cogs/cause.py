@@ -129,7 +129,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
                f'images%2Frabbit%2Frabbitman{random.randint(1, 9)}.jpg?alt=media'
 
     async def send_counter_update(self, msg: str, username: str, pfp: typing.Optional[str]):
-        webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
+        webhook = discord.Webhook.from_url(rabbitWebhook, adapter=discord.AsyncWebhookAdapter(self.bot.session))
         await webhook.send(msg, username=username, avatar_url=pfp)
 
     async def increment_rabbit(self, db: asyncpg.Connection, message: discord.Message,

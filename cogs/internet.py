@@ -21,8 +21,8 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get("https://icanhazdadjoke.com",
-                                              headers={"Accept": "application/json"}) as res:
+        async with self.bot.session.get("https://icanhazdadjoke.com",
+                                        headers={"Accept": "application/json"}) as res:
             content = await res.json()
             await ctx.send(content['joke'])
 
@@ -36,8 +36,8 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get(f'http://reddit.com/r/{search}/new/.json',
-                                              headers={'User-agent': 'Chrome'}) as res:
+        async with self.bot.session.get(f'http://reddit.com/r/{search}/new/.json',
+                                        headers={'User-agent': 'Chrome'}) as res:
             json = await res.json()
 
             if "error" in json or json["data"]["after"] is None:
@@ -78,7 +78,7 @@ class Internet(commands.Cog):
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.clientSession.get("https://useless-facts.sameerkumar.website/api") as res:
+        async with self.bot.session.get("https://useless-facts.sameerkumar.website/api") as res:
             await ctx.send(((await res.json())['data']))
 
     @commands.command(aliases=('belikebill',))
@@ -106,8 +106,8 @@ class Internet(commands.Cog):
         search = quote(query)
         link = f"https://www.urbandictionary.com/define.php?term={search}"
 
-        async with self.bot.clientSession.get(f"http://api.urbandictionary.com/v0/define",
-                                              params={'term': query}) as res:
+        async with self.bot.session.get(f"http://api.urbandictionary.com/v0/define",
+                                        params={'term': query}) as res:
             if res.status != 200:
                 await ctx.send(f'Errorrrrr... {res.status}: {res.reason}')
                 return
@@ -153,8 +153,8 @@ class Internet(commands.Cog):
 
         await ctx.channel.trigger_typing()
         member = member or ctx.author
-        async with self.bot.clientSession.get("https://insult.mattbas.org/api/insult.json",
-                                              headers={"Accept": "application/json"}) as res:
+        async with self.bot.session.get("https://insult.mattbas.org/api/insult.json",
+                                        headers={"Accept": "application/json"}) as res:
             if res.status != 200:
                 await ctx.send("That lucky bastard... An error occurred."
                                "Mission failed bois, we'll get 'em next time")

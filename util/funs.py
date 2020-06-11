@@ -40,7 +40,7 @@ async def log(ctx, msg, sent_message, out=None):
 
     embed.add_field(name='Message', value=f'[Jump To Message]({sent_message.jump_url})')
 
-    webhook = discord.Webhook.from_url(keys.logWebhook, adapter=discord.AsyncWebhookAdapter(ctx.bot.clientSession))
+    webhook = discord.Webhook.from_url(keys.logWebhook, adapter=discord.AsyncWebhookAdapter(ctx.bot.session))
     await webhook.send(embed=embed, username=ctx.command.name)
 
 

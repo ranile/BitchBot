@@ -258,7 +258,7 @@ class Miscellaneous(dpy_commands.Cog):
             text: A message you want to owoize
         """
 
-        async with self.bot.clientSession.get('https://nekos.life/api/v2/owoify', params={'text': text}) as resp:
+        async with self.bot.session.get('https://nekos.life/api/v2/owoify', params={'text': text}) as resp:
             json = await resp.json()
             await ctx.send(json['owo'])
 

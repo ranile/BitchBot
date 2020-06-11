@@ -43,7 +43,7 @@ class Stats(dpy_commands.Cog):
 
         self.log_webhook = discord.Webhook.from_url(
             keys.logWebhook,
-            adapter=discord.AsyncWebhookAdapter(self.bot.clientSession))
+            adapter=discord.AsyncWebhookAdapter(self.bot.session))
 
         if not keys.debug:
             self.stats_loop.start()
@@ -156,7 +156,7 @@ class Stats(dpy_commands.Cog):
             return
 
         log.info("Posting stats")
-        session: aiohttp.ClientSession = self.bot.clientSession
+        session: aiohttp.ClientSession = self.bot.session
         try:
             await session.post(
                 f'https://top.gg/api/bots/{self.bot.user.id}/stats',
