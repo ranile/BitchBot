@@ -64,12 +64,11 @@ class TrackSelectionMenu(menus.Menu):
 
     async def response(self, ctx: commands.Context) -> mlavalink.Track:
         await self.start(ctx, wait=True)
-        print(self._selection.title if self._selection else 'nothing')
         return self._selection
 
 
 def alone_or_has_perms():
-    async def predicate(ctx):
+    async def predicate(ctx: commands.Context):
         if await ctx.bot.is_owner(ctx.author):
             return True
 
@@ -86,9 +85,8 @@ def alone_or_has_perms():
 
 
 def must_be_playing():
-    def pred(ctx):
-        player = ctx.bot.lavalink.player_manager.get(ctx.guild.id)
-        if player is not None and player.is_playing:
+    def pred(ctx: commands.Context):
+        if ctx.player is not None and ctx.player.is_playing:
             return True
         raise dpy_commands.CheckFailure('Music must be playing in order to use this command')
 
@@ -96,9 +94,8 @@ def must_be_playing():
 
 
 def player_must_exist():
-    def pred(ctx):
-        player = ctx.bot.lavalink.player_manager.get(ctx.guild.id)
-        if player is not None:
+    def pred(ctx: commands.Context):
+        if ctx.player is not None:
             return True
         raise dpy_commands.CheckFailure('There is no player for this server. Play some music and try again')
 
@@ -124,9 +121,10 @@ class Music(dpy_commands.Cog):
             if len(event.player.queue) == 0 and event.player.current is None:
                 await self.stop_player(int(event.player.guild_id))
                 channel = self.bot.get_channel(int(event.player.fetch('channel')))
-                # TODO check if bot is still in vc
-                await channel.send(f'Nothing has been played for the past {to_sleep} seconds '
-                                   f'so I have decided to leave the voice channel')
+                my_voice = self.bot.get_guild(channel.guild.id).me.voice
+                if my_voice and my_voice.channel:
+                    await channel.send(f'Nothing has been played for the past {to_sleep} seconds '
+                                       f'so I have decided to leave the voice channel')
 
     # noinspection PyProtectedMember
     async def connect_to(self, guild_id: int, channel_id: typing.Optional[int]):
@@ -217,8 +215,9 @@ class Music(dpy_commands.Cog):
         Args:
             query: The search query. Can also be a URL
         """
-        # Get the player for this guild from cache.
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+
+        await ctx.trigger_typing()
+
         # Remove leading and trailing <>. <> may be used to suppress embedding links in Discord.
         query = query.strip('<>')
 
@@ -228,8 +227,7 @@ class Music(dpy_commands.Cog):
             query = f'ytsearch:{query}'
 
         # Get the results for the query from Lavalink.
-        results: mlavalink.TracksResponse = await player.node.get_tracks(query)
-        print(results)
+        results: mlavalink.TracksResponse = await ctx.player.node.get_tracks(query)
 
         # noinspection PyPep8Naming
         LoadType = mlavalink.LoadType
@@ -242,7 +240,7 @@ class Music(dpy_commands.Cog):
             tracks = results.tracks
 
             for track in tracks:
-                player.add(requester=ctx.author.id, track=track.raw)
+                ctx.player.add(requester=ctx.author.id, track=track.raw)
 
             embed.title = 'Playlist Enqueued!'
             embed.description = f'{results.playlist_info.name} - {len(tracks)} tracks'
@@ -252,16 +250,15 @@ class Music(dpy_commands.Cog):
             embed.title = 'Track Enqueued'
             embed.description = f'[{track.title}]({track.uri})'
 
-            player.add(requester=ctx.author.id, track=track.raw)
+            ctx.player.add(requester=ctx.author.id, track=track.raw)
 
         elif results.load_type == LoadType.SEARCH_RESULT:
             track = await TrackSelectionMenu(tracks=results.tracks).response(ctx)
             if track is None:
                 return await ctx.send('You did not pick anything')
-            print('track', track)
             embed.title = 'Track Enqueued'
             embed.description = f'[{track.title}]({track.uri})'
-            player.add(requester=ctx.author.id, track=track.raw)
+            ctx.player.add(requester=ctx.author.id, track=track.raw)
         else:
             return  # in case shit goes down
 
@@ -269,69 +266,66 @@ class Music(dpy_commands.Cog):
 
         # We don't want to call .play() if the player is playing as that will effectively skip
         # the current track.
-        if not player.is_playing:
-            await player.play()
+        if not ctx.player.is_playing:
+            await ctx.player.play()
 
     @commands.command()
     @alone_or_has_perms()
     @must_be_playing()
     async def repeat(self, ctx: commands.Context):
         """Puts the player on repeat"""
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        player.repeat = not player.repeat
-        await ctx.send(f'Set repeat to: {player.repeat}')
+
+        ctx.player.repeat = not ctx.player.repeat
+        await ctx.send(f'Set repeat to: {ctx.player.repeat}')
 
     @commands.command()
     @alone_or_has_perms()
     @must_be_playing()
     async def pause(self, ctx: commands.Context):
         """Pause the player."""
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-
-        if player.paused:
+        if ctx.player.paused:
             return await ctx.send('Already paused!')
-        await player.set_pause(True)
+        await ctx.player.set_pause(True)
         await ctx.send('Paused!')
 
     @commands.command()
     @alone_or_has_perms()
     async def resume(self, ctx: commands.Context):
         """Resume the player from a paused state."""
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
 
-        if not player.paused:
+        if not ctx.player.paused:
             return await ctx.send('I am not currently paused!')
 
         await ctx.send('Resuming the player!')
-        await player.set_pause(False)
+        await ctx.player.set_pause(False)
 
     @commands.command()
     @alone_or_has_perms()
     @must_be_playing()
     async def skip(self, ctx: commands.Context):
         """Skip the currently playing song."""
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        await player.skip()
+
+        await ctx.player.skip()
         await ctx.send("Skipped!")
 
     @commands.command(aliases=['np', 'current', 'nowplaying'])
     @must_be_playing()
     async def now_playing(self, ctx: commands.Context):
         """Retrieve the currently playing song."""
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        current = player.current
+
+        current = ctx.player.current
         await ctx.send(embed=discord.Embed(
             title='Now playing',
             description=f'[{current.title}]({current.uri}) - {current.author}\n'
-                        f'{format_time(player.position)} / {format_time(current.duration)}'
+                        f'**Duration**: {format_time(ctx.player.position)} / {format_time(current.duration)}\n'
+                        f'**Requested by**: {ctx.guild.get_member(current.requester).display_name}'
         ))
 
     @commands.command(aliases=['q'])
     @must_be_playing()
     async def queue(self, ctx: commands.Context):
         """Retrieve information on the next 5 songs from the queue."""
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
-        upcoming = list(itertools.islice(player.queue, 0, 5))
+        upcoming = list(itertools.islice(ctx.player.queue, 0, 5))
 
         desc = []
         for song in upcoming:
@@ -360,9 +354,8 @@ class Music(dpy_commands.Cog):
     @player_must_exist()
     async def lavalink_info(self, ctx: commands.Context):
         """Retrieve various Node/Server/Player information."""
-        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
 
-        stats = player.node.stats
+        stats = ctx.player.node.stats
 
         sp = util.space
 
