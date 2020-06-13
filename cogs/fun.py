@@ -1,15 +1,38 @@
+import typing
+
 import discord
 import re
 from urllib.parse import quote
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 
 from BitchBot import BitchBot
 from util.funs import random_discord_color
-from util import BloodyMenuPages, EmbedPagesData, checks
+from util import BloodyMenuPages, EmbedPagesData, checks, commands
+
+SUB_OR_USER_EXP = re.compile(r'/?[ru]/[\w-]+', re.IGNORECASE)
+
+
+def valid_sub_or_user(arg: str) -> str:
+    match = SUB_OR_USER_EXP.fullmatch(arg)
+    if match is None:
+        raise dpy_commands.BadArgument(f'{arg} is not a valid a subreddit or username.'
+                                       'Try something like r/sub or /u/username')
+    name = match.group(0)
+    if name.startswith('/'):
+        name = name[1:]
+    if name.endswith('/'):
+        name = name[:-1]
+    return name.lower()
+
+
+def hot_or_new(arg: str) -> str:
+    if arg.lower() not in ('hot', 'new'):
+        raise dpy_commands.BadArgument(f'{arg} must be either `hot` or `new`')
+    return arg.lower()
 
 
 # noinspection PyIncorrectDocstring
-class Fun(commands.Cog):
+class Fun(dpy_commands.Cog):
     def __init__(self, bot: BitchBot):
         self.bot: BitchBot = bot
         self.is_image_regex = re.compile(r".*\.(jpg|png|gif)$")
@@ -27,16 +50,17 @@ class Fun(commands.Cog):
             await ctx.send(content['joke'])
 
     @commands.command()
-    async def reddit(self, ctx: commands.Context, *, search: str):
+    async def reddit(self, ctx: commands.Context, hot_new: typing.Optional[hot_or_new] = 'new', *,
+                     search: valid_sub_or_user):
         """
         Get a random reddit post
 
         Args:
-            search: The subreddit from which you will get the post
+            search: The sub reddit or user from where you want to get the posts
         """
 
         await ctx.channel.trigger_typing()
-        async with self.bot.session.get(f'http://reddit.com/r/{search}/new/.json',
+        async with self.bot.session.get(f'http://reddit.com/{search}/{hot_new}/.json',
                                         headers={'User-agent': 'Chrome'}) as res:
             json = await res.json()
 
@@ -82,11 +106,15 @@ class Fun(commands.Cog):
             await ctx.send(((await res.json())['data']))
 
     @commands.command(aliases=('belikebill',))
-    async def bill(self, ctx: commands.Context, *, name: str = 'Bill'):
+    async def bill(self, ctx: commands.Context, *, name: typing.Union[str, discord.Member] = 'Bill'):
         """
         Be like bill
-        """
 
+        Args:
+            name: Server member or a name to get bill for
+        """
+        if isinstance(name, discord.Member):
+            name = name.display_name
         link = f"https://belikebill.ga/billgen-API.php?default=1&name={quote(name)}"
         await ctx.send(embed=discord.Embed().set_image(url=link))
 
