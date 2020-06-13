@@ -1,7 +1,7 @@
 bot = 'Bot token'
 
 logWebhook = 'Webhook to send logs to'
-rabbitWebhook = "Placeholder so I don't risk Attribute Errors. You'll never need this"
+rabbitWebhook = "Placeholder so I don't risk AttributeErrors. You'll never need this"
 
 db = {  # postgres config
     'host': 'localhost',  # hostname where postgres is running
@@ -10,8 +10,6 @@ db = {  # postgres config
     'password': ''  # password of postgres user
 }
 
-project_id = 'GCP project ID for dialog flow'
-
 can_use_private_commands = []  # list of people who can use private commands
 
 trusted_guilds = []  # guilds where anyone can say anything through the bot
@@ -19,6 +17,13 @@ trusted_guilds = []  # guilds where anyone can say anything through the bot
 debug = True  # if this is running in a debug env
 
 client_id = 0  # bot's client id
-client_secret = ''  # bot's client secert
-redirect_uri = 'http://hostname:port/api/auth/callback'  # oauth2 redirect uri
-redirect_after_login_url = 'http://hostname:port/home'  # where to redirect after logging the user in
+
+lavalink_pass = 'youshallnotpass'  # lavalink server's password
+
+# bot list tokens for posting stats
+
+dbl_token = ''
+dbl_webhook_auth = ''
+list_my_bots_token = ''
+dbots_token = ''
+discordapps_token = ''

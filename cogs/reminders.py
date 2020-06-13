@@ -1,25 +1,23 @@
-import logging
-
 import discord
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 import textwrap
 
 import util
+from BitchBot import BitchBot
 from resources import Timer
 import pendulum
 
-from util.converters import HumanTime
+from services import TimersService
+from util import HumanTime, commands
 
-log = logging.getLogger('BitchBot' + __name__)
 
+class Reminders(dpy_commands.Cog):
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
 
-class Reminders(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    # noinspection PyIncorrectDocstring
+    # noinspection PyIncorrectDocstring,PyUnresolvedReferences
     @commands.group(invoke_without_command=True, usage='<time> <text>')
-    async def remind(self, ctx, *, time_and_text: HumanTime(other=True)):
+    async def remind(self, ctx: commands.Context, *, time_and_text: HumanTime(other=True)):
         """
         Reminds you of something after a certain amount of time.
 
@@ -45,13 +43,13 @@ class Reminders(commands.Cog):
         delta = (pendulum.instance(timer.expires_at) - pendulum.instance(ctx.message.created_at)).in_words()
         await ctx.send(f"{ctx.author.display_name} in {delta}:\n{timer.kwargs['text']}")
 
-    @remind.command(name='list', aliases=['get'])
-    async def reminders_list(self, ctx):
+    @remind.command(name='list', aliases=['get'], wants_db=True)
+    async def reminders_list(self, ctx: commands.Context):
         """
         Show 10 of your upcoming reminders
         """
 
-        fetched = await self.bot.timers.timers_service.get_where(extras={"author_id": ctx.author.id}, limit=10)
+        fetched = await TimersService.get_where(ctx.db, extras={"author_id": ctx.author.id}, limit=10)
         if len(fetched) == 0:
             return await ctx.send('No currently running reminders')
 
@@ -59,7 +57,7 @@ class Reminders(commands.Cog):
             title='Upcoming reminders',
             color=util.random_discord_color()
         )
-        embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=str(ctx.author), icon_url=str(ctx.author.avatar_url))
 
         for timer in fetched:
             text = f"{textwrap.shorten(timer.kwargs['text'], width=512)}"
@@ -70,8 +68,8 @@ class Reminders(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.Cog.listener()
-    async def on_reminder_timer_complete(self, timer):
+    @dpy_commands.Cog.listener()
+    async def on_reminder_timer_complete(self, timer: Timer):
         channel = self.bot.get_channel(timer.kwargs['channel_id'])
         member = self.bot.get_guild(timer.kwargs['guild_id']).get_member(timer.kwargs['author_id'])
         delta = (pendulum.instance(timer.expires_at) - pendulum.instance(timer.created_at)).in_words()

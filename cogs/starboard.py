@@ -1,41 +1,40 @@
-import logging
-
 import discord
-from discord.ext import commands
+import typing
+from discord.ext import commands as dpy_commands
 
+from BitchBot import BitchBot
 from services import StarboardService
 from services import ConfigService
-from util import funs, checks
+from util import funs, checks, commands, logging
 
-log = logging.getLogger('BitchBot' + __name__)
+log = logging.Logger.obtain(__name__)
 STAR = '\N{WHITE MEDIUM STAR}'
+# TODO: Redo everything
 
 
 # noinspection PyIncorrectDocstring
-class Starboard(commands.Cog):
+class Starboard(dpy_commands.Cog):
     """A starboard.
     Allow users to star a message.
     Once a message reaches a certain number of stars, it is sent to the starboard channel and saved into the database
     """
 
-    def __init__(self, bot):
-        self.config_service = ConfigService(bot.db)
-        self.bot = bot
+    def __init__(self, bot: BitchBot):
+        self.bot: BitchBot = bot
         self.already_starred = []
-        self.starboard_service = StarboardService(bot.db)
 
-    async def cog_check(self, ctx):
+    async def cog_check(self, ctx: commands.Context):
         if ctx.guild is None:
-            raise commands.NoPrivateMessage("Starboard can't be used in DMs")
+            raise dpy_commands.NoPrivateMessage("Starboard can't be used in DMs")
         if ctx.command.name == self.setup.name:
             return True
-        config = await self.config_service.get(ctx.guild.id)
+        config = await ConfigService.get(ctx.db, ctx.guild.id)
         if config is None or config.starboard_channel is None:
-            raise commands.CommandError('You need starboard enabled')
+            raise dpy_commands.CommandError('You need starboard enabled')
         return True
 
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    @dpy_commands.Cog.listener()
+    async def on_reaction_add(self, reaction: discord.Reaction, user: typing.Union[discord.Member, discord.User]):
         if str(reaction) != STAR:
             return
 
@@ -44,11 +43,12 @@ class Starboard(commands.Cog):
 
         msg = reaction.message
 
-        config = await self.config_service.get(msg.guild.id)
-        if config is None or config.starboard_channel is None:
-            return
+        async with self.bot.db.acquire() as db:
+            config = await ConfigService.get(db, msg.guild.id)
+            if config is None or config.starboard_channel is None:
+                return
 
-        above_limit, starred = await self.starboard_service.star(reaction)
+            above_limit, starred = await StarboardService.star(db, reaction)
 
         if above_limit and msg.id not in self.already_starred:
             author = msg.author
@@ -58,7 +58,7 @@ class Starboard(commands.Cog):
                 description=f'**Channel**:{msg.channel.mention}\n\n'
                             f'{starred.message_content}')
 
-            embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+            embed.set_author(name=author.display_name, icon_url=str(author.avatar_url))
             embed.description = starred.message_content
             embed.add_field(name='Original', value=f'[Link]({reaction.message.jump_url})')
             if starred.attachment:
@@ -68,37 +68,37 @@ class Starboard(commands.Cog):
 
             await msg.guild.get_channel(config.starboard_channel).send(embed=embed)
 
-    @commands.Cog.listener()
-    async def on_reaction_remove(self, reaction, user):
+    @dpy_commands.Cog.listener()
+    async def on_reaction_remove(self, reaction: discord.Reaction, user: typing.Union[discord.Member, discord.User]):
         if str(reaction) != STAR:
             return
 
         if user.bot:
             return
+        async with self.bot.db.acquire() as db:
+            config = await ConfigService.get(db, reaction.message.guild.id)
+            if config is None or config.starboard_channel is None:
+                await log.debug(f'Skipping starboard star remove for {reaction.message.id} in {reaction.message.guild.id}')
+                return
 
-        config = await self.config_service.get(reaction.message.guild.id)
-        if config is None or config.starboard_channel is None:
-            log.debug(f'Skipping starboard star remove for {reaction.message.id} in {reaction.message.guild.id}')
-            return
+            await StarboardService.unstar(db, reaction)
 
-        await self.starboard_service.unstar(reaction)
-
-    @commands.group(invoke_without_command=True)
-    async def starboard(self, ctx, message):
+    @commands.group(invoke_without_command=True, wants_db=True)
+    async def starboard(self, ctx: commands.Context, message: int):
         """
         Shows a message from starboard
 
         Args:
              message: The message ID of the message you wanna pull from starboard
         """
-        star = await self.starboard_service.get(message, ctx.guild.id)
+        star = await StarboardService.get(ctx.db, message, ctx.guild.id)
 
         if star is None:
             return await ctx.send('Not found')
 
         message = await ctx.guild.get_channel(star.channel).fetch_message(star.message_id)
         embed = discord.Embed(color=funs.random_discord_color())
-        embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+        embed.set_author(name=message.author.display_name, icon_url=str(message.author.avatar_url))
         embed.description = star.message_content
         embed.add_field(name='Original', value=f'[Link]({message.jump_url})')
         if star.attachment:
@@ -108,12 +108,12 @@ class Starboard(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @starboard.group(invoke_without_command=True)
-    async def stats(self, ctx):
+    @starboard.group(invoke_without_command=True, wants_db=True)
+    async def stats(self, ctx: commands.Context):
         """Top 10 people whose messages are starred in a server"""
 
-        top = await self.starboard_service.guild_top_stats(ctx.guild)
-        paginator = commands.Paginator(prefix='```md')
+        top = await StarboardService.guild_top_stats(ctx.db, ctx.guild)
+        paginator = dpy_commands.Paginator(prefix='```md')
         length = 0
         for starred in top:
             member = starred["author"]
@@ -127,7 +127,7 @@ class Starboard(commands.Cog):
 
         paginator.add_line()
         paginator.add_line('-' * length)
-        me = await self.starboard_service.my_stats(ctx)
+        me = await StarboardService.members_stats(ctx.db, ctx.guild.id, ctx.author.id)
         if me is not None:
             paginator.add_line(f'You: {me["count"]}')
         else:
@@ -136,9 +136,9 @@ class Starboard(commands.Cog):
         for page in paginator.pages:
             await ctx.send(page)
 
-    @starboard.command()
+    @starboard.command(wants_db=True)
     @checks.can_config()
-    async def setup(self, ctx, channel: discord.TextChannel, limit=2):
+    async def setup(self, ctx: commands.Context, channel: discord.TextChannel, limit: int = 2):
         """
         Setup starboard
 
@@ -146,18 +146,18 @@ class Starboard(commands.Cog):
             channel: The channel you want to use for starboard
             limit: The number of stars required to put a message on the starboard
         """
-        inserted = await self.config_service.setup_starboard(ctx.guild.id, channel.id, limit)
+        inserted = await ConfigService.setup_starboard(ctx.db, ctx.guild.id, channel.id, limit)
 
         await ctx.send(f'Inserted {self.bot.get_channel(inserted.starboard_channel).mention} as starboard channel')
 
-    @starboard.command()
+    @starboard.command(wants_db=True)
     @checks.can_config()
-    async def delete(self, ctx):
+    async def delete(self, ctx: commands.Context):
         """Deletes the current starboard config
         The starboard channel along with all of its messages is **not** deleted
         """
 
-        deleted = await self.config_service.delete_starboard(ctx.guild.id)
+        deleted = await ConfigService.delete_starboard(ctx.db, ctx.guild.id)
         if deleted is None:
             return await ctx.send('This server was never configured')
         await ctx.send('Starboard deleted')

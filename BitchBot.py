@@ -6,23 +6,18 @@ import traceback
 import aiohttp
 import discord
 from discord.ext import commands
-from util import commands as bloody_commands
+from util import commands as bloody_commands, database, lavalink
 import keys
 from jishaku.paginators import WrappedPaginator
-from database import database
 import util
 import random
 import hypercorn
 import os
 
-from services import ActivityService, ConfigService
+from services import ConfigService
+from web.backend.utils.quart_with_bot import QuartWithBot
 
-bitch_bot_logger = logging.getLogger('BitchBot')
-bitch_bot_logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-fmt = '%(name)s: %(levelname)s: %(asctime)s: %(message)s'
-file_handler.setFormatter(logging.Formatter(fmt))
-bitch_bot_logger.addHandler(file_handler)
+logger = util.Logger.obtain(__name__)
 
 
 async def _prefix_pred(bot, message):
@@ -35,6 +30,29 @@ async def _prefix_pred(bot, message):
     return commands.when_mentioned_or(*prefixes)(bot, message)
 
 
+async def before_invoke(ctx: bloody_commands.Context):
+    if getattr(ctx.command, 'wants_db', False):
+        # Thanks to circular imports
+        # noinspection PyUnresolvedReferences
+        ctx.db = await ctx.bot.db.acquire()
+
+
+async def after_invoke(ctx: bloody_commands.Context):
+    if ctx.db is not None:
+        await ctx.db.close()
+
+
+class BlacklistedUserInvoked(commands.CheckFailure):
+    pass
+
+
+async def global_check(ctx: bloody_commands.Context):
+    # noinspection PyUnresolvedReferences
+    if ctx.message.author.id in ctx.bot.blacklist:
+        raise BlacklistedUserInvoked()
+    return True
+
+
 # noinspection PyMethodMayBeStatic
 class BitchBot(commands.Bot):
     def __init__(self, **kwargs):
@@ -43,12 +61,14 @@ class BitchBot(commands.Bot):
             help_command=util.BloodyHelpCommand(),
             owner_id=529535587728752644,
             case_insensitive=True,
-            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True)
+            allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
+            status=discord.Status.online,
+            activity=discord.Game(f"use >help or @mention me")
         )
         self.loop = self.loop or asyncio.get_event_loop()
-        self.clientSession = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession()
 
-        self.quart_app = util.QuartWithBot(__name__, static_folder=None)
+        self.quart_app = QuartWithBot(__name__, static_folder=None)
         self.quart_app.debug = keys.debug
         # Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')
@@ -56,37 +76,51 @@ class BitchBot(commands.Bot):
         # socket stats props
         self.socket_stats = {}
 
-        self.lines_of_code_count = self._count_lines_of_code()
+        # self.lines_of_code_count = self._count_lines_of_code()
+        self.lines_of_code_count = 0
 
         self.prefixes = {}
 
         self.blacklist = {}
-        self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1.0, 15.0, commands.BucketType.user)
+        self.blacklist_message_bucket = commands.CooldownMapping.from_cooldown(1, 15.0, commands.BucketType.user)
 
         self.log_webhook = discord.Webhook.from_url(keys.logWebhook,
-                                                    adapter=discord.AsyncWebhookAdapter(self.clientSession))
+                                                    adapter=discord.AsyncWebhookAdapter(self.session))
+
+        self._before_invoke = before_invoke
+        self._after_invoke = after_invoke
+        self.add_check(global_check)
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
-        discord_handler = util.DiscordLoggingHandler(self.loop, self.clientSession)
+        Levels = util.Levels
+        util.Logger.init(self.log_webhook, base_level=Levels.INFO, colors={
+            Levels.DEBUG: 0x000001,
+            Levels.INFO: 0xFFFFFE,
+            Levels.WARN: discord.Color.dark_orange(),
+            Levels.ERROR: discord.Color.red(),
+            Levels.CRITICAL: discord.Color.dark_red(),
+        })
+        discord_handler = util.DiscordLoggingHandler(self.loop, self.session)
+
+        file_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+        file_handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 
         dpy_logger = logging.getLogger('discord')
         dpy_logger.setLevel(logging.INFO)
         dpy_logger.addHandler(file_handler)
         dpy_logger.addHandler(discord_handler)
 
-        bitch_bot_logger.addHandler(discord_handler)
-
-    async def set_prefix(self, prefix, *, should_insert=True):
+    async def set_prefix(self, db, prefix, *, should_insert=True):
         if should_insert:
-            prefix = await self.config_service.insert_prefix(prefix)
+            prefix = await ConfigService.insert_prefix(db, prefix)
 
         self.prefixes[prefix.guild_id] = str(prefix)
 
         return prefix
 
-    async def clear_custom_prefix(self, guild_id):
-        await self.config_service.delete_prefix(guild_id)
+    async def clear_custom_prefix(self, db, guild_id):
+        await ConfigService.delete_prefix(db, guild_id)
         del self.prefixes[guild_id]
 
     # noinspection PyAttributeOutsideInit
@@ -98,26 +132,29 @@ class BitchBot(commands.Bot):
 
         self.load_extension('util.timers')
 
-        self.activity_service = ActivityService(self.db)
-        self.config_service = ConfigService(self.db)
-
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
-                bitch_bot_logger.debug(f'Successfully loaded extension {cog_name}')
+                await logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
-                bitch_bot_logger.exception(f'Failed to load loaded extension {cog_name}', e)
+                await logger.error(f'Failed to load loaded extension {cog_name}\nError: {e}')
 
         for i in ('spa_serve', 'routes', 'commands', 'webhooks'):
             self.load_extension(f'web.backend.routes.{i}')
 
-        prefixes = await self.config_service.get_all_prefixes()
+        async with self.db.acquire() as db:
+            prefixes = await ConfigService.get_all_prefixes(db)
         for i in prefixes:
-            await self.set_prefix(i, should_insert=False)
+            await self.set_prefix(db=None, prefix=i, should_insert=False)
 
-        blacklist = await self.config_service.get_blacklisted_users()
+        async with self.db.acquire() as db:
+            blacklist = await ConfigService.get_blacklisted_users(db)
         for blocked_user in blacklist:
             self.blacklist[blocked_user.user_id] = blocked_user
+
+        self.lavalink = lavalink.Client(keys.client_id)
+        self.lavalink.add_node('127.0.0.1', 2333, keys.lavalink_pass, 'eu', 'debug-node')
+        self.add_listener(self.lavalink.voice_update_handler, 'on_socket_response')
 
         await super().start(*args, **kwargs)
 
@@ -136,7 +173,7 @@ class BitchBot(commands.Bot):
         super().run(*args, **kwargs)
 
     async def close(self):
-        await self.clientSession.close()
+        await self.session.close()
         await self.db.close()
         await super().close()
 
@@ -157,7 +194,7 @@ class BitchBot(commands.Bot):
         if message.author.bot:  # don't do anything if the author is a bot
             return
 
-        ctx = await self.get_context(message, cls=bloody_commands.BloodyContext)
+        ctx = await self.get_context(message, cls=bloody_commands.Context)
 
         if not ctx.valid:
             if self.user.mentioned_in(message) \
@@ -169,35 +206,12 @@ class BitchBot(commands.Bot):
                     await self.send_ping_log_embed(message)  # and log the message
 
             self.dispatch('regular_human_message', message)
-        else:
-            if message.author.id in self.blacklist:  # handle blacklist
-                if message.channel.permissions_for(message.guild.me).send_messages and \
-                        not self.blacklist_message_bucket.update_rate_limit(message):
-                    blacklist = self.blacklist[message.author.id]
-                    reason = blacklist.reason if blacklist.reason is not None else "No reason provided"
-                    embed = discord.Embed(title='You have been blocked from using this bot by the bot owner',
-                                          description=f'**Reason**: {reason}',
-                                          timestamp=blacklist.blacklisted_at)
-                    embed.set_footer(text='Blocked at')
 
-                    await message.channel.send(embed=embed)
-
-                return
-
-        if hasattr(ctx.command, 'wants_db') and ctx.command.wants_db:
-            async with self.db.acquire() as con:
-                ctx.db = con
-                await self.invoke(ctx)
-        else:
-            await self.invoke(ctx)
+        await self.invoke(ctx)
 
     async def on_ready(self):
         print(f"{self.user.name} is running")
         print("-" * len(self.user.name + " is running"))
-        await self.change_presence(
-            status=discord.Status.online,
-            activity=discord.Game(f"use >help or @mention me")
-        )
 
     async def on_socket_response(self, msg):
         event = msg['t']
@@ -212,20 +226,35 @@ class BitchBot(commands.Bot):
         if isinstance(exception, commands.CommandNotFound):
             return
 
+        if isinstance(exception, BlacklistedUserInvoked):
+            if (ctx.message.channel.permissions_for(ctx.message.guild.me).send_messages and
+                    not self.blacklist_message_bucket.update_rate_limit(ctx.message)):
+
+                blacklist = self.blacklist[ctx.message.author.id]
+
+                embed = discord.Embed(
+                    title='You have been blocked from using this bot by the bot owner',
+                    timestamp=blacklist.blacklisted_at,
+                    color=discord.Color.red()
+                ).set_footer(text='Blocked at')
+
+                if blacklist.reason:
+                    embed.description = f'**Reason**: {blacklist.reason}'
+
+                return await ctx.send(embed=embed)
+
         allowed_mentions = discord.AllowedMentions(everyone=False, roles=False, users=True)
 
         async def send(msg):
             await ctx.send(
                 embed=discord.Embed(
                     description=f'{str(msg)}\n'
-                                f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info or'
+                                f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info or '
                                 f'join the [support server]({util.SUPPORT_SERVER_INVITE}) for help',
                     color=discord.Color.red()),
                 allowed_mentions=allowed_mentions)
 
-        if isinstance(exception, commands.CheckFailure):
-            return await send(exception)
-        elif isinstance(exception, commands.UserInputError):
+        if isinstance(exception, (commands.CheckFailure, commands.UserInputError, commands.MaxConcurrencyReached)):
             return await send(exception)
 
         exception = getattr(exception, 'original', exception)
@@ -250,7 +279,7 @@ class BitchBot(commands.Bot):
                             f'{sp(2)}**Name**: {ctx.guild.name}\n'
                             f'{sp(2)}**ID**: {ctx.guild.id}\n'
                             f'{sp(2)}**Owner in guild**: {ctx.guild.get_member(self.owner_id) is not None}\n'
-                            f'**Traceback**: {tb}',
+                            f'**Traceback**: \n```py\n{tb}```',
                 color=discord.Color.red()
             )
 
@@ -321,16 +350,16 @@ class BitchBot(commands.Bot):
     def refresh_loc_count(self):
         self.lines_of_code_count = self._count_lines_of_code()
 
-    async def refresh_prefixes(self):
+    async def refresh_prefixes(self, db):
         self.prefixes.clear()
-        prefixes = await self.config_service.get_all_prefixes()
+        prefixes = await ConfigService.get_all_prefixes(db)
         for i in prefixes:
-            await self.set_prefix(i, should_insert=False)
+            await self.set_prefix(db=None, prefix=i, should_insert=False)
 
-    async def blacklist_user(self, user, *, reason=None):
-        blacklisted = await self.config_service.blacklist_user(user.id, reason=reason)
+    async def blacklist_user(self, db, user, *, reason=None):
+        blacklisted = await ConfigService.blacklist_user(db, user.id, reason=reason)
         self.blacklist[blacklisted.user_id] = blacklisted
 
-    async def remove_from_blacklist(self, user):
-        await self.config_service.remove_user_from_blacklist(user.id)
+    async def remove_from_blacklist(self, db, user):
+        await ConfigService.remove_user_from_blacklist(db, user.id)
         del self.blacklist[user.id]

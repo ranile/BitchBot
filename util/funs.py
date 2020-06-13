@@ -4,7 +4,6 @@ from random import randint
 from typing import Union
 import discord
 from quart import session
-from requests_oauthlib import OAuth2Session
 
 import keys
 from .consts import *
@@ -41,7 +40,7 @@ async def log(ctx, msg, sent_message, out=None):
 
     embed.add_field(name='Message', value=f'[Jump To Message]({sent_message.jump_url})')
 
-    webhook = discord.Webhook.from_url(keys.logWebhook, adapter=discord.AsyncWebhookAdapter(ctx.bot.clientSession))
+    webhook = discord.Webhook.from_url(keys.logWebhook, adapter=discord.AsyncWebhookAdapter(ctx.bot.session))
     await webhook.send(embed=embed, username=ctx.command.name)
 
 
@@ -64,23 +63,6 @@ async def fetch_user_from_session(_session):
 
 def token_updater(token):
     session['oauth2_token'] = token
-
-
-def make_oauth_session(token=None, state=None, scopes=None):
-    return OAuth2Session(
-        client_id=keys.client_id,
-        token=token,
-        state=state,
-        scope=scopes,
-        redirect_uri=keys.redirect_uri,
-        auto_refresh_kwargs={
-            'client_id': keys.client_id,
-            'client_secret': keys.redirect_uri,
-        },
-        auto_refresh_url=TOKEN_URL,
-        token_updater=token_updater,
-    )
-
 
 def space(count=4):
     return f'{ZWS} ' * count

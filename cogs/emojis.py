@@ -1,11 +1,11 @@
 import random
 
 import discord
-from discord.ext import commands
+from discord.ext import commands as dpy_commands
 
 import keys
 from services import EmojiService
-from util import funs, BloodyMenuPages, EmbedPagesData
+from util import funs, BloodyMenuPages, EmbedPagesData, commands
 
 
 def chunks(lst, n):
@@ -19,18 +19,18 @@ def arg_or_1(arg: str):
 
 
 # noinspection PyIncorrectDocstring
-class Emojis(commands.Cog):
+class Emojis(dpy_commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.safe_emojis = []
-        self.emoji_service = EmojiService(bot.db)
 
         self.bot.loop.create_task(self.fetch_safe_emojis())
 
     async def fetch_safe_emojis(self):
-        self.safe_emojis = await self.emoji_service.fetch_all_safe_emojis()
+        async with self.bot.db.acquire() as db:
+            self.safe_emojis = await EmojiService.fetch_all_safe_emojis(db)
 
-    def safety_check(self, ctx):
+    def safety_check(self, ctx: commands.Context):
         if ctx.author.id == self.bot.owner_id:
             return True
 
@@ -43,17 +43,19 @@ class Emojis(commands.Cog):
         if ctx.guild.id in keys.trusted_guilds:
             return True
 
-    def ensure_safe_emojis(self, ctx, emojis):
+    def ensure_safe_emojis(self, ctx: commands.Context, emojis):
         if self.safety_check(ctx):
             return True
 
         for emoji in emojis:
             if emoji.id not in self.safe_emojis:
-                raise commands.CheckFailure(
+                raise dpy_commands.CheckFailure(
                     f"Channel '{ctx.channel}' needs to be NSFW in order to use emoji '{emoji.name}'.")
 
+    # For some reason, greedy fucks up
+    # noinspection PyUnresolvedReferences
     @commands.group(aliases=["e"], invoke_without_command=True)
-    async def emoji(self, ctx, emojis: commands.Greedy[discord.Emoji], amount: arg_or_1 = 1):
+    async def emoji(self, ctx: commands.Context, emojis: dpy_commands.Greedy[discord.Emoji], amount: arg_or_1 = 1):
         """Send any number of the emoji given by 'emojis'
 
         Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
@@ -81,7 +83,7 @@ class Emojis(commands.Cog):
         await ctx.message.delete(delay=2)
 
     @emoji.command(aliases=["emojiurl", "l"])
-    async def link(self, ctx, emoji: discord.Emoji):
+    async def link(self, ctx: commands.Context, emoji: discord.Emoji):
         """Send link of any one of the emoji given by 'emojis' command
 
         Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
@@ -91,11 +93,11 @@ class Emojis(commands.Cog):
             emoji: The emoji's name to link
         """
         self.ensure_safe_emojis(ctx, [emoji])
-        await ctx.send(emoji.url)
+        await ctx.send(str(emoji.url))
         await ctx.message.delete(delay=2)
 
     @emoji.command()
-    async def list(self, ctx):
+    async def list(self, ctx: commands.Context):
         """
         Shows the emojis that can be sent by 'emoji' command
 
@@ -131,7 +133,7 @@ class Emojis(commands.Cog):
         await pages.start(ctx)
 
     @emoji.command(aliases=['em'])
-    async def embed(self, ctx, emoji: discord.Emoji):
+    async def embed(self, ctx: commands.Context, emoji: discord.Emoji):
         """
         Send embed of any one of the emoji given by 'emojis' command
 
@@ -148,7 +150,7 @@ class Emojis(commands.Cog):
         await ctx.message.delete(delay=2)
 
     @emoji.command()
-    async def react(self, ctx, message: discord.Message, emoji: discord.Emoji):
+    async def react(self, ctx: commands.Context, message: discord.Message, emoji: discord.Emoji):
         """Make the bot react to a message with the given emoji
 
         Only emojis that has been marked safe by bot admins can be used in non-NSFW channels.
@@ -161,10 +163,10 @@ class Emojis(commands.Cog):
         self.ensure_safe_emojis(ctx, [emoji])
         await message.add_reaction(emoji)
 
-    @emoji.command(aliases=['marksafe', 'ms'], hidden=True)
-    @commands.check(lambda ctx: ctx.author.id in keys.can_use_private_commands)
+    @emoji.command(aliases=['marksafe', 'ms'], hidden=True, wants_db=True)
+    @dpy_commands.check(lambda ctx: ctx.author.id in keys.can_use_private_commands)
     async def mark_safe(self, ctx, emoji: discord.Emoji):
-        await self.emoji_service.mark_safe(emoji.id, ctx.author.id)
+        await EmojiService.mark_safe(ctx.db, emoji.id, ctx.author.id)
         await self.fetch_safe_emojis()
         await ctx.send(f'\N{WHITE HEAVY CHECK MARK}')
 

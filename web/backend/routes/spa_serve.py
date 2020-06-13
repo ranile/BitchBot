@@ -1,7 +1,7 @@
-import util
+from web.backend.utils.blueprint_with_bot import BlueprintWithBot
 import quart
 
-spa_blueprint = util.BlueprintWithBot('spa_blueprint', __name__, static_folder=None)
+spa_blueprint = BlueprintWithBot('spa_blueprint', __name__, static_folder=None)
 DIR = './web/frontend/dist/bitch-bot'
 
 

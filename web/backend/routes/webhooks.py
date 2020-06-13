@@ -1,11 +1,11 @@
-import util
+from web.backend.utils.blueprint_with_bot import BlueprintWithBot
 from quart import request, abort
 import keys
 import discord
 from web.backend.models import DBLVote, VoteTypes
 from http import HTTPStatus
 
-blueprint = util.BlueprintWithBot('webhook_routes', __name__, url_prefix='/api/webhooks')
+blueprint = BlueprintWithBot('webhook_routes', __name__, url_prefix='/api/webhooks')
 
 
 async def send_log(embed):
