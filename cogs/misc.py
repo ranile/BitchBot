@@ -1,18 +1,13 @@
-import random
+import re
+import typing
 from typing import Union
 
-import asyncio
 import discord
-import re
-import string
-
-import typing
 from discord.ext import commands as dpy_commands
 
-from BitchBot import BitchBot
 import util
+from BitchBot import BitchBot
 from util import converters, checks, commands
-from util.consts import EMOJI_CHARS, SOMEONE_EMOJIS, SUPPORT_SERVER_INVITE
 
 
 def c_to_f(c: float) -> float:
@@ -60,30 +55,10 @@ class Miscellaneous(dpy_commands.Cog):
         sent = []
         for i in text:
             if re.fullmatch(r'[a-z]', i, re.IGNORECASE):
-                await msg.add_reaction(EMOJI_CHARS[str(i).lower()])
+                await msg.add_reaction(util.EMOJI_CHARS[str(i).lower()])
                 sent.append(i)
 
         await util.log(ctx, text, ctx.message, ''.join(sent))
-
-    @commands.command(hidden=True)
-    @checks.owner_only_in_non_trusted_guilds()
-    async def totogglecase(self, ctx: commands.Context, *, msg: str):
-        """
-        Convert string to toggle case
-
-        This command can only be used bot admins
-
-        Args:
-            msg: Message you want to be in toggled case
-        """
-        out = ""
-        message = str(msg)
-        for i in range(0, len(message)):
-            out += message[i].lower() if (i % 2 == 0) else message[i].upper()
-
-        sentMessage = await ctx.send(out)
-        await util.log(ctx, msg, sentMessage, out)
-        await ctx.message.delete(delay=5)
 
     @commands.command(aliases=["yell"], hidden=True)
     @checks.owner_only_in_non_trusted_guilds()
@@ -100,69 +75,6 @@ class Miscellaneous(dpy_commands.Cog):
         sentMessage = await ctx.send(out)
         await util.log(ctx, msg, sentMessage, out)
         await ctx.message.delete()
-
-    @commands.command(aliases=["wide"], hidden=True)
-    async def addspaces(self, ctx: commands.Context, msg: str, spaces: int = 3):
-        """
-        Adds spaces in between every character.
-
-        This command can only be used bot admins
-
-        Args:
-            msg: Message you want to make wide
-            spaces: optional number of spaces between characters
-        """
-
-        between = spaces * ' '
-        out = between.join(list(str(msg)))
-        sentMessage = await ctx.send(out, embed=discord.Embed().set_author(name=f'- {ctx.author.display_name}'))
-        await util.log(ctx, msg, sentMessage, out)
-        await ctx.message.delete(delay=5)
-
-    @commands.command(hidden=True)
-    async def flip(self, ctx: commands.Context, *, msg: str):
-        """
-        Converts given text to flipped unicode characters
-
-        This command can only be used bot admins
-
-        Args:
-            msg: Message you want to flip
-        """
-        FLIP_RANGES = [
-            (string.ascii_lowercase, "ɐqɔpǝɟƃɥᴉɾʞꞁɯuodbɹsʇnʌʍxʎz"),
-            (string.ascii_uppercase, "ⱯᗺƆᗡƎᖵ⅁HIᒋ⋊ꞀWNOԀꝹᴚS⊥ႶɅMX⅄Z"),
-            (string.digits, "0ІᘔƐᔭ59Ɫ86"),
-            (string.punctuation, "¡„#$%⅋,)(*+'-˙/:؛>=<¿@]\\[ᵥ‾`}|{~"),
-        ]
-
-        msgBack = ""
-        for c in list(msg):
-            for r in range(len(FLIP_RANGES)):
-                try:
-                    p = FLIP_RANGES[r][0].index(c)
-                    if not p == -1:
-                        newC = FLIP_RANGES[r][1][p]
-                        msgBack += newC
-                        break
-                except ValueError:
-                    msgBack += ' '
-                    continue
-
-        out = ' '.join(msgBack.split())
-        sentMessage = await ctx.send(out, embed=discord.Embed().set_author(name=f'- {ctx.author.display_name}'))
-        await util.log(ctx, msg, sentMessage, out)
-        await ctx.message.delete(delay=5)
-
-    @commands.command(aliases=["rick", "rickroll"])
-    async def rickroulette(self, ctx: commands.Context):
-        """
-        Rickroll bot. Lose/win
-        """
-        await ctx.channel.trigger_typing()
-        rick = "https://tenor.com/view/never-gonna-give-you-up-dont-give-never-give-up-gif-14414705"
-        await asyncio.sleep(3)
-        await ctx.send(f"Get rick rolled\n {rick}")
 
     @commands.command(aliases=["to_c"])
     async def toc(self, ctx: commands.Context, *, temp: float):
@@ -201,11 +113,11 @@ class Miscellaneous(dpy_commands.Cog):
             answers: The answers for the poll. If omitted, it will default to yes/no. Max of 10 answers are allowed
         """
 
-        if len(answers) > len(EMOJI_CHARS):
+        if len(answers) > len(util.EMOJI_CHARS):
             raise dpy_commands.BadArgument('Answers must be 26 or less')
 
         desc = []
-        letter_emoji = list(EMOJI_CHARS.values())
+        letter_emoji = list(util.EMOJI_CHARS.values())
 
         for i, answer in enumerate(answers):
             desc.append(f'{letter_emoji[i]} {answers[i]}')
@@ -249,19 +161,6 @@ class Miscellaneous(dpy_commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def owoize(self, ctx: commands.Context, *, text: str):
-        """
-        Owoizes the given text
-
-        Args:
-            text: A message you want to owoize
-        """
-
-        async with self.bot.session.get('https://nekos.life/api/v2/owoify', params={'text': text}) as resp:
-            json = await resp.json()
-            await ctx.send(json['owo'])
-
     @commands.command(name='userinfo', aliases=['whois', 'uinfo'])
     async def user_info(self, ctx: commands.Context, member: Union[discord.Member, converters.FetchedUser] = None):
         """
@@ -293,37 +192,6 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def swear(self, ctx: commands.Context, *, sentence: str):
-        """
-        Swear too much
-        Or more like fuck a sentence
-
-        Args:
-            sentence: The sentence you wanna fuck up (add swear words to)
-        """
-        new = ''
-        newsplitted = []
-        splitted = sentence.split(' ')
-        words = ['bitch', 'motherfucker', 'gay', 'fucker', 'boi', 'goddamn']
-        end_words = [', okay bitch?!', ', now shut up', ', sit down boi']
-        for x in splitted:
-            newsplitted.append(x)
-            if random.randint(0, 1):
-                newsplitted.append(random.choice(words))
-        for x in ' '.join(newsplitted):
-            if random.randint(0, 1):
-                new += x.upper()
-            else:
-                new += x.lower()
-        if random.randint(0, 8) > 5:
-            for x in random.choice(end_words):
-                if random.randint(0, 1):
-                    new += x.upper()
-                else:
-                    new += x.lower()
-        await ctx.send(new)
-
-    @commands.command()
     async def source(self, ctx: commands.Context):
         """Gives you a link to the source code"""
         await ctx.send(embed=discord.Embed(
@@ -342,7 +210,7 @@ class Miscellaneous(dpy_commands.Cog):
                 url='https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160',
                 color=util.random_discord_color()
             ).add_field(name="Need help? Have any ideas for the bot? Want to report a bug?",
-                        value=f"[Join our support server]({SUPPORT_SERVER_INVITE})")
+                        value=f"[Join our support server]({util.SUPPORT_SERVER_INVITE})")
             .set_author(name=str(ctx.me), icon_url=ctx.me.avatar_url_as(format='png'))
             .set_footer(text=f'Rquested by {ctx.author.display_name}',
                         icon_url=ctx.author.avatar_url_as(format='png'))
@@ -368,23 +236,6 @@ class Miscellaneous(dpy_commands.Cog):
             await ctx.send(f'Time: {repr(time)}\n'
                            f'Other argument: {time_and_arg.other}\n'
                            f'Delta: {(time - pendulum.instance(ctx.message.created_at)).in_words()}')
-
-    @commands.command(hidden=True)
-    async def someone(self, ctx: commands.Context, *, text: str):
-        """
-        Repeats msg but with a random member's name after {prefix}someone
-
-        Example:
-            `{prefix}someone isn't cool
-
-        Args:
-            text: The text to be repeated
-        """
-
-        emote = random.choice(SOMEONE_EMOJIS)
-        user = random.choice(ctx.guild.members).display_name
-        response = f'@someone {emote} ***({user})*** {text}'
-        await ctx.send(response)
 
 
 def setup(bot):
