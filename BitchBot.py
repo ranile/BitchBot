@@ -250,9 +250,7 @@ class BitchBot(commands.Bot):
                     color=discord.Color.red()),
                 allowed_mentions=allowed_mentions)
 
-        if isinstance(exception, commands.CheckFailure):
-            return await send(exception)
-        elif isinstance(exception, commands.UserInputError):
+        if isinstance(exception, (commands.CheckFailure, commands.UserInputError, commands.MaxConcurrencyReached)):
             return await send(exception)
 
         exception = getattr(exception, 'original', exception)

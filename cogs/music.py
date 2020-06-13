@@ -207,7 +207,7 @@ class Music(dpy_commands.Cog):
         await ctx.send(f'Connected to **{channel}**')
 
     @commands.command()
-    # @dpy_commands.max_concurrency(1, dpy_commands.BucketType.guild) TODO
+    @dpy_commands.max_concurrency(1, dpy_commands.BucketType.guild)
     async def play(self, ctx: commands.Context, *, query: str):
         """
         Add a song to the queue.
