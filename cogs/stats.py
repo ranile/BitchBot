@@ -6,11 +6,10 @@ import keys
 from BitchBot import BitchBot
 from services import ActivityService
 import util
-from util import checks, commands
-import logging
+from util import checks, commands, logging
 import traceback
 
-log = logging.getLogger('BitchBot' + __name__)
+logger = logging.Logger.obtain(__name__)
 
 
 def must_have_activity_enabled():
@@ -65,8 +64,8 @@ class Stats(dpy_commands.Cog):
                 increment_by = 2
                 async with self.bot.db.acquire() as db:
                     await ActivityService.increment(db, message.author.id, message.guild.id, increment_by)
-                log.debug(f'Incremented activity of {message.author} ({message.author.id}) '
-                          f'in {message.guild} ({message.guild.id}) by {increment_by}')
+                await logger.debug(f'Incremented activity of {message.author} ({message.author.id}) '
+                                   f'in {message.guild} ({message.guild.id}) by {increment_by}')
 
     @commands.group()
     async def stats(self, ctx: commands.Context):
@@ -155,7 +154,6 @@ class Stats(dpy_commands.Cog):
         if keys.debug:
             return
 
-        log.info("Posting stats")
         session: aiohttp.ClientSession = self.bot.session
         try:
             await session.post(
@@ -180,14 +178,13 @@ class Stats(dpy_commands.Cog):
                 headers={'Authorization': keys.discordapps_token})
         except BaseException as exception:
             tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__, 5))
-            return await self.log_webhook.send(embed=discord.Embed(
+            return await logger.error(embed=discord.Embed(
                 title='An error occurred while posting stats',
                 description=tb,
                 color=discord.Color.red(),
             ))
 
-        await self.log_webhook.send('Posted stats')
-        log.info("Successfully posted stats")
+        await logger.info("Successfully posted stats")
 
     @stats_loop.before_loop
     async def before_stats_loop(self):

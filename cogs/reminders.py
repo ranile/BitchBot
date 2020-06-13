@@ -1,5 +1,3 @@
-import logging
-
 import discord
 from discord.ext import commands as dpy_commands
 import textwrap
@@ -11,8 +9,6 @@ import pendulum
 
 from services import TimersService
 from util import HumanTime, commands
-
-log = logging.getLogger('BitchBot' + __name__)
 
 
 class Reminders(dpy_commands.Cog):

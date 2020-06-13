@@ -17,12 +17,7 @@ import os
 from services import ConfigService
 from web.backend.utils.quart_with_bot import QuartWithBot
 
-bitch_bot_logger = logging.getLogger('BitchBot')
-bitch_bot_logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-fmt = '%(name)s: %(levelname)s: %(asctime)s: %(message)s'
-file_handler.setFormatter(logging.Formatter(fmt))
-bitch_bot_logger.addHandler(file_handler)
+logger = util.Logger.obtain(__name__)
 
 
 async def _prefix_pred(bot, message):
@@ -98,14 +93,23 @@ class BitchBot(commands.Bot):
 
     # noinspection PyMethodMayBeStatic,SpellCheckingInspection
     async def setup_logger(self):
+        Levels = util.Levels
+        util.Logger.init(self.log_webhook, base_level=Levels.INFO, colors={
+            Levels.DEBUG: 0x000001,
+            Levels.INFO: 0xFFFFFE,
+            Levels.WARN: discord.Color.dark_orange(),
+            Levels.ERROR: discord.Color.red(),
+            Levels.CRITICAL: discord.Color.dark_red(),
+        })
         discord_handler = util.DiscordLoggingHandler(self.loop, self.session)
+
+        file_handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+        file_handler.setFormatter(logging.Formatter('%(name)s: %(levelname)s: %(asctime)s: %(message)s'))
 
         dpy_logger = logging.getLogger('discord')
         dpy_logger.setLevel(logging.INFO)
         dpy_logger.addHandler(file_handler)
-        # dpy_logger.addHandler(discord_handler)
-
-        bitch_bot_logger.addHandler(discord_handler)
+        dpy_logger.addHandler(discord_handler)
 
     async def set_prefix(self, db, prefix, *, should_insert=True):
         if should_insert:
@@ -131,9 +135,9 @@ class BitchBot(commands.Bot):
         for cog_name in self.initial_cogs:
             try:
                 self.load_extension(f"cogs.{cog_name}")
-                bitch_bot_logger.debug(f'Successfully loaded extension {cog_name}')
+                await logger.debug(f'Successfully loaded extension {cog_name}')
             except Exception as e:
-                bitch_bot_logger.exception(f'Failed to load loaded extension {cog_name}', e)
+                await logger.error(f'Failed to load loaded extension {cog_name}\nError: {e}')
 
         for i in ('spa_serve', 'routes', 'commands', 'webhooks'):
             self.load_extension(f'web.backend.routes.{i}')

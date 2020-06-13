@@ -1,11 +1,8 @@
-import logging
 from discord.ext import commands as dpy_commands
 
 from BitchBot import BitchBot
 from resources import Prefix
 from util import checks, commands
-
-logger = logging.getLogger('BitchBot' + __name__)
 
 
 # noinspection PyIncorrectDocstring

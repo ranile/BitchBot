@@ -6,3 +6,4 @@ from .funs import *
 from . import consts
 from . import commands
 from .converters import *
+from .logging import *

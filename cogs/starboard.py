@@ -1,5 +1,3 @@
-import logging
-
 import discord
 import typing
 from discord.ext import commands as dpy_commands
@@ -7,9 +5,9 @@ from discord.ext import commands as dpy_commands
 from BitchBot import BitchBot
 from services import StarboardService
 from services import ConfigService
-from util import funs, checks, commands
+from util import funs, checks, commands, logging
 
-log = logging.getLogger('BitchBot' + __name__)
+log = logging.Logger.obtain(__name__)
 STAR = '\N{WHITE MEDIUM STAR}'
 # TODO: Redo everything
 
@@ -80,7 +78,7 @@ class Starboard(dpy_commands.Cog):
         async with self.bot.db.acquire() as db:
             config = await ConfigService.get(db, reaction.message.guild.id)
             if config is None or config.starboard_channel is None:
-                log.debug(f'Skipping starboard star remove for {reaction.message.id} in {reaction.message.guild.id}')
+                await log.debug(f'Skipping starboard star remove for {reaction.message.id} in {reaction.message.guild.id}')
                 return
 
             await StarboardService.unstar(db, reaction)
