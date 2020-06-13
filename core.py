@@ -5,7 +5,7 @@ cogs = [
     'jsk',
     "cause",
     "emojis",
-    "internet",
+    "fun",
     "starboard",
     'stats',
     'mod',

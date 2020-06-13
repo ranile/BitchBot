@@ -9,7 +9,7 @@ from util import BloodyMenuPages, EmbedPagesData, checks
 
 
 # noinspection PyIncorrectDocstring
-class Internet(commands.Cog):
+class Fun(commands.Cog):
     def __init__(self, bot: BitchBot):
         self.bot: BitchBot = bot
         self.is_image_regex = re.compile(r".*\.(jpg|png|gif)$")
@@ -164,4 +164,4 @@ class Internet(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Internet(bot))
+    bot.add_cog(Fun(bot))
