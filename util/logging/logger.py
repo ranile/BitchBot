@@ -81,7 +81,7 @@ class Logger:
         return params
 
     async def _send(self, message_or_embed: typing.Union[str, discord.Embed], level: Levels, force_embeds: bool = True):
-        if self.base_level <= level:
+        if self.base_level > level:
             return
         await self._webhook.send(**self._build_data(level, message_or_embed, force_embeds))
 
