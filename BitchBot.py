@@ -245,7 +245,7 @@ class BitchBot(commands.Bot):
             await ctx.send(
                 embed=discord.Embed(
                     description=f'{str(msg)}\n'
-                                f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info or'
+                                f'See `{ctx.prefix}help {ctx.command.qualified_name}` for more info or '
                                 f'join the [support server]({util.SUPPORT_SERVER_INVITE}) for help',
                     color=discord.Color.red()),
                 allowed_mentions=allowed_mentions)
