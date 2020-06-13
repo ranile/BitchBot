@@ -10,12 +10,12 @@ _loggers = {}
 class Levels(Enum):
     value: str
 
-    DEBUG = 'DEBUG'
-    INFO = 'INFO'
-    WARN = 'WARN'
-    ERROR = 'ERROR'
-    EXCEPTION = 'EXCEPTION'
-    CRITICAL = 'CRITICAL'
+    DEBUG = 0
+    INFO = 1
+    WARN = 2
+    ERROR = 3
+    EXCEPTION = 4
+    CRITICAL = 5
 
 
 _default = True
@@ -67,7 +67,7 @@ class Logger:
         params = {}
         if isinstance(data, str) and make_embed:
             embed = discord.Embed(
-                title=level.value.title(),
+                title=level.name.title(),
                 description=f'```{lang}\n{data}```\n**Module**: `{self.module}`',
                 color=self._colors[level],
                 timestamp=datetime.utcnow()
