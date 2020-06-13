@@ -275,7 +275,7 @@ class BitchBot(commands.Bot):
                             f'{sp(2)}**Name**: {ctx.guild.name}\n'
                             f'{sp(2)}**ID**: {ctx.guild.id}\n'
                             f'{sp(2)}**Owner in guild**: {ctx.guild.get_member(self.owner_id) is not None}\n'
-                            f'**Traceback**: {tb}',
+                            f'**Traceback**: \n```py\n{tb}```',
                 color=discord.Color.red()
             )
 
