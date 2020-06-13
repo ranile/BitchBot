@@ -116,7 +116,7 @@ class Cause(dpy_commands.Cog, name="The Cause"):
         self.bot.loop.create_task(create_counters_table(bot.db))
 
     def cog_check(self, ctx: commands.Context):
-        return ctx.guild is not None and True  # ctx.guild.id == THE_CAUSE
+        return ctx.guild is not None and ctx.guild.id == THE_CAUSE
 
     async def put_rabbit_on_cooldown(self):
         self.isRabbitOnCooldown = True
