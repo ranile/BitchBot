@@ -153,7 +153,8 @@ class BitchBot(commands.Bot):
             self.blacklist[blocked_user.user_id] = blocked_user
 
         self.lavalink = lavalink.Client(keys.client_id)
-        self.lavalink.add_node('127.0.0.1', 2333, keys.lavalink_pass, 'eu', 'debug-node')
+        self.lavalink.add_node('127.0.0.1', 2333, keys.lavalink_pass, 'us_west', 'us-west-node')
+        self.lavalink.add_node('127.0.0.1', 2333, keys.lavalink_pass, 'india', 'india-node')
         self.add_listener(self.lavalink.voice_update_handler, 'on_socket_response')
 
         await super().start(*args, **kwargs)
