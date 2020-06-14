@@ -17,7 +17,7 @@ def bot_and_author_have_permissions(**perms):
     return dpy_commands.check(pred)
 
 
-# noinspection PyIncorrectDocstring,PyUnresolvedReferences,PyMethodMayBeStatic
+# noinspection PyIncorrectDocstring,PyMethodMayBeStatic
 class Moderation(dpy_commands.Cog):
     def __init__(self, bot: BitchBot):
         self.bot: BitchBot = bot
@@ -87,11 +87,13 @@ class Moderation(dpy_commands.Cog):
 
         Args:
             victim: Member you want to ban
-            reason: Reason for ban - Optional
+            reason: Reason for ban
         """
 
         await self._do_ban(ctx, victim, reason)
 
+    # docstrings warns about time and reason
+    # noinspection PyUnresolvedReferences
     @commands.command(usage='<victim> <time> <reason>')
     @bot_and_author_have_permissions(ban_members=True)
     async def tempban(self, ctx: commands.Context, victim: discord.Member, *,
@@ -101,8 +103,8 @@ class Moderation(dpy_commands.Cog):
 
         Args:
             victim: Member you want to ban
-            time: Un-ban time - Optional
-            reason: Reason for ban - Optional
+            time: Un-ban time
+            reason: Reason for ban
         """
         if time_and_reason is None:
             time = None
@@ -137,13 +139,13 @@ class Moderation(dpy_commands.Cog):
               f'to learn how to configure the muted role.'
         config = await ConfigService.get(db, guild.id)
         if config is None:
-            raise commands.CommandError(f'There is no configuration stored for this server. {msg}')
+            raise dpy_commands.CommandError(f'There is no configuration stored for this server. {msg}')
         if config.muted_role_id is None:
-            raise commands.CommandError(f'There is no muted role configured for this server. {msg}')
+            raise dpy_commands.CommandError(f'There is no muted role configured for this server. {msg}')
         muted = guild.get_role(config.muted_role_id)
         if muted is None:
-            raise commands.CommandError(f'The muted role configured for this server has been deleted '
-                                        f'and cannot be found. {msg.replace("configure", "reconfigure")}')
+            raise dpy_commands.CommandError(f'The muted role configured for this server has been deleted '
+                                            f'and cannot be found. {msg.replace("configure", "reconfigure")}')
         return muted
 
     async def do_mute(self, ctx, *, victim, reason=None, time=None):
@@ -181,6 +183,8 @@ class Moderation(dpy_commands.Cog):
         async with ctx.typing():
             await self.do_mute(ctx, victim=victim, reason=reason)
 
+    # docstrings warns about time and reason
+    # noinspection PyUnresolvedReferences
     @mute.command(name='temp', usage='<victim> <time> <reason>', wants_db=True)
     @bot_and_author_have_permissions(manage_roles=True)
     async def temp_mute(self, ctx: commands.Context, victim: discord.Member, *,
@@ -205,9 +209,8 @@ class Moderation(dpy_commands.Cog):
 
             if time:
                 extras = {
-                    'mute_id': inserted.id,
-                    'guild_id': inserted.guild_id,
-                    'muted_user_id': inserted.muted_user_id,
+                    'guild_id': ctx.guild.id,
+                    'muted_user_id': victim.id,
                 }
                 timer = Timer(
                     event='tempmute',
@@ -314,7 +317,7 @@ class Moderation(dpy_commands.Cog):
         if warnings_for is not None:
             warnings_for = warnings_for.id
         warnings = await WarningsService.get_all(ctx.db, ctx.guild.id, warnings_for)
-        pages = commands.Paginator(prefix='```md', max_size=1980)
+        pages = dpy_commands.Paginator(prefix='```md', max_size=1980)
         index = 1
         sorted_warnings = sorted(warnings, key=lambda x: x.id)
         for warning in sorted_warnings:

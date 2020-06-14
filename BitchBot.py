@@ -55,6 +55,8 @@ async def global_check(ctx: bloody_commands.Context):
 
 # noinspection PyMethodMayBeStatic
 class BitchBot(commands.Bot):
+    timers: util.Timers
+
     def __init__(self, **kwargs):
         super().__init__(
             command_prefix=_prefix_pred,
