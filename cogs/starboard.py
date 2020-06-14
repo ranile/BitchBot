@@ -28,7 +28,8 @@ class Starboard(dpy_commands.Cog):
             raise dpy_commands.NoPrivateMessage("Starboard can't be used in DMs")
         if ctx.command.name == self.setup.name:
             return True
-        config = await ConfigService.get(ctx.db, ctx.guild.id)
+        async with self.bot.db.acquire() as db:
+            config = await ConfigService.get(db, ctx.guild.id)
         if config is None or config.starboard_channel is None:
             raise dpy_commands.CommandError('You need starboard enabled')
         return True
