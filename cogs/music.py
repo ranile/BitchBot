@@ -133,7 +133,7 @@ class Music(dpy_commands.Cog):
         # Internal attr, not typed
         # noinspection PyUnresolvedReferences
         ws = self.bot._connection._get_websocket(guild_id)
-        await ws.voice_state(str(guild_id), str(channel_id))
+        await ws.voice_state(str(guild_id), channel_id if channel_id is None else str(channel_id))
 
     def cog_unload(self):
         """ Cog unload handler. This removes any event hooks that were registered. """
