@@ -135,6 +135,8 @@ class Stats(dpy_commands.Cog):
     @dpy_commands.guild_only()
     @checks.can_config()
     async def activity_enable(self, ctx: commands.Context):
+        """Enable activity tracking for this server"""
+
         await ActivityService.set_tracking_state(ctx.db, ctx.guild.id, True)
         self.wants_activity_tracking.add(ctx.guild.id)
 
@@ -144,6 +146,8 @@ class Stats(dpy_commands.Cog):
     @dpy_commands.guild_only()
     @checks.can_config()
     async def activity_disable(self, ctx: commands.Context):
+        """Disable activity tracking for this server"""
+
         await ActivityService.set_tracking_state(ctx.db, ctx.guild.id, False)
         self.wants_activity_tracking.remove(ctx.guild.id)
 
