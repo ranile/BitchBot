@@ -101,7 +101,7 @@ class Miscellaneous(dpy_commands.Cog):
         await ctx.send(f'{int(c_to_f(temp))}°F')
 
     @commands.command()
-    async def poll(self, ctx: commands.Context, question: str, *answers: typing.Tuple[str]):
+    async def poll(self, ctx: commands.Context, question: str, *answers):
         """
         Start a poll.
         If answers/questions contain spaces put it in quotes
