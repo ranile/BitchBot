@@ -98,15 +98,18 @@ class Stats(dpy_commands.Cog):
         fetched = await ActivityService.get(ctx.db, target)
 
         if fetched is None:
-            await ctx.send(f'Activity for user `{util.format_human_readable_user(target)}` not found')
+            return await ctx.send(f'Activity for user `{util.format_human_readable_user(target)}` not found')
 
         member = ctx.guild.get_member(fetched.user_id)
-        embed = discord.Embed(color=util.random_discord_color())
-        embed.set_author(name=member.display_name, icon_url=member.avatar_url)
-        embed.add_field(name='Activity Points', value=fetched.points)
-        embed.add_field(name='Position', value=fetched.position)
-        embed.set_footer(text='Last updated at')
-        embed.timestamp = fetched.last_updated_time
+
+        embed = discord.Embed(
+            color=0x9CA1F7,
+            description=f'**Activity points**: {fetched.points}\n'
+                        f'**Position**: {fetched.position}',
+            timestamp=fetched.last_updated_time
+        ).set_footer(text='Last updated at').set_author(
+            name=f'Activity for {member.display_name}', icon_url=member.avatar_url)
+
         await ctx.send(embed=embed)
 
     @activity.command(name='top', wants_db=True)
@@ -127,7 +130,7 @@ class Stats(dpy_commands.Cog):
         data.append('-' * length)
         # I probably should use one query but I don't know how to do it so we just gonna go with two
         me = await ActivityService.get(ctx.db, ctx.author)
-        data.append(f'You have {me.points} points')
+        data.append(f"You have {f'{me.points} points' if me is not None else 'no activity'}")
 
         await util.BloodyMenuPages(util.TextPagesData(data)).start(ctx)
 

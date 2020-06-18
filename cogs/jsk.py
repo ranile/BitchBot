@@ -78,6 +78,14 @@ class MyJishaku(JishakuBase, metaclass=GroupCogMeta, command_parent=sudo, name='
         await ctx.send("Exiting...")
         await self.bot.close()
 
+    @commands.command(name="git", aliases=['girl'])
+    async def jsk_git(self, ctx: commands.Context, *, argument: codeblock_converter):
+        """
+        Shortcut for 'jsk sh git'. Invokes the system shell.
+        """
+
+        return await super().jsk_git(ctx, argument=argument)
+
     @commands.command()
     async def delete(self, ctx, message: discord.Message):
         await message.delete()
