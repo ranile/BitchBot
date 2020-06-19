@@ -3,6 +3,8 @@ from typing import Union
 
 import discord
 from discord.ext import commands as dpy_commands
+from jishaku.codeblocks import codeblock_converter
+from jishaku.paginators import WrappedPaginator
 
 import util
 from BitchBot import BitchBot
@@ -210,9 +212,9 @@ class Miscellaneous(dpy_commands.Cog):
                 color=util.random_discord_color()
             ).add_field(name="Need help? Have any ideas for the bot? Want to report a bug?",
                         value=f"[Join our support server]({util.SUPPORT_SERVER_INVITE})")
-            .set_author(name=str(ctx.me), icon_url=ctx.me.avatar_url_as(format='png'))
-            .set_footer(text=f'Rquested by {ctx.author.display_name}',
-                        icon_url=ctx.author.avatar_url_as(format='png'))
+                .set_author(name=str(ctx.me), icon_url=ctx.me.avatar_url_as(format='png'))
+                .set_footer(text=f'Rquested by {ctx.author.display_name}',
+                            icon_url=ctx.author.avatar_url_as(format='png'))
         )
 
     # noinspection PyUnresolvedReferences
@@ -235,6 +237,49 @@ class Miscellaneous(dpy_commands.Cog):
             await ctx.send(f'Time: {repr(time)}\n'
                            f'Other argument: {time_and_arg.other}\n'
                            f'Delta: {(time - pendulum.instance(ctx.message.created_at)).in_words()}')
+
+    @commands.group(invoke_without_command=True, aliases=['paste', 'bin'])
+    async def pastify(self, ctx: commands.Context, *, paste_id: str):
+        """
+        Fetch a paste from [pastify](https://pastify-app.web.app)
+
+        Args:
+             paste_id: the id of paste to fetch. If provided in format `paste_id.lang`,
+                       provided `lang` will be used for syntax highlighting
+        """
+
+        split = paste_id.split('.')
+        print(split)
+        async with ctx.typing(), self.bot.session.get(
+                f'https://us-central1-pastify-app.cloudfunctions.net/api/{split[0]}') as resp:
+            json = await resp.json()
+            content = json['content']
+
+            lang = split[1] if len(split) == 2 else ''
+
+            if len(content) < 1990:
+                return await ctx.send(f'```{lang}\n{content}```')
+
+            paginator = WrappedPaginator(prefix=f'```{lang}', suffix='```', max_size=1985)
+            paginator.add_line(content)
+
+            await util.BloodyMenuPages(util.TextPagesData(paginator)).start(ctx)
+
+    @pastify.command(name='create', aliases=['new'])
+    async def pastify_create(self, ctx: commands.Context, *, content: codeblock_converter):
+        """
+        Create a paste on [pastify](https://pastify-app.web.app).
+
+        It'll give you a pastify url
+
+        Args:
+            content: The content of paste
+        """
+
+        async with ctx.typing(), self.bot.session.post('https://us-central1-pastify-app.cloudfunctions.net/api/',
+                                                       json={'content': content.content}) as resp:
+            json = await resp.json()
+            await ctx.send(f'https://pastify-app.web.app/show/{json["id"]}.{content.language}')
 
 
 def setup(bot):
