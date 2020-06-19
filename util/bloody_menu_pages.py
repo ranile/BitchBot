@@ -60,6 +60,20 @@ class BloodyMenuPages(menus.MenuPages, inherit_buttons=False):
                 return
         await super().update(payload)
 
+    def _verify_permissions(self, ctx, channel, permissions):
+        if not permissions.send_messages:
+            raise commands.BotMissingPermissions(['send_messages'])
+
+        if self.check_embeds and not permissions.embed_links:
+            raise commands.BotMissingPermissions(['embed_links'])
+
+        self._can_remove_reactions = permissions.manage_messages
+        if self.should_add_reactions():
+            if not permissions.add_reactions:
+                raise commands.BotMissingPermissions(['add_reactions'])
+            if not permissions.read_message_history:
+                raise commands.BotMissingPermissions(['read_message_history'])
+
     @menus.button('<:backward:656488824129454080>', skip_if=menus.MenuPages._skip_double_triangle_buttons)
     async def go_to_first_page(self, payload):
         await super().go_to_first_page(payload)

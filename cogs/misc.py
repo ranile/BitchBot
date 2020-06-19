@@ -196,7 +196,7 @@ class Miscellaneous(dpy_commands.Cog):
     async def source(self, ctx: commands.Context):
         """Gives you a link to the source code"""
         await ctx.send(embed=discord.Embed(
-            description=f"The {self.bot.lines_of_code_count} lines of actual Python 3 code that "
+            description=f"The {self.bot.lines_of_code_count} lines of actual Python 3 and typescript code that "
                         f"I'm made of can be found [here](https://github.com/hamza1311/BitchBot)",
             color=util.random_discord_color()
         ))
@@ -249,7 +249,7 @@ class Miscellaneous(dpy_commands.Cog):
         """
 
         split = paste_id.split('.')
-        print(split)
+
         async with ctx.typing(), self.bot.session.get(
                 f'https://us-central1-pastify-app.cloudfunctions.net/api/{split[0]}') as resp:
             json = await resp.json()

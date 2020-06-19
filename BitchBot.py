@@ -123,7 +123,10 @@ class BitchBot(commands.Bot):
 
     async def clear_custom_prefix(self, db, guild_id):
         await ConfigService.delete_prefix(db, guild_id)
-        del self.prefixes[guild_id]
+        try:
+            del self.prefixes[guild_id]
+        except KeyError:
+            pass  # already gone for some reason or wasn't set in the first place
 
     # noinspection PyAttributeOutsideInit
     async def start(self, *args, **kwargs):
@@ -336,7 +339,7 @@ class BitchBot(commands.Bot):
             if root.startswith(('./venv', './web/frontend/node_modules', '.git', '.idea')):
                 continue
             for file in files:
-                if file.endswith(('.py',)):
+                if file.endswith(('.py', '.ts')):
                     yield os.path.join(root, file)
 
     def _count_lines_of_code(self):
