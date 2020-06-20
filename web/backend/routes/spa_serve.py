@@ -8,12 +8,28 @@ DIR = './web/frontend/dist/bitch-bot'
 @spa_blueprint.route('/', defaults={'path': 'index.html'})
 @spa_blueprint.route("/<path:path>")
 async def static_file(path):
-    return await quart.send_from_directory(DIR, path)
+    resp = await quart.send_from_directory(DIR, path)
+    if resp.content_type.startswith(('text/html', 'text/css', 'application/javascript')):
+        resp.cache_control.public = True
+        resp.cache_control.max_age = 60 * 60
+        resp.cache_control.must_revalidate = True
+        resp.cache_control.no_cache = True
+    elif resp.content_type.startswith('image/'):
+        resp.cache_control.public = True
+        resp.cache_control.max_age = 60 * 60 * 24
+
+    return resp
 
 
 @spa_blueprint.errorhandler(404)
 async def send_index(path):
-    return await quart.send_from_directory(DIR, 'index.html')
+    resp = await quart.send_from_directory(DIR, 'index.html')
+    resp.cache_control.public = True
+    resp.cache_control.max_age = 60 * 60
+    resp.cache_control.must_revalidate = True
+    resp.cache_control.no_cache = True
+
+    return resp
 
 
 def setup(bot):
