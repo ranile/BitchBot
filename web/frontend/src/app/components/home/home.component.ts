@@ -43,6 +43,28 @@ export class HomeComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        const targets = document.getElementById('features-grid').querySelectorAll('img');
+        const lazyLoad = target => {
+            const io = new IntersectionObserver((entries, observer) => {
+                console.log(entries)
+                entries.forEach(entry => {
+                    console.log('😍');
+
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.getAttribute('data-lazy');
+                        console.log(src)
+                        img.setAttribute('src', src);
+                        img.classList.add('fade');
+
+                        observer.disconnect();
+                    }
+                });
+            });
+
+            io.observe(target)
+        };
+        targets.forEach(lazyLoad);
         this.userService.fetchMyStats().then(resp => {
             this.stats = resp
         })

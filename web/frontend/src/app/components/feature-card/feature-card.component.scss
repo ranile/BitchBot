@@ -17,7 +17,15 @@ section {
             max-height: 90%;
         }
 
-        filter: drop-shadow(10px 7px 10px rgba(0, 0, 0, 0.2))
+        filter: drop-shadow(10px 7px 10px rgba(0, 0, 0, 0.2));
+
+        opacity: 0;
+        transition: ease-in 500ms;
+    }
+
+    .fade {
+        opacity: 1;
+        transition: ease-in 500ms;
     }
 
     div {

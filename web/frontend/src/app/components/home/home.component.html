@@ -28,7 +28,7 @@
     <div class="item features">
         <h3 class="title">Features</h3>
 
-        <div class="features-grid">
+        <div id="features-grid">
 
             <app-feature-card
                 class="feature-card"
@@ -36,7 +36,7 @@
                 imgSource="assets/emojis.webp"
                 title="Use any emoji from any server I am in"
                 [lines]="['I let you use any emoji, animated or not, that I can see, no need to have nitro or be in a specific server',
-                    'Even have me delete your command message.',
+                    'Even have me delete your command message or send the emoji multiple times.',
                     'I will tell even you send it so you don\'t end up wondering which ghost bruhed you']">
             </app-feature-card>
 
@@ -140,7 +140,7 @@
             </div>
             <!--<a href="https://discord.gg/k2ysVzd"><img src="https://discordapp.com/api/v7/guilds/693765408787922994/widget.png?style=banner2"/></a>-->
             <iframe id="widget" src="https://discord.com/widget?id=693765408787922994&theme=dark"
-                    allowtransparency="true" title="Support Discord server widget"></iframe>
+                    allowtransparency="true" title="Support Discord server widget" loading="lazy"></iframe>
         </div>
 
         <h3 class="title" *ngIf="!isIframe">Find me on:</h3>

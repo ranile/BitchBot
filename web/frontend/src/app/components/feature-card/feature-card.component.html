@@ -1,9 +1,9 @@
 <section [ngClass]="imageDirection">
-    <img src="{{imgSource}}"
+    <img [attr.data-lazy]="imgSource"
          alt="Emojis demo"/>
     <span class="spacer" *ngIf="!isSmallScreen"></span>
     <div>
-        <h6 class="title">{{title}}</h6>
+        <h5 class="title">{{title}}</h5>
         <span *ngFor="let line of lines">{{line}}</span>
     </div>
 </section>
