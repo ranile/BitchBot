@@ -4,8 +4,8 @@
             <img class="toolbar-icon" src="assets/icon.webp" alt="icon" routerLink="/">
         </div>
 
-        <span class="spacer"></span>
-        <app-navbar></app-navbar>
+        <button mat-button class="navbar-button" id="first-button" routerLink="commands">Commands</button>
+        <button mat-button class="navbar-button" (click)="navigateToInvite()">Invite</button>
     </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>
