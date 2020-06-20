@@ -13,7 +13,6 @@ cogs = [
     'reminders',
     'config',
     'music',
-    'test'
 ]
 
 bot = BitchBot(cogs=cogs)

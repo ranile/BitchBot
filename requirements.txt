@@ -7,3 +7,5 @@ Quart
 dateparser
 pendulum
 git+https://github.com/Devoxin/Lavalink.py.git@dev#egg=lavalink
+Flask-Caching
+

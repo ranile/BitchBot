@@ -10,7 +10,6 @@ import {Stats} from "../../models/Stats";
     styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-    avatarUrl: string;
     static INVITE_URL = 'https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160'
     REPO_URL          = 'https://www.github.com/hamza1311/BitchBot'
     DBOTS_URL         = 'https://discord.bots.gg/bots/595363392886145046'
@@ -44,9 +43,8 @@ export class HomeComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        Promise.all([this.userService.fetchMyAvatarUrl(1024), this.userService.fetchMyStats()]).then(resp => {
-            this.avatarUrl = resp[0]
-            this.stats = resp[1]
+        this.userService.fetchMyStats().then(resp => {
+            this.stats = resp
         })
     }
 

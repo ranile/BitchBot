@@ -18,7 +18,7 @@ $dark-theme: mat-dark-theme($dark-primary, $dark-accent);
 @include angular-material-theme($dark-theme);
 
 a {
-    color: mat-color($mat-blue, 500);
+    color: mat-color($mat-blue, 400);
     text-decoration: none;
 }
 

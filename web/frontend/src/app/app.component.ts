@@ -1,5 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { DOCUMENT } from "@angular/common";
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterEvent } from "@angular/router";
 import { ThemePalette } from "@angular/material/core";
 import { UserService } from "./services/user/user.service";
@@ -10,13 +9,11 @@ import { UserService } from "./services/user/user.service";
     styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-    avatarUrl: string = '';
     navbarColor: ThemePalette = 'primary';
     hideToolbar = false;
 
     constructor(
         private userService: UserService,
-        @Inject(DOCUMENT) private _document: HTMLDocument,
         private router: Router
     ) {
         this.router.events.subscribe(value => {
@@ -28,10 +25,6 @@ export class AppComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.userService.fetchMyAvatarUrl(1024).then(url => {
-            this.avatarUrl = url
-            this._document.getElementById('appFavicon').setAttribute('href', url);
-        })
     }
 
 }

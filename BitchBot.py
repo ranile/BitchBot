@@ -6,6 +6,8 @@ import traceback
 import aiohttp
 import discord
 from discord.ext import commands
+from flask_caching import Cache
+
 from util import commands as bloody_commands, database, lavalink
 import keys
 from jishaku.paginators import WrappedPaginator
@@ -72,6 +74,16 @@ class BitchBot(commands.Bot):
 
         self.quart_app = QuartWithBot(__name__, static_folder=None)
         self.quart_app.debug = keys.debug
+
+        config = {
+            "DEBUG": keys.debug,
+            "CACHE_TYPE": "simple",
+            "CACHE_DEFAULT_TIMEOUT": 300
+        }
+        self.quart_app.config.from_mapping(config)
+
+        Cache(self.quart_app)
+
         # Probably should put it with config
         self.initial_cogs = kwargs.pop('cogs')
 
