@@ -67,7 +67,7 @@ class BitchBot(commands.Bot):
             case_insensitive=True,
             allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
             status=discord.Status.online,
-            activity=discord.Game(f"use >help or @mention me")
+            activity=discord.Game(f"https://bitchbot.31416.dev | >help | >invite")
         )
         self.loop = self.loop or asyncio.get_event_loop()
         self.session = aiohttp.ClientSession()
