@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterEvent } from "@angular/router";
+import { Component, Inject, OnInit } from '@angular/core';
 import { ThemePalette } from "@angular/material/core";
-import { UserService } from "./services/user/user.service";
+import { DOCUMENT } from "@angular/common";
 
 @Component({
     selector: 'app-root',
@@ -12,16 +11,10 @@ export class AppComponent implements OnInit {
     navbarColor: ThemePalette = 'primary';
     hideToolbar = false;
 
-    constructor(
-        private userService: UserService,
-        private router: Router
-    ) {
-        this.router.events.subscribe(value => {
-            if (value instanceof RouterEvent) {
-                this.hideToolbar = value.url.toLowerCase().includes('iframe')
-                this.navbarColor = value.url && value.url != '/' ? undefined : 'primary';
-            }
-        })
+    constructor(@Inject(DOCUMENT) private document: Document) {
+        const location = this.document.location
+        this.hideToolbar = location.href.toLowerCase().includes('iframe')
+        this.navbarColor = location.pathname && location.pathname != '/' ? undefined : 'primary';
     }
 
     ngOnInit(): void {

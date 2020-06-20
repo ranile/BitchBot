@@ -1,8 +1,7 @@
-import {Component, Inject, OnInit} from '@angular/core';
-import {Router, RouterEvent} from "@angular/router";
-import {DOCUMENT} from '@angular/common';
-import {UserService} from "../../services/user/user.service";
-import {Stats} from "../../models/Stats";
+import { Component, Inject, OnInit } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { UserService } from "../../services/user/user.service";
+import { Stats } from "../../models/Stats";
 
 @Component({
     selector: 'app-home',
@@ -31,15 +30,10 @@ export class HomeComponent implements OnInit {
     };
 
     constructor(
-        private router: Router,
         @Inject(DOCUMENT) private document: Document,
         private userService: UserService,
     ) {
-        this.router.events.subscribe(value => {
-            if (value instanceof RouterEvent) {
-                this.isIframe = value.url.toLowerCase().includes('iframe')
-            }
-        })
+        this.isIframe = this.document.location.href.toLowerCase().includes('iframe')
     }
 
     ngOnInit(): void {
@@ -71,6 +65,6 @@ export class HomeComponent implements OnInit {
     }
 
     setHrefTo(url) {
-        window.location.href = url
+        this.document.location.href = url
     }
 }
