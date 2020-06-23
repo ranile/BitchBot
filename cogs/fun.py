@@ -397,10 +397,10 @@ class Fun(dpy_commands.Cog):
 
         await ctx.send(embed=discord.Embed(
             title='Minesweeper',
-            description=f'{game}\n'
-                        f'Columns: {columns}\n'
-                        f'Rows: {rows}\n'
-                        f'Bomb count/percentage: {bombs}/{round((bombs / (columns * rows)) * 100, 2)}\n'
+            description=f'{game}\n\n'
+                        f'**Columns**: {columns}\n'
+                        f'**Rows**: {rows}\n'
+                        f'**Bomb count/percentage**: {bombs}/{round((bombs / (columns * rows)) * 100, 2)}%\n'
         ).set_author(name=ctx.author.display_name, icon_url=str(ctx.author.avatar_url)))
 
 
