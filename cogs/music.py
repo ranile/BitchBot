@@ -153,7 +153,7 @@ class Music(dpy_commands.Cog):
     async def cog_before_invoke(self, ctx: commands.Context):
         player = self.bot.lavalink.player_manager.create(ctx.guild.id, endpoint=str(ctx.guild.region))
 
-        if not player.is_connected:
+        if not player.is_connected or ctx.me.voice is None or ctx.me.voice.channel is None:
             permissions = ctx.author.voice.channel.permissions_for(ctx.me)
 
             if not permissions.connect or not permissions.speak:  # Check user limit too?
@@ -344,7 +344,7 @@ class Music(dpy_commands.Cog):
 
     @commands.command(aliases=['disconnect', 'dc'])
     @alone_or_has_perms()
-    @must_be_playing()
+    @player_must_exist()
     async def stop(self, ctx: commands.Context):
         """Stop and disconnect the player"""
         await self.stop_player(ctx.guild.id)
