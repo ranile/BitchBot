@@ -15,6 +15,13 @@ class ConfigService:
         return GuildConfig.convert(fetched)
 
     @staticmethod
+    async def delete_for_guild(db: asyncpg.Connection, guild_id: int):
+        return await db.execute('''
+        delete from guildconfig
+        where guild_id = $1;
+        ''', guild_id)
+
+    @staticmethod
     async def setup_starboard(db: asyncpg.Connection, guild_id, starboard_channel_id, star_limit):
         query = '''
         insert into guildconfig (guild_id, starboard_channel, star_limit)
@@ -155,7 +162,7 @@ class ConfigService:
             on GuildConfig;
         
         create trigger refresh_config_view_on_update
-            after update or insert
+            after update or insert or delete 
             on GuildConfig
         execute function refresh_config_view();
         

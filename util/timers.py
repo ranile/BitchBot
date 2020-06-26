@@ -1,11 +1,11 @@
-import logging
 from datetime import datetime
 
+from util import logging
 from services import TimersService
 
 from discord.ext import tasks
 
-log = logging.getLogger('BitchBot' + __name__)
+logger = logging.Logger.obtain(__name__)
 
 
 class Timers:
@@ -20,7 +20,8 @@ class Timers:
         self.current_timers.append(inserted)
 
     async def delete_timer(self, timer):
-        log.debug(f'Deleting timer {timer.id}')
+        await logger.debug(f'Deleting timer {timer.id}')
+
         async with self.bot.db.acquire() as db:
             await TimersService.delete(db, timer)
         self.current_timers.remove(timer)
@@ -33,10 +34,10 @@ class Timers:
         self.stop()
         self.refresh_timer.start()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(minutes=1)
     async def refresh_timer(self):
         if self.current_timers is None:
-            log.info('Fetching timers from db')
+            await logger.info('Fetching timers from db')
             async with self.bot.db.acquire() as db:
                 self.current_timers = await TimersService.fetch_all_timers(db)
 

@@ -1,8 +1,12 @@
+import discord
 from discord.ext import commands as dpy_commands
 
 from BitchBot import BitchBot
 from resources import Prefix
-from util import checks, commands
+from services import ConfigService
+from util import checks, commands, Logger
+
+logger = Logger.obtain(__name__)
 
 
 # noinspection PyIncorrectDocstring
@@ -64,6 +68,13 @@ class Config(dpy_commands.Cog):
             prefixes.append('`>`')
 
         return ', '.join(prefixes)
+
+    @dpy_commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):
+        async with self.bot.db.acquire() as db:
+            await ConfigService.delete_for_guild(db, guild.id)
+
+        await logger.info(f'Deleted config for guild id {guild.id}')
 
 
 def setup(bot):

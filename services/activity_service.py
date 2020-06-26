@@ -66,6 +66,20 @@ class ActivityService:
 
         return [row['guild_id'] for row in fetched] if fetched is not None else []
 
+    @staticmethod
+    async def delete_for_guild(db: asyncpg.Connection, guild_id: int):
+        return await db.execute('''
+            delete from activity
+            where guild_id = $1;
+        ''', guild_id)
+
+    @staticmethod
+    async def delete_for_member(db: asyncpg.Connection, guild_id: int, member_id: int):
+        return await db.execute('''
+            delete from activity
+            where guild_id = $1 and user_id=$2;
+        ''', guild_id, member_id)
+
     initial_sql = '''
         create table if not exists Activity
         (

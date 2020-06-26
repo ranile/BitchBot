@@ -197,6 +197,28 @@ class Stats(dpy_commands.Cog):
     async def before_stats_loop(self):
         await self.bot.wait_until_ready()
 
+    @dpy_commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):
+        if guild.id not in self.wants_activity_tracking:
+            return
+
+        async with self.bot.db.acquire() as db:
+            await ActivityService.delete_for_guild(db, guild.id)
+
+        self.wants_activity_tracking.discard(guild.id)
+
+        await logger.info(f'Deleted activity for guild id {guild.id}')
+
+    @dpy_commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        if member.guild.id not in self.wants_activity_tracking:
+            return
+
+        async with self.bot.db.acquire() as db:
+            await ActivityService.delete_for_member(db, member.guild.id, member.id)
+
+        await logger.debug(f'Deleted activity for member {member.id} in guild id {member.guild.id}')
+
 
 def setup(bot):
     bot.add_cog(Stats(bot))
