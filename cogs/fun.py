@@ -47,6 +47,21 @@ def hot_or_new(arg: str) -> str:
     return arg.lower()
 
 
+def must_be_between_0_and_13(arg: str) -> int:
+    try:
+        arg = int(arg)
+    except ValueError:
+        raise dpy_commands.BadArgument(f'{arg} is not a valid number')
+
+    if arg > 13:
+        raise dpy_commands.BadArgument(f'The columns and rows are cannot be more than 13')
+
+    if arg < 1:
+        raise dpy_commands.BadArgument(f'Provided number cannot be 0 or a negative number')
+
+    return arg
+
+
 # noinspection PyIncorrectDocstring
 class Fun(dpy_commands.Cog):
     """
@@ -336,6 +351,57 @@ class Fun(dpy_commands.Cog):
         user = random.choice(ctx.guild.members).display_name
         response = f'@someone {emote} ***({user})*** {text}'
         await ctx.send(response)
+
+    @commands.command(usage='[columns=random] [rows=random] [bombs=random]')
+    @dpy_commands.max_concurrency(1, dpy_commands.BucketType.guild)
+    async def minesweeper(
+            self, ctx: commands.Context,
+            columns: must_be_between_0_and_13 = random.randint(4, 13),
+            rows: must_be_between_0_and_13 = random.randint(4, 13),
+            bombs: int = None
+    ):
+        """
+        Play a game of minesweeper
+
+        Args:
+            columns: The number of columns to have
+            rows: The number of rows to have
+            bombs: The number of bombs to have
+        """
+        if bombs is None:
+            bombs = round(random.randint(5, round((columns * rows - 1) / 2.5)))
+
+        if bombs + 1 > columns * rows:
+            raise dpy_commands.BadArgument('You have more bombs than spaces on the grid or '
+                                           'you attempted to make all of the spaces bombs!')
+
+        def mapper(ch):
+            return f'||{util.NUMBER_TO_LETTER.get(ch, "💣")}||'
+
+        grid = [[0 for _ in range(columns)] for _ in range(rows)]
+
+        for _ in range(bombs):
+            x = random.randint(0, columns - 1)
+            y = random.randint(0, rows - 1)
+
+            if grid[y][x] == 0:
+                grid[y][x] = 'B'
+
+        for i, gird_rows in enumerate(grid):
+            for j, item in enumerate(gird_rows):
+                picked = random.choice([x for x in range(0, 9)])
+                if grid[i][j] != 'B':
+                    grid[i][j] = picked
+
+        game = '\n'.join((''.join(map(mapper, the_rows)) for the_rows in grid))
+
+        await ctx.send(embed=discord.Embed(
+            title='Minesweeper',
+            description=f'{game}\n\n'
+                        f'**Columns**: {columns}\n'
+                        f'**Rows**: {rows}\n'
+                        f'**Bomb count/percentage**: {bombs}/{round((bombs / (columns * rows)) * 100, 2)}%\n'
+        ).set_author(name=ctx.author.display_name, icon_url=str(ctx.author.avatar_url)))
 
 
 def setup(bot):
