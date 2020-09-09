@@ -1,5 +1,5 @@
 asyncpg
-git+https://github.com/Rapptz/discord.py@master#egg=discord.py[voice]
+git+https://github.com/Rapptz/discord.py@feature/intents#egg=discord.py[voice]
 git+https://github.com/Gorialis/jishaku@master#egg=jishaku
 psutil
 git+https://github.com/Rapptz/discord-ext-menus

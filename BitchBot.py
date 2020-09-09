@@ -67,7 +67,8 @@ class BitchBot(commands.Bot):
             case_insensitive=True,
             allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
             status=discord.Status.online,
-            activity=discord.Game(f"https://bitchbot.31416.dev | >help | >invite")
+            activity=discord.Game(f"https://bitchbot.31416.dev | >help | >invite"),
+            intents=discord.Intents.all()
         )
         self.loop = self.loop or asyncio.get_event_loop()
         self.session = aiohttp.ClientSession()
@@ -338,6 +339,19 @@ class BitchBot(commands.Bot):
                     embed.add_field(name='\u200b', value=f"{page}", inline=False)
         else:
             embed.add_field(name='Emojis', value=f"None", inline=False)
+
+        await self.get_channel(648069341341810688).send(embed=embed)
+
+    async def on_guild_remove(self, guild):
+
+        embed = discord.Embed(
+            title=f"Someone kicked my ass",
+            color=util.random_discord_color(),
+            description=f'**Name**: {guild}\n'
+                        f'**ID**: {guild.id}\n'
+                        f'**Owner**: {guild.owner} ({guild.owner.id})\n'
+                        f'**Members**: {guild.member_count} ({len([m for m in guild.members if m.bot])} bots)\n',
+        ).set_thumbnail(url=guild.icon_url)
 
         await self.get_channel(648069341341810688).send(embed=embed)
 
