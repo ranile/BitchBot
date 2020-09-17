@@ -60,6 +60,7 @@ class BitchBot(commands.Bot):
     timers: util.Timers
 
     def __init__(self, **kwargs):
+        intents = discord.Intents(members=True, typing=False)
         super().__init__(
             command_prefix=_prefix_pred,
             help_command=util.BloodyHelpCommand(),
@@ -68,7 +69,8 @@ class BitchBot(commands.Bot):
             allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True),
             status=discord.Status.online,
             activity=discord.Game(f"https://bitchbot.31416.dev | >help | >invite"),
-            intents=discord.Intents.all()
+            intents=intents,
+            member_cache_flags=discord.MemberCacheFlags.from_intents(intents)
         )
         self.loop = self.loop or asyncio.get_event_loop()
         self.session = aiohttp.ClientSession()
@@ -91,8 +93,7 @@ class BitchBot(commands.Bot):
         # socket stats props
         self.socket_stats = {}
 
-        # self.lines_of_code_count = self._count_lines_of_code()
-        self.lines_of_code_count = 0
+        self.lines_of_code_count = self._count_lines_of_code()
 
         self.prefixes = {}
 
@@ -283,7 +284,7 @@ class BitchBot(commands.Bot):
                 return
             return await send(exception)
         else:
-            await send(f'{exception.__class__.__name__} : {str(exception)}')
+            await send(f'{exception.__class__.__name__} : {str(exception)}\nMy owner has been notified of this error.')
 
             tb = ''.join(traceback.format_exception(type(exception), exception, exception.__traceback__, 5))
             sp = util.space
@@ -350,7 +351,8 @@ class BitchBot(commands.Bot):
             description=f'**Name**: {guild}\n'
                         f'**ID**: {guild.id}\n'
                         f'**Owner**: {guild.owner} ({guild.owner.id})\n'
-                        f'**Members**: {guild.member_count} ({len([m for m in guild.members if m.bot])} bots)\n',
+                        f'**Members**: {guild.member_count} ({len([m for m in guild.members if m.bot])} bots)\n'
+                        f'**Current guild count**: {len(self.guilds)}',
         ).set_thumbnail(url=guild.icon_url)
 
         await self.get_channel(648069341341810688).send(embed=embed)
