@@ -125,7 +125,14 @@ class BitchBot(commands.Bot):
         dpy_logger = logging.getLogger('discord')
         dpy_logger.setLevel(logging.INFO)
         dpy_logger.addHandler(file_handler)
-        dpy_logger.addHandler(discord_handler)
+
+        gateway_logger = logging.getLogger('discord.gateway')
+        gateway_logger.setLevel(logging.INFO)
+        gateway_logger.addHandler(discord_handler)
+
+        dpy_logger_2 = logging.getLogger('discord')
+        dpy_logger_2.setLevel(logging.WARNING)
+        dpy_logger_2.addHandler(discord_handler)
 
     async def set_prefix(self, db, prefix, *, should_insert=True):
         if should_insert:
