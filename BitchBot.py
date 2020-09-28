@@ -60,7 +60,14 @@ class BitchBot(commands.Bot):
     timers: util.Timers
 
     def __init__(self, **kwargs):
-        intents = discord.Intents(members=True, typing=False)
+        intents = discord.Intents(
+            guilds=True,
+            members=True,
+            emojis=True,
+            voice_states=True,
+            messages=True,
+            reactions=True
+        )
         super().__init__(
             command_prefix=_prefix_pred,
             help_command=util.BloodyHelpCommand(),
