@@ -1,6 +1,6 @@
 # BitchBot
 
-**This project has been abandoned**
+**No Bitches. This project has been abandoned**
 
  Fun Discord bot with moderation and utility tools like reminders, starboard, activity tracking and more  
  [Invite her to your server](https://discordapp.com/oauth2/authorize?client_id=595363392886145046&scope=bot&permissions=388160)
